@@ -119,4 +119,36 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  h1 {
+    @apply text-6xl font-bold leading-[1.15] tracking-tight
+  }
+
+  h2 {
+    @apply text-5xl font-bold leading-[1.15] tracking-tight
+  }
+
+  h3 {
+    @apply text-4xl font-bold leading-[1.15] tracking-tight
+  }
+
+  h4 {
+    @apply text-3xl font-bold leading-[1.15] tracking-tight
+  }
+
+  h5 {
+    @apply text-2xl font-bold leading-[1.15] tracking-tight
+  }
+
+  h6 {
+    @apply text-xl font-bold leading-[1.15] tracking-tight
+  }
+
+  p {
+    @apply text-base
+  }
+
+  small {
+    @apply text-xs
+  }
 }

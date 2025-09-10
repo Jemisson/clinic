@@ -49,7 +49,7 @@ export function Login() {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-none border-none">
+    <Card className="w-full max-w-md">
       <CardHeader className="flex flex-col items-center gap-10">
         <div className="size-20 relative">
           <Image
