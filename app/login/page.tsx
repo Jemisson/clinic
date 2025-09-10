@@ -6,8 +6,8 @@ import { Login } from '@/components/Login';
 
 export default function LoginPage() {
   return (
-    <div className="w-full h-screen flex">
-      <div className="lg:w-1/2 w-full flex items-center justify-center">
+    <div className="w-full h-svh flex bg-muted">
+      <div className="lg:w-1/2 w-full flex items-center justify-center p-6 lg:p-0">
         <Login />
       </div>
 
@@ -17,7 +17,7 @@ export default function LoginPage() {
           alt={SITE_NAME}
           fill
           className="object-cover"
-          sizes='100vh'
+          sizes='100svh'
         />
       </div>
     </div>
