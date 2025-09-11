@@ -29,6 +29,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import dayjs from '@/lib/dayjs';
+import * as Icons from 'lucide-react';
 
 type Checked = DropdownMenuCheckboxItemProps['checked'];
 
@@ -47,127 +48,128 @@ export default function TagsPage() {
   ];
 
   const tags = [
-    {
-      icon: 'House',
-      name: 'Procedimento',
-      createdAt: '2024-06-01T09:30:00-03:00',
-      updatedAt: '2024-06-02T10:00:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  {
+    icon: "Stethoscope",
+    name: "Consulta",
+    createdAt: "2024-06-01T09:30:00-03:00",
+    updatedAt: "2024-06-02T10:00:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'User',
-      name: 'Paciente',
-      createdAt: '2024-06-02T10:15:00-03:00',
-      updatedAt: '2024-06-03T11:20:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "User",
+    name: "Paciente",
+    createdAt: "2024-06-02T10:15:00-03:00",
+    updatedAt: "2024-06-03T11:20:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'Calendar',
-      name: 'Agendamento',
-      createdAt: '2024-06-03T14:45:00-03:00',
-      updatedAt: '2024-06-04T09:00:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "Calendar",
+    name: "Agendamento",
+    createdAt: "2024-06-03T14:45:00-03:00",
+    updatedAt: "2024-06-04T09:00:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'FileText',
-      name: 'Relatório',
-      createdAt: '2024-06-04T08:20:00-03:00',
-      updatedAt: '2024-06-05T10:30:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "FileText",
+    name: "Prontuário",
+    createdAt: "2024-06-04T08:20:00-03:00",
+    updatedAt: "2024-06-05T10:30:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'Settings',
-      name: 'Configuração',
-      createdAt: '2024-06-05T11:00:00-03:00',
-      updatedAt: '2024-06-06T12:15:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "Pill",
+    name: "Prescrição",
+    createdAt: "2024-06-05T11:00:00-03:00",
+    updatedAt: "2024-06-06T12:15:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'AlertCircle',
-      name: 'Alerta',
-      createdAt: '2024-06-06T16:10:00-03:00',
-      updatedAt: '2024-06-07T17:05:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "AlertCircle",
+    name: "Emergência",
+    createdAt: "2024-06-06T16:10:00-03:00",
+    updatedAt: "2024-06-07T17:05:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'CheckCircle',
-      name: 'Concluído',
-      createdAt: '2024-06-07T13:50:00-03:00',
-      updatedAt: '2024-06-08T14:20:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "CheckCircle",
+    name: "Alta",
+    createdAt: "2024-06-07T13:50:00-03:00",
+    updatedAt: "2024-06-08T14:20:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'MessageSquare',
-      name: 'Mensagem',
-      createdAt: '2024-06-08T15:30:00-03:00',
-      updatedAt: '2024-06-09T16:00:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "MessageSquare",
+    name: "Anotações",
+    createdAt: "2024-06-08T15:30:00-03:00",
+    updatedAt: "2024-06-09T16:00:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'BookOpen',
-      name: 'Manual',
-      createdAt: '2024-06-09T09:45:00-03:00',
-      updatedAt: '2024-06-10T10:15:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "BookOpen",
+    name: "Manual Clínico",
+    createdAt: "2024-06-09T09:45:00-03:00",
+    updatedAt: "2024-06-10T10:15:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-    {
-      icon: 'Clipboard',
-      name: 'Tarefa',
-      createdAt: '2024-06-10T12:25:00-03:00',
-      updatedAt: '2024-06-11T13:00:00-03:00',
-      visible: {
-        icon: showIcon,
-        name: showNameColumn,
-        createdAt: showCreatedAt,
-        updatedAt: showUpdatedAt,
-      },
+  },
+  {
+    icon: "ClipboardList",
+    name: "Exames",
+    createdAt: "2024-06-10T12:25:00-03:00",
+    updatedAt: "2024-06-11T13:00:00-03:00",
+    visible: {
+      icon: showIcon,
+      name: showNameColumn,
+      createdAt: showCreatedAt,
+      updatedAt: showUpdatedAt,
     },
-  ];
+  },
+];
+
 
   return (
     <section className="w-full lg:max-w-5xl flex flex-col gap-6">
@@ -214,48 +216,71 @@ export default function TagsPage() {
         </DropdownMenu>
       </header>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((column) => (
-              <TableHead
-                key={column.title}
-                className={column.visible ? '' : 'hidden'}
-              >
-                {column.title}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tags.map((tag) => (
-            <TableRow key={tag.name}>
-              {tag.visible.icon && <TableCell>{tag.icon}</TableCell>}
-              {tag.visible.name && <TableCell>{tag.name}</TableCell>}
-              {tag.visible.createdAt && (
-                <TableCell>
-                  {dayjs(tag.createdAt).format('DD/MM/YYYY - HH:mm:ss')}
-                </TableCell>
-              )}
-              {tag.visible.updatedAt && (
-                <TableCell>
-                  {dayjs(tag.updatedAt).format('DD/MM/YYYY - HH:mm:ss')}
-                </TableCell>
-              )}
-              <TableCell>
-                <div className="flex gap-1">
-                  <Button variant={'ghost'} size={'icon'} className="size-8">
-                    <Eye />
-                  </Button>
-                  <Button variant={'ghost'} size={'icon'} className="size-8">
-                    <Pencil />
-                  </Button>
-                </div>
-              </TableCell>
+      <section className="overflow-hidden rounded-md border">
+        <Table>
+          <TableHeader className="bg-muted">
+            <TableRow>
+              {columns.map((column) => (
+                <TableHead
+                  key={column.title}
+                  className={column.visible ? '' : 'hidden'}
+                >
+                  {column.title}
+                </TableHead>
+              ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {tags.map((tag) => {
+              const LucideIcon = Icons[tag.icon as keyof typeof Icons];
+              return (
+                <TableRow key={tag.name}>
+                  {tag.visible.icon && (
+                    <TableCell>
+                      <Button size={'icon'}>
+                        {LucideIcon ? (
+                          <LucideIcon />
+                        ) : (
+                          tag.icon
+                        )}
+                      </Button>
+                    </TableCell>
+                  )}
+                  {tag.visible.name && <TableCell>{tag.name}</TableCell>}
+                  {tag.visible.createdAt && (
+                    <TableCell>
+                      {dayjs(tag.createdAt).format('DD/MM/YYYY - HH:mm:ss')}
+                    </TableCell>
+                  )}
+                  {tag.visible.updatedAt && (
+                    <TableCell>
+                      {dayjs(tag.updatedAt).format('DD/MM/YYYY - HH:mm:ss')}
+                    </TableCell>
+                  )}
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button
+                        variant={'ghost'}
+                        size={'icon'}
+                        className="size-8"
+                      >
+                        <Eye />
+                      </Button>
+                      <Button
+                        variant={'ghost'}
+                        size={'icon'}
+                        className="size-8"
+                      >
+                        <Pencil />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </section>
 
       <footer className="flex flex-col gap-2 items-center md:flex-row">
         <p className="text-muted-foreground flex-grow">
