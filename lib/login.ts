@@ -1,4 +1,3 @@
-// service/auth.ts
 import { loginSchema } from '@/lib/schemas/auth'
 import { API_URL } from '@/utils/constants'
 import Cookies from 'js-cookie'
@@ -19,7 +18,6 @@ type LoginResult =
   | { success: false; errors?: Partial<Record<'email' | 'password', string>>; apiError?: string }
 
 export async function loginUser(email: string, password: string): Promise<LoginResult> {
-  // validação
   const result = loginSchema.safeParse({ email, password })
   if (!result.success) {
     const fieldErrors: Partial<Record<'email' | 'password', string>> = {}
@@ -37,7 +35,6 @@ export async function loginUser(email: string, password: string): Promise<LoginR
       body: JSON.stringify({ user: { email, password } }),
     })
 
-    // tenta ler o JSON (mesmo em erro)
     let json: LoginResponse | null = null
     try {
       json = (await res.json()) as LoginResponse
@@ -48,7 +45,6 @@ export async function loginUser(email: string, password: string): Promise<LoginR
     const apiCode = json?.status?.code
     const apiMsg = json?.status?.message
 
-    // considera erro se HTTP não-OK ou se API trouxe code >= 400
     if (!res.ok || (typeof apiCode === 'number' && apiCode >= 400)) {
       return { success: false, apiError: apiMsg || 'Falha ao fazer login' }
     }
@@ -59,9 +55,8 @@ export async function loginUser(email: string, password: string): Promise<LoginR
       return { success: false, apiError: 'Token não encontrado na resposta.' }
     }
 
-    // salva cookie clinic_token
     Cookies.set('clinic_token', token, {
-      expires: 7, // ajuste conforme necessário
+      expires: 7,
       path: '/',
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',

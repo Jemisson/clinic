@@ -52,16 +52,23 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 export function AppSidebar() {
   return (
-    <Sidebar variant='inset'>
+    <Sidebar variant="inset">
       <SidebarHeader>
-        <div className="size-6 relative">
-          <Image
-            src="/logo.svg"
-            alt={`Logo ${SITE_NAME}`}
-            fill
-            className="object-cover"
-          />
-        </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton>
+              <div className="size-5 relative">
+                <Image
+                  src="/logo.svg"
+                  alt={`Logo ${SITE_NAME}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <span className='font-semibold'>{SITE_NAME}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
       <SidebarContent>
