@@ -41,7 +41,6 @@ api.interceptors.response.use(
     const status = error.response?.status
 
     if (status === 401) {
-      // limpa token e redireciona
       Cookies.remove('clinic_token', { path: '/' })
       if (typeof window !== 'undefined') {
         toast.error('Sessão expirada, faça login novamente')

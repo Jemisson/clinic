@@ -10,7 +10,7 @@ import {
 const RESOURCE = '/profile_users'
 
 export const UsersService = {
-  list: async (params?: { page?: number; per_page?: number }) => {
+  list: async (params?: { page?: number; per_page?: number; q?: string  }) => {
     const { data } = await api.get<UsersIndexResponse>(RESOURCE, { params })
     const users: User[] = data.data.map(toUser)
     const meta: JsonApiMeta = data.meta
