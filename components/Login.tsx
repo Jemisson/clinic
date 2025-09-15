@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -9,43 +9,44 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import Image from 'next/image';
-import { SITE_NAME } from '@/utils/constants';
-import { loginUser } from '@/lib/login';
-import type { LoginInput } from '@/lib/schemas/auth';
-import { useRouter } from 'next/navigation';
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import Image from 'next/image'
+import { SITE_NAME } from '@/utils/constants'
+import { loginUser } from '@/lib/login'
+import type { LoginInput } from '@/lib/schemas/auth'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof LoginInput, string>>
-  >({});
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [errors, setErrors] = useState<Partial<Record<keyof LoginInput, string>>>({})
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const from = searchParams.get('from') || '/'
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setErrors({});
-    setApiError(null);
-    setLoading(true);
+    e.preventDefault()
+    setErrors({})
+    setApiError(null)
+    setLoading(true)
 
-    const result = await loginUser(email, password);
+    const result = await loginUser(email, password)
 
     if (!result.success) {
-      setErrors(result.errors || {});
-      setApiError(result.apiError || null);
-      setLoading(false);
-      return;
+      setErrors(result.errors || {})
+      setApiError(result.apiError || null)
+      setLoading(false)
+      return
     }
 
-    console.log('Login OK:', result.data);
-    router.push('/');
-    setLoading(false);
+    router.replace(from)
+    setLoading(false)
   }
 
   return (
@@ -122,5 +123,5 @@ export function Login() {
         </CardFooter>
       </CardHeader>
     </Card>
-  );
+  )
 }

@@ -1,4 +1,3 @@
-// app/tags/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -16,7 +15,6 @@ export default function TagsPage() {
     ;(async () => {
       try {
         const res: TagResponse = await TagsService.list({ page: 1, per_page: 10 })
-        console.log('TagsPage -> res', res);
 
         const parsed = res.data.map((r) => ({ id: r.id, ...r.attributes }))
         if (mounted) setRows(parsed)

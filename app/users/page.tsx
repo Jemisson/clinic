@@ -1,4 +1,3 @@
-// app/users/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -73,7 +72,7 @@ export default function UsersPage() {
         onPerPageChange={(n) => { setPerPage(n); setPage(1) }}
         searchValue={search}
         onSearchChange={(value) => { setSearch(value); setPage(1) }}
-        searchPlaceholder="Buscar por nome, email, cpf, setor, função ou papel..."
+        searchPlaceholder="Buscar por nome, email..."
       />
     </div>
   )

@@ -1,4 +1,3 @@
-// app/users/data-table.tsx
 'use client'
 
 import { Button } from '@/components/ui/button'
@@ -8,8 +7,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { PaginationControls } from '@/components/ui/pagination-controls'
+import { SearchInput } from '@/components/ui/search-input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
@@ -67,13 +66,12 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-3">
-      {/* Toolbar */}
       <div className="flex items-center gap-2">
-        <Input
-          className="max-w-xs"
-          placeholder={searchPlaceholder}
+        <SearchInput
           value={searchValue}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={(v) => onSearchChange(v)}
+          placeholder={searchPlaceholder}
+          debounceMs={500}
         />
 
         <DropdownMenu>
@@ -98,7 +96,6 @@ export function DataTable<TData, TValue>({
         </DropdownMenu>
       </div>
 
-      {/* Tabela */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -106,20 +103,19 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : (
-                        <button
-                          className={header.column.getCanSort() ? 'select-none' : undefined}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                          {{
-                            asc: ' ▲',
-                            desc: ' ▼',
-                          }[header.column.getIsSorted() as string] ?? null}
-                        </button>
-                      )}
+                    {header.isPlaceholder ? null : (
+                      <button
+                        className={header.column.getCanSort() ? 'select-none' : undefined}
+                        onClick={header.column.getToggleSortingHandler()}
+                        aria-label={`Ordenar por ${String(header.column.columnDef.header)}`}
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {{
+                          asc: ' ▲',
+                          desc: ' ▼',
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </button>
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -130,13 +126,11 @@ export function DataTable<TData, TValue>({
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={`sk-${i}`}>
-                  <TableCell colSpan={columns.length}>
-                    {Skeleton ? (
-                      <Skeleton className="h-6 w-full" />
-                    ) : (
-                      <div className="h-6 w-full animate-pulse rounded bg-gray-200" />
-                    )}
-                  </TableCell>
+                  {table.getAllLeafColumns().map((col, c) => (
+                    <TableCell key={`sk-${i}-${c}`}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : table.getRowModel().rows?.length ? (
