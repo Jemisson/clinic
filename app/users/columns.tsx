@@ -12,6 +12,32 @@ const formatDate = (s?: string) => {
 
 export const userColumns: ColumnDef<User>[] = [
   {
+    accessorKey: 'photo',
+    header: 'Foto',
+    accessorFn: (row) => row.photo_thumb_url,
+    cell: ({ row, getValue }) => {
+      const photo = getValue() as string | null
+      const name = row.original.name as string | undefined
+
+      const initial = name?.trim()?.charAt(0).toUpperCase() ?? '?'
+
+      return photo ? (
+        <img
+          src={photo}
+          alt={`Foto de ${name ?? 'usuário'}`}
+          className="h-8 w-8 rounded-full object-cover"
+        />
+      ) : (
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-700">
+          {initial}
+        </div>
+      )
+    },
+    enableSorting: false,
+    enableHiding: true,
+    size: 36,
+  },
+  {
     accessorKey: 'name',
     header: 'Nome',
     cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,

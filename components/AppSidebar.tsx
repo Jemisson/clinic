@@ -136,7 +136,7 @@ export function AppSidebar() {
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuButton asChild>
-                      <Link href="/user/new">
+                      <Link href="/users/new">
                         <UserRoundPlus /> <span>Adicionar Usuário</span>
                       </Link>
                     </SidebarMenuButton>
