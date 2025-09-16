@@ -7,21 +7,30 @@ type LoginResponse = {
     code: number
     message: string
     data?: {
-      user?: { id: number; email: string }
+      user?: { id: number; email: string; role?: string }
       token?: string
     }
   }
 }
 
 type LoginResult =
-  | { success: true; data: LoginResponse; token: string; user?: { id: number; email: string } }
-  | { success: false; errors?: Partial<Record<'email' | 'password', string>>; apiError?: string }
+  | {
+      success: true
+      data: LoginResponse
+      token: string
+      user?: { id: number; email: string; role?: string }
+    }
+  | {
+      success: false
+      errors?: Partial<Record<'email' | 'password', string>>
+      apiError?: string
+    }
 
 export async function loginUser(email: string, password: string): Promise<LoginResult> {
-  const result = loginSchema.safeParse({ email, password })
-  if (!result.success) {
+  const parsed = loginSchema.safeParse({ email, password })
+  if (!parsed.success) {
     const fieldErrors: Partial<Record<'email' | 'password', string>> = {}
-    for (const issue of result.error.issues) {
+    for (const issue of parsed.error.issues) {
       const field = issue.path[0] as 'email' | 'password'
       if (!fieldErrors[field]) fieldErrors[field] = issue.message
     }
@@ -29,18 +38,14 @@ export async function loginUser(email: string, password: string): Promise<LoginR
   }
 
   try {
-    const res = await fetch(`${API_URL}login`, {
+    const url = new URL('login', API_URL).toString()
+    const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ user: { email, password } }),
     })
 
-    let json: LoginResponse | null = null
-    try {
-      json = (await res.json()) as LoginResponse
-    } catch {
-      /* ignore */
-    }
+    const json = (await res.json()) as LoginResponse
 
     const apiCode = json?.status?.code
     const apiMsg = json?.status?.message
@@ -62,7 +67,7 @@ export async function loginUser(email: string, password: string): Promise<LoginR
       secure: process.env.NODE_ENV === 'production',
     })
 
-    return { success: true, data: json!, token, user }
+    return { success: true, data: json, token, user }
   } catch {
     return { success: false, apiError: 'Não foi possível conectar. Tente novamente.' }
   }
