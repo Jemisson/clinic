@@ -8,9 +8,11 @@ import {
   ProfileUserFormInput,
 } from '@/types'
 
+interface BuildOpts { removePhoto?: boolean }
+
 const RESOURCE = '/profile_users'
 
-function buildFormData(values: ProfileUserFormInput) {
+function buildFormData(values: ProfileUserFormInput, opts: BuildOpts = {}) {
   const fd = new FormData()
 
   fd.append('profile_user[name]', values.name)
@@ -38,6 +40,10 @@ function buildFormData(values: ProfileUserFormInput) {
     fd.append('photo', values.photo)
   }
 
+  if (opts.removePhoto) {
+    fd.append('remove_photo', '1')
+  }
+
   return fd
 }
 
@@ -63,8 +69,8 @@ export const UsersService = {
     return data
   },
 
-  update: async (id: string | number, values: ProfileUserFormInput) => {
-    const formData = buildFormData(values)
+  update: async (id: string | number, values: ProfileUserFormInput, opts: BuildOpts = {}) => {
+    const formData = buildFormData(values, opts)
     const { data } = await api.put(`${RESOURCE}/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })

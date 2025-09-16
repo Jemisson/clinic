@@ -45,6 +45,7 @@ type Props = {
   defaultValues?: Partial<UserFormValues>
   idForEdit?: string | number
   onSuccess?: () => void
+  initialPhotoUrl?: string
 }
 
 function Stepper({
@@ -83,8 +84,8 @@ function Stepper({
   )
 }
 
-
-export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
+export function UserForm({ mode, defaultValues, idForEdit, onSuccess, initialPhotoUrl }: Props) {
+  const [removePhoto, setRemovePhoto] = useState(false)
   const schema = useMemo(() => {
     return baseSchema.superRefine((val, ctx) => {
       const pass = val.user.password ?? ''
@@ -191,8 +192,8 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
       setPreview(url)
       return () => URL.revokeObjectURL(url)
     }
-    setPreview(null)
-  }, [photo])
+    setPreview(initialPhotoUrl || null)
+  }, [photo, initialPhotoUrl])
 
   const onDropFile = (file?: File) => {
     if (!file) return
@@ -232,7 +233,7 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
         toast.success('Usuário criado')
       } else {
         if (!idForEdit) throw new Error('idForEdit ausente')
-        await UsersService.update(idForEdit, payload)
+        await UsersService.update(idForEdit, payload, { removePhoto })
         toast.success('Usuário atualizado')
       }
       onSuccess?.()
@@ -389,12 +390,9 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             <div className="flex flex-col items-center gap-3">
               <div className="h-28 w-28 overflow-hidden rounded-full border bg-muted">
-                <img
-                  src={preview || '/avatar.png'}
-                  alt="Pré-visualização"
-                  className="h-full w-full object-cover"
-                />
+                <img src={preview || '/user.jpg'} alt="Pré-visualização" className="h-full w-full object-cover" />
               </div>
+
               <Button
                 type="button"
                 variant="outline"
@@ -403,22 +401,48 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
               >
                 Escolher arquivo
               </Button>
+
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => setValue('photo', e.target.files?.[0] ?? null, { shouldDirty: true })}
+                onChange={(e) => {
+                  setRemovePhoto(false)
+                  setValue('photo', e.target.files?.[0] ?? null, { shouldDirty: true })
+                }}
                 onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }}
                 disabled={isSubmitting}
               />
+
+              {mode === 'edit' && (initialPhotoUrl || preview) && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={removePhoto}
+                    onChange={(e) => {
+                      setRemovePhoto(e.target.checked)
+                      if (e.target.checked) {
+                        setValue('photo', null, { shouldDirty: true })
+                        setPreview(null)
+                      } else {
+                        setPreview(initialPhotoUrl || null)
+                      }
+                    }}
+                  />
+                  Remover foto atual
+                </label>
+              )}
             </div>
 
             <div
               ref={dropRef}
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
-              onDrop={onDrop}
+              onDrop={(e) => {
+                onDrop(e)
+                setRemovePhoto(false)
+              }}
               className="md:col-span-2 flex h-40 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed bg-muted/50 p-4 text-center hover:bg-muted"
               onClick={() => fileInputRef.current?.click()}
             >
