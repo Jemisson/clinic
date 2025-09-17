@@ -1,5 +1,5 @@
 // service/tags.ts
-import { TagResponse } from '@/types/tag'
+import { TagResponse } from '@/types/tags'
 import api from './api'
 
 const RESOURCE = '/tags'

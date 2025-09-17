@@ -1,73 +1,99 @@
- "use client"
+"use client"
 
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Tag } from "@/utils/interfaces"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { TagData } from "@/types/tags"
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, SquareDashed } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import * as LucideIcons from "lucide-react"
-import React from "react"
 
-export const columns: ColumnDef<Tag>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-  },
-  {
-    accessorKey: "icon",
-    header: "Ícone",
-    cell: ({row}) => {
-        const iconName = row.original.icon as keyof typeof LucideIcons
-        const Icon = LucideIcons[iconName] as React.ElementType
+const lucideIcons = LucideIcons as unknown as Record<
+    string,
+    React.ComponentType<React.SVGProps<SVGSVGElement>>
+>
 
-        return Icon ? <Icon className="size-5"/> : null
+export const columns: ColumnDef<TagData, string>[] = [
+    {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) => {
+            return <span>TAG-{row.original.id}</span>
+        },
     },
-  },
-  {
-    accessorKey: "isActive",
-    header: "Status",
-  },
-  {
-    id: "actions",
-    header: "Ações",
-    cell: ({ row }) => {
-      const tag = row.original
- 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(tag.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
+    {
+        id: "tag",
+        accessorFn: (row) => row.attributes.name,
+        header: ({ column }) => {
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">Tag <LucideIcons.ChevronsUpDown /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+                            <LucideIcons.ArrowUp className="text-muted-foreground" /> Asc
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+                            <LucideIcons.ArrowDown className="text-muted-foreground" /> Desc
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                            <LucideIcons.EyeOff className="text-muted-foreground" /> Mostrar
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        },
+        cell: ({ row }) => {
+            const tag = row.original
+            const iconName = row.original.attributes.icon
+            const IconComponent = lucideIcons[iconName]
+
+            return (
+                <Badge>{IconComponent ? <IconComponent /> : <SquareDashed />} {tag.attributes.name}</Badge>
+            )
+        }
     },
-  },
+    {
+        id: "status",
+        header: "Status",
+        cell: () => {
+            return <span className="flex gap-1 items-center"><LucideIcons.CircleCheck className="text-base text-muted-foreground size-4" /> Ativo</span>
+        },
+    },
+    {
+        id: "actions",
+        header: "Ações",
+        cell: ({ row }) => {
+            const tag = row.original
+
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                            <MoreHorizontal />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem>Visualizar</DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => navigator.clipboard.writeText(`TAG-${tag.id}`)}
+                        >
+                            Copiar ID
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem><span className="text-destructive">Desativar</span></DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        },
+    },
+
 ]

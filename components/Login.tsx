@@ -42,6 +42,7 @@ export function Login() {
       setErrors(result.errors || {})
       setApiError(result.apiError || null)
       setLoading(false)
+      console.log(result)
       return
     }
 

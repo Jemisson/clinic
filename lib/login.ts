@@ -1,5 +1,5 @@
 import { loginSchema } from '@/lib/schemas/auth'
-import { API_URL } from '@/utils/constants'
+import { API_LOGIN_URL } from '@/utils/constants'
 import Cookies from 'js-cookie'
 
 type LoginResponse = {
@@ -38,7 +38,8 @@ export async function loginUser(email: string, password: string): Promise<LoginR
   }
 
   try {
-    const url = new URL('login', API_URL).toString()
+    const url = new URL('login', API_LOGIN_URL).toString()
+    console.log(API_LOGIN_URL, url)
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
