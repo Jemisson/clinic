@@ -24,9 +24,33 @@ const lucideIcons = LucideIcons as unknown as Record<
 export const columns: ColumnDef<TagData, string>[] = [
     {
         accessorKey: "id",
-        header: () => (
-            <Button variant={"ghost"}><LucideIcons.Hash /><span>ID</span></Button>
-        ),
+        header: ({ column }) => {
+            const sorted = column.getIsSorted()
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                            <LucideIcons.Hash /> <span>ID</span>
+                            {sorted === "asc" ? (
+                                <LucideIcons.ArrowUp />
+                            ) : sorted === "desc" ? (
+                                <LucideIcons.ArrowDown />
+                            ) : (
+                                <LucideIcons.ChevronsUpDown />
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+                            <LucideIcons.ArrowUp className="text-muted-foreground" /> Asc
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+                            <LucideIcons.ArrowDown className="text-muted-foreground" /> Desc
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        },
         cell: ({ row }) => {
             return <span>TAG-{row.original.id}</span>
         },
@@ -75,43 +99,127 @@ export const columns: ColumnDef<TagData, string>[] = [
     },
     {
         id: "status",
-        header: () => (
-            <Button variant={"ghost"}><LucideIcons.CircleCheckBig /><span>Status</span></Button>
-        ),
-
-        cell: () => {
-            return <span className="flex items-center"><LucideIcons.Dot className="text-green-500" />Ativo</span>
+        header: ({ column }) => {
+            const sorted = column.getIsSorted()
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                            <LucideIcons.CircleCheckBig /> <span>Status</span>
+                            {sorted === "asc" ? (
+                                <LucideIcons.ArrowUp />
+                            ) : sorted === "desc" ? (
+                                <LucideIcons.ArrowDown />
+                            ) : (
+                                <LucideIcons.ChevronsUpDown />
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+                            <LucideIcons.ArrowUp className="text-muted-foreground" /> Asc
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+                            <LucideIcons.ArrowDown className="text-muted-foreground" /> Desc
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
         },
+
+        cell: ({ row }) => {
+            const status = row.original.attributes.status
+            return (
+                <Badge variant={"outline"} className="border-none">
+                    <span
+                        className={`size-1.5 rounded-full ${status === "active" ? "bg-green-500" : "bg-red-500"
+                            }`}
+                    />
+                    {status === "active" ? "Ativo" : "Inativo"}
+                </Badge>
+            )
+        },
+
     },
     {
         id: "createdAt",
-        header: () => (
-            <Button variant={"ghost"}><LucideIcons.CalendarCheck2 /><span>Criado em</span></Button>
-        ),
+        header: ({ column }) => {
+            const sorted = column.getIsSorted()
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                            <LucideIcons.CalendarCheck2 /> <span>Criado em</span>
+                            {sorted === "asc" ? (
+                                <LucideIcons.ArrowUp />
+                            ) : sorted === "desc" ? (
+                                <LucideIcons.ArrowDown />
+                            ) : (
+                                <LucideIcons.ChevronsUpDown />
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+                            <LucideIcons.ArrowUp className="text-muted-foreground" /> Asc
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+                            <LucideIcons.ArrowDown className="text-muted-foreground" /> Desc
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        },
 
-        cell: () => {
+        cell: ({ row }) => {
+            const date = row.original.attributes.created_at
             return <Tooltip>
                 <TooltipTrigger asChild>
-                    <span>{dayjs(1758108095000).format("DD/MM/YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
                 </TooltipTrigger>
                 <TooltipContent>
-                    {dayjs(1758108095000).format("HH:mm:ss")}
+                    {dayjs(date).format("HH:mm:ss")}
                 </TooltipContent>
             </Tooltip>
         }
     },
     {
         id: "updatedAt",
-        header: () => (
-            <Button variant={"ghost"}><LucideIcons.CalendarSync /><span>Atualizado em</span></Button>
-        ),
-        cell: () => {
+        header: ({ column }) => {
+            const sorted = column.getIsSorted()
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                            <LucideIcons.CalendarSync /> <span>Atualizado em</span>
+                            {sorted === "asc" ? (
+                                <LucideIcons.ArrowUp />
+                            ) : sorted === "desc" ? (
+                                <LucideIcons.ArrowDown />
+                            ) : (
+                                <LucideIcons.ChevronsUpDown />
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+                            <LucideIcons.ArrowUp className="text-muted-foreground" /> Asc
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+                            <LucideIcons.ArrowDown className="text-muted-foreground" /> Desc
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        },
+        cell: ({ row }) => {
+            const date = row.original.attributes.updated_at
             return <Tooltip>
                 <TooltipTrigger asChild>
-                    <span>{dayjs(1760816262000).format("DD/MM/YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
                 </TooltipTrigger>
                 <TooltipContent>
-                    {dayjs(1760816262000).format("HH:mm:ss")}
+                    {dayjs(date).format("HH:mm:ss")}
                 </TooltipContent>
             </Tooltip>
         }
@@ -130,7 +238,6 @@ export const columns: ColumnDef<TagData, string>[] = [
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem><span className="flex gap-1 items-center"><LucideIcons.Eye />Visualizar</span></DropdownMenuItem>
                         <DropdownMenuItem><span className="flex gap-1 items-center"><LucideIcons.SquarePen />Editar</span></DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem><span className="text-destructive flex gap-1 items-center"><LucideIcons.CircleOff className="text-destructive" /> Desativar</span></DropdownMenuItem>

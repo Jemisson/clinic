@@ -5,13 +5,16 @@ export interface TagResponse {
 
 export interface TagData {
   id: string;
-  type: "tag";
+  type: 'tag';
   attributes: TagAttributes;
 }
 
 export interface TagAttributes {
   name: string;
   icon: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Meta {
@@ -19,4 +22,11 @@ export interface Meta {
   total_pages: number;
   current_page: number;
   per_page: number;
+}
+
+export interface TagFormInput {
+  tag: {
+    name: string;
+    icon: string;
+  };
 }

@@ -19,11 +19,11 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import useSWR from "swr"
 import TagsService from "@/service/tags"
-import { TagData } from "@/types/tags"
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { TagData, TagFormInput } from "@/types/tags"
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Plus, Settings2 } from "lucide-react"
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu"
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -56,17 +56,20 @@ export function DataTable({ columns }: DataTableProps) {
     const [showCreatedAt, setShowCreatedAt] = useState<Checked>(true)
     const [showUpdatedAt, setShowUpdatedAt] = useState<Checked>(true)
 
-    const [filterActive, setFilterActive] = useState<Checked>(true);
-    const [filterInactive, setFilterInactive] = useState<Checked>(true);
+    const [searchValue, setSearchValue] = useState("")
+    const [filterStatus, setFilterStatus] = useState("")
+    const inputSearchRef = useRef<HTMLInputElement>(null)
 
     const lucideIcons = LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
 
     const { data: tags, isValidating } = useSWR(
-        [pagination.pageIndex, globalFilter],
+        [pagination.pageIndex, globalFilter, filterStatus],
         () => {
             return TagsService.list({
                 page: pagination.pageIndex + 1,
                 per_page: pagination.pageSize,
+                q: globalFilter,
+                t: filterStatus
             })
         }
     )
@@ -102,12 +105,51 @@ export function DataTable({ columns }: DataTableProps) {
         resolver: zodResolver(TagSchema),
         defaultValues: {
             name: "",
+            icon: ""
         }
     })
 
-    function onSubmit(data: z.infer<typeof TagSchema>) {
-        console.log(data)
+    async function onSubmit(data: z.infer<typeof TagSchema>) {
+        const payload: TagFormInput = {
+            tag: {
+                ...data,
+            },
+        }
+
+        try {
+            await TagsService.create(payload)
+            console.log("Tag criada")
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                console.error("Erro:", e.message)
+            } else {
+                console.error("Erro desconhecido:", e)
+            }
+        }
     }
+
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            table.setGlobalFilter(searchValue)
+        }
+    }
+
+    useEffect(() => {
+        const input = inputSearchRef.current
+        if (!input) return
+
+        const handleSearch = (e: Event) => {
+            const target = e.target as HTMLInputElement
+            if (target.value === "") {
+                setSearchValue("")
+                table.setGlobalFilter("") // também limpa o filtro
+            }
+        }
+
+        input.addEventListener("search", handleSearch)
+        return () => input.removeEventListener("search", handleSearch)
+    }, [table])
 
 
     return (
@@ -115,11 +157,12 @@ export function DataTable({ columns }: DataTableProps) {
             <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
                 <div className="flex flex-col gap-4 lg:flex-row">
                     <Input
+                        type="search"
                         placeholder="Filtrar Tags..."
-                        value={globalFilter}
-                        onChange={(event) =>
-                            table.setGlobalFilter(event.target.value)
-                        }
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        ref={inputSearchRef}
                         className="lg:max-w-xs"
                     />
 
@@ -128,8 +171,12 @@ export function DataTable({ columns }: DataTableProps) {
                             <Button variant={"outline"} className="border-dashed"><LucideIcons.Funnel />Filtrar</Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuCheckboxItem checked={filterActive} onCheckedChange={setFilterActive}>Ativo</DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem checked={filterInactive} onCheckedChange={setFilterInactive}>Inativo</DropdownMenuCheckboxItem>
+                            <DropdownMenuRadioGroup value={filterStatus} onValueChange={setFilterStatus}>
+                                <DropdownMenuRadioItem value="active">Ativo</DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="inactive">Inativo</DropdownMenuRadioItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => setFilterStatus("")} className="flex justify-center">Limpar Filtro</DropdownMenuItem>
+                            </DropdownMenuRadioGroup>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
