@@ -2,8 +2,6 @@ import {
   ChevronDown,
   Home,
   Bookmark,
-  BookmarkCheck,
-  BookmarkPlus,
   UserRound,
   UserRoundCheck,
   UserRoundPlus,
@@ -73,7 +71,6 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarMenu>
-          {/* Home */}
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive>
               <Link href="/">
@@ -82,39 +79,14 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
 
-          {/* Tags com submenu */}
-          <Collapsible className="group/collapsible">
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton>
-                  <Bookmark />
-                  <span>Tags</span>
-                  <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/tags">
+              <Bookmark /> Tags
+              </Link>
+              </SidebarMenuButton>
+          </SidebarMenuItem>
 
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="/tags">
-                        <BookmarkCheck /> <span>Listar Tags</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="/tags/new">
-                        <BookmarkPlus /> <span>Adicionar Tag</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-
-          {/* Usuário com submenu */}
           <Collapsible className="group/collapsible">
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>

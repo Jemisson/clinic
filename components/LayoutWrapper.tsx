@@ -70,7 +70,7 @@ export default function LayoutWrapper({
           </Breadcrumb>
         </header>
 
-        <main className="flex-1 justify-center flex p-6">{children}</main>
+        <main>{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
