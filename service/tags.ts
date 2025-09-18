@@ -1,6 +1,11 @@
-// service/tags.ts
-import { TagData, TagFormInput, TagResponse, TagStatus, TagStatusUpdateInput } from '@/types/tags';
 import api from './api';
+import {
+  TagData,
+  TagFormInput,
+  TagResponse,
+  TagStatus,
+  TagStatusUpdateInput
+} from '@/types/tags';
 
 const RESOURCE = '/tags';
 
@@ -45,6 +50,10 @@ export const TagsService = {
 
   deactivate: async (id: string | number) => {
     return TagsService.setStatus(id, "inactive")
+  },
+
+  activate: async (id: string | number) => {
+    return TagsService.setStatus(id, "active")
   },
 };
 

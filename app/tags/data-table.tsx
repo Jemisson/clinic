@@ -28,7 +28,11 @@ import {
 import * as LucideIcons from "lucide-react";
 import useSWR from "swr"
 import TagsService from "@/service/tags"
-import { TagData } from "@/types/tags"
+import {
+    TagAttributes,
+    TagData,
+    TagStatus
+} from "@/types/tags"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -43,9 +47,16 @@ import { Plus, Settings2 } from "lucide-react"
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu"
 import { CustomPagination } from "@/lib/pagination"
 import TagUpsertDialog from "@/components/tags/TagUpsertDialog"
+import TagStatusDialog from "@/components/tags/TagStatusDialog"
 
 interface DataTableProps {
-    columns: (handlers: { onEdit: (tag: TagData) => void; onDeactivate: (tag: TagData) => void }) => ColumnDef<TagData, string>[]
+    columns: (
+        handlers: {
+            onEdit: (tag: TagData) => void;
+            onDeactivate: (tag: TagData) => void;
+            onReactivate: (tag: TagData) => void
+        }
+    ) => ColumnDef<TagData, string>[]
 }
 
 type Checked = DropdownMenuCheckboxItemProps["checked"]
@@ -69,9 +80,39 @@ export function DataTable({ columns }: DataTableProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [selectedTag, setSelectedTag] = useState<TagData | null>(null)
 
+    const [isStatusOpen, setIsStatusOpen] = useState(false)
+    const [statusLoading, setStatusLoading] = useState(false)
+    const [statusTarget, setStatusTarget] = useState<TagStatus>("inactive")
+
+    function openStatusDialog(tag: TagData, target: TagAttributes["status"]) {
+        if (tag.attributes.status === target) return
+
+        setSelectedTag(tag)
+        setStatusTarget(target as TagStatus)
+        setIsStatusOpen(true)
+    }
+
+    async function confirmStatusChange() {
+        if (!selectedTag) return
+        try {
+            setStatusLoading(true)
+            await TagsService.setStatus(selectedTag.id, statusTarget)
+            await mutate()
+            setIsStatusOpen(false)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setStatusLoading(false)
+        }
+    }
+
     const cols = useMemo(
-        () => columns({ onEdit: openEdit, onDeactivate: deactivateTag }),
-        [columns, openEdit, deactivateTag]
+        () => columns({
+            onEdit: openEdit,
+            onDeactivate: (t) => openStatusDialog(t, "inactive"),
+            onReactivate: (t) => openStatusDialog(t, "active"),
+        }),
+        [columns, openEdit]
     )
 
     function openCreate() {
@@ -82,19 +123,6 @@ export function DataTable({ columns }: DataTableProps) {
     function openEdit(tag: TagData) {
         setSelectedTag(tag)
         setIsDialogOpen(true)
-    }
-
-    async function deactivateTag(tag: TagData) {
-        if (tag.attributes.status === "inactive") return
-        const ok = window.confirm(`Desativar a tag "${tag.attributes.name}"?`)
-        if (!ok) return
-
-        try {
-            await TagsService.deactivate(tag.id)
-            await mutate()
-        } catch (e) {
-            console.error(e)
-        }
     }
 
     const { data: tags, isValidating, mutate } = useSWR(
@@ -257,10 +285,18 @@ export function DataTable({ columns }: DataTableProps) {
                     open={isDialogOpen}
                     onOpenChange={setIsDialogOpen}
                     tag={selectedTag}
-                    onSuccess={async () => {
-                    await mutate()
-                    }}
+                    onSuccess={async () => await mutate() }
                 />
+
+                <TagStatusDialog
+                    open={isStatusOpen}
+                    onOpenChange={setIsStatusOpen}
+                    tag={selectedTag}
+                    loading={statusLoading}
+                    targetStatus={statusTarget}
+                    onConfirm={confirmStatusChange}
+                />
+
             </div>
 
             <div className="flex flex-col gap-4 items-center md:flex-row md:justify-between md:items-center">

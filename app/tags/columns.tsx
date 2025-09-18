@@ -22,7 +22,11 @@ const lucideIcons = LucideIcons as unknown as Record<
 >
 
 export const columns = (
-  { onEdit, onDeactivate }: { onEdit: (tag: TagData) => void; onDeactivate: (tag: TagData) => void }
+  { onEdit, onDeactivate, onReactivate }: { 
+                                onEdit: (tag: TagData) => void;
+                                onDeactivate: (tag: TagData) => void;
+                                onReactivate: (tag: TagData) => void
+                            }
 ): ColumnDef<TagData, string>[] => [
     {
         accessorKey: "id",
@@ -236,30 +240,38 @@ export const columns = (
             const isInactive = tag.attributes.status === "inactive"
 
             return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost">
-                            <MoreHorizontal />
-                        </Button>
-                    </DropdownMenuTrigger>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                    <MoreHorizontal />
+                </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onEdit(tag)}>
+                        <span className="flex gap-1 items-center">
+                            <LucideIcons.SquarePen /> Editar
+                        </span>
+                    </DropdownMenuItem>
 
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(tag)}>
-                            <span className="flex gap-1 items-center">
-                                <LucideIcons.SquarePen />Editar
+                    <DropdownMenuSeparator />
+
+                    {isInactive ? (
+                        <DropdownMenuItem onClick={() => onReactivate(tag)}>
+                            <span className="text-green-700 flex gap-1 items-center">
+                                <LucideIcons.CircleCheckBig className="text-green-700"/> Reativar
                             </span>
                         </DropdownMenuItem>
-
-                        <DropdownMenuSeparator />
-
-                         <DropdownMenuItem onClick={() => onDeactivate(tag)} disabled={isInactive}>
+                    ) : (
+                        <DropdownMenuItem onClick={() => onDeactivate(tag)}>
                             <span className="text-destructive flex gap-1 items-center">
-                            <LucideIcons.CircleOff className="text-destructive" /> Desativar
+                                <LucideIcons.CircleOff className="text-destructive" /> Desativar
                             </span>
                         </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
             )
         },
-    },
+    }
+
 ]
