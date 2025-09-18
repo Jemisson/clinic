@@ -101,6 +101,10 @@ export function DataTable({ columns }: DataTableProps) {
         table.getColumn("updatedAt")?.toggleVisibility(!!showUpdatedAt)
     }, [showId, showStatus, showCreatedAt, showUpdatedAt, table])
 
+    useEffect(() => {
+        setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+    }, [filterStatus])
+
     const tagForm = useForm<z.infer<typeof TagSchema>>({
         resolver: zodResolver(TagSchema),
         defaultValues: {
