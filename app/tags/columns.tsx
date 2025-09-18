@@ -21,7 +21,9 @@ const lucideIcons = LucideIcons as unknown as Record<
     React.ComponentType<React.SVGProps<SVGSVGElement>>
 >
 
-export const columns: ColumnDef<TagData, string>[] = [
+export const columns = (
+  { onEdit, onDeactivate }: { onEdit: (tag: TagData) => void; onDeactivate: (tag: TagData) => void }
+): ColumnDef<TagData, string>[] => [
     {
         accessorKey: "id",
         header: ({ column }) => {
@@ -229,7 +231,10 @@ export const columns: ColumnDef<TagData, string>[] = [
         header: () => (
             <Button variant={"ghost"}><LucideIcons.Menu /><span>Ações</span></Button>
         ),
-        cell: () => {
+        cell: ({ row }) => {
+            const tag = row.original
+            const isInactive = tag.attributes.status === "inactive"
+
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -237,14 +242,24 @@ export const columns: ColumnDef<TagData, string>[] = [
                             <MoreHorizontal />
                         </Button>
                     </DropdownMenuTrigger>
+
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem><span className="flex gap-1 items-center"><LucideIcons.SquarePen />Editar</span></DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(tag)}>
+                            <span className="flex gap-1 items-center">
+                                <LucideIcons.SquarePen />Editar
+                            </span>
+                        </DropdownMenuItem>
+
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem><span className="text-destructive flex gap-1 items-center"><LucideIcons.CircleOff className="text-destructive" /> Desativar</span></DropdownMenuItem>
+
+                         <DropdownMenuItem onClick={() => onDeactivate(tag)} disabled={isInactive}>
+                            <span className="text-destructive flex gap-1 items-center">
+                            <LucideIcons.CircleOff className="text-destructive" /> Desativar
+                            </span>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             )
         },
     },
-
 ]

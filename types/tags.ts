@@ -30,3 +30,9 @@ export interface TagFormInput {
     icon: string;
   };
 }
+
+export type TagStatus = "active" | "inactive"
+
+export interface TagStatusUpdateInput {
+  tag: { status: TagStatus }
+}

@@ -1,5 +1,5 @@
 // service/tags.ts
-import { TagFormInput, TagResponse } from '@/types/tags';
+import { TagData, TagFormInput, TagResponse, TagStatus, TagStatusUpdateInput } from '@/types/tags';
 import api from './api';
 
 const RESOURCE = '/tags';
@@ -18,6 +18,7 @@ export const TagsService = {
     console.log(params)
     return data;
   },
+
   create: async (values: TagFormInput) => {
     const formData = buildFormData(values);
     const { data } = await api.post(RESOURCE, formData, {
@@ -34,6 +35,16 @@ export const TagsService = {
     });
 
     return data;
+  },
+
+  setStatus: async (id: string | number, status: TagStatus) => {
+    const payload: TagStatusUpdateInput = { tag: { status } }
+    const { data } = await api.patch<TagData>(`${RESOURCE}/${id}`, payload)
+    return data
+  },
+
+  deactivate: async (id: string | number) => {
+    return TagsService.setStatus(id, "inactive")
   },
 };
 

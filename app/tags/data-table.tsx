@@ -19,27 +19,33 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useEffect, useRef, useState } from "react"
+import {
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react"
+import * as LucideIcons from "lucide-react";
 import useSWR from "swr"
 import TagsService from "@/service/tags"
-import { TagData, TagFormInput } from "@/types/tags"
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { TagData } from "@/types/tags"
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
 import { Plus, Settings2 } from "lucide-react"
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu"
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { DialogTrigger } from "@radix-ui/react-dialog"
-import z from "zod"
-import { TagSchema } from "@/lib/schemas/tag"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import * as LucideIcons from "lucide-react";
-import { tagIcons } from "@/utils/tagIcons"
 import { CustomPagination } from "@/lib/pagination"
+import TagUpsertDialog from "@/components/tags/TagUpsertDialog"
 
 interface DataTableProps {
-    columns: ColumnDef<TagData, string>[]
+    columns: (handlers: { onEdit: (tag: TagData) => void; onDeactivate: (tag: TagData) => void }) => ColumnDef<TagData, string>[]
 }
 
 type Checked = DropdownMenuCheckboxItemProps["checked"]
@@ -60,9 +66,38 @@ export function DataTable({ columns }: DataTableProps) {
     const [filterStatus, setFilterStatus] = useState("")
     const inputSearchRef = useRef<HTMLInputElement>(null)
 
-    const lucideIcons = LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [selectedTag, setSelectedTag] = useState<TagData | null>(null)
 
-    const { data: tags, isValidating } = useSWR(
+    const cols = useMemo(
+        () => columns({ onEdit: openEdit, onDeactivate: deactivateTag }),
+        [columns, openEdit, deactivateTag]
+    )
+
+    function openCreate() {
+        setSelectedTag(null)
+        setIsDialogOpen(true)
+    }
+
+    function openEdit(tag: TagData) {
+        setSelectedTag(tag)
+        setIsDialogOpen(true)
+    }
+
+    async function deactivateTag(tag: TagData) {
+        if (tag.attributes.status === "inactive") return
+        const ok = window.confirm(`Desativar a tag "${tag.attributes.name}"?`)
+        if (!ok) return
+
+        try {
+            await TagsService.deactivate(tag.id)
+            await mutate()
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const { data: tags, isValidating, mutate } = useSWR(
         [pagination.pageIndex, globalFilter, filterStatus],
         () => {
             return TagsService.list({
@@ -79,7 +114,7 @@ export function DataTable({ columns }: DataTableProps) {
 
     const table = useReactTable({
         data,
-        columns,
+        columns: cols,
         manualPagination: true,
         pageCount: meta?.total_pages ?? 0,
         getCoreRowModel: getCoreRowModel(),
@@ -105,34 +140,6 @@ export function DataTable({ columns }: DataTableProps) {
         setPagination((prev) => ({ ...prev, pageIndex: 0 }))
     }, [filterStatus])
 
-    const tagForm = useForm<z.infer<typeof TagSchema>>({
-        resolver: zodResolver(TagSchema),
-        defaultValues: {
-            name: "",
-            icon: ""
-        }
-    })
-
-    async function onSubmit(data: z.infer<typeof TagSchema>) {
-        const payload: TagFormInput = {
-            tag: {
-                ...data,
-            },
-        }
-
-        try {
-            await TagsService.create(payload)
-            console.log("Tag criada")
-        } catch (e: unknown) {
-            if (e instanceof Error) {
-                console.error("Erro:", e.message)
-            } else {
-                console.error("Erro desconhecido:", e)
-            }
-        }
-    }
-
-
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             table.setGlobalFilter(searchValue)
@@ -147,7 +154,7 @@ export function DataTable({ columns }: DataTableProps) {
             const target = e.target as HTMLInputElement
             if (target.value === "") {
                 setSearchValue("")
-                table.setGlobalFilter("") // também limpa o filtro
+                table.setGlobalFilter("")
             }
         }
 
@@ -199,68 +206,11 @@ export function DataTable({ columns }: DataTableProps) {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button><Plus />Adicionar Tag</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle className="flex items-center gap-1"><LucideIcons.Bookmark />Adicionar Tag</DialogTitle>
-                            </DialogHeader>
-
-                            <Form {...tagForm}>
-                                <form onSubmit={tagForm.handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-4">
-                                    <FormField
-                                        control={tagForm.control}
-                                        name="name"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Nome</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Nome da Tag" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={tagForm.control}
-                                        name="icon"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Ícone</FormLabel>
-                                                <FormControl>
-                                                    <Select value={field.value} onValueChange={field.onChange}>
-                                                        <SelectTrigger className="w-full">
-                                                            <SelectValue placeholder="Selecione um ícone" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {tagIcons.map((iconName) => {
-                                                                const IconComponent = lucideIcons[iconName];
-                                                                return (
-                                                                    <SelectItem key={iconName} value={iconName}>
-                                                                        {IconComponent && <Button size={"icon"}><IconComponent className="text-background" /></Button>} {iconName}
-                                                                    </SelectItem>
-                                                                );
-                                                            })}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </form>
-                            </Form>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DialogClose>
-                                <Button onClick={tagForm.handleSubmit(onSubmit)}>Adicionar</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                    <div className="flex gap-4">
+                        <Button onClick={openCreate}>
+                            <Plus /> Adicionar Tag
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -295,15 +245,23 @@ export function DataTable({ columns }: DataTableProps) {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                <TableCell colSpan={cols.length} className="h-24 text-center">
                                     {isValidating ? "Carregando..." : "Nenhum dado encontrado."}
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
-            </div>
 
+                 <TagUpsertDialog
+                    open={isDialogOpen}
+                    onOpenChange={setIsDialogOpen}
+                    tag={selectedTag}
+                    onSuccess={async () => {
+                    await mutate()
+                    }}
+                />
+            </div>
 
             <div className="flex flex-col gap-4 items-center md:flex-row md:justify-between md:items-center">
                 <small className="text-muted-foreground md:flex-1">Total de Tags: {meta?.total_count}</small>
