@@ -26,6 +26,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Button } from "@/components/ui/button"
 import { Funnel, Plus, Settings2 } from "lucide-react"
 import { CustomPagination } from "@/lib/pagination"
+import FormUser from "./form-user"
 
 interface DataTableProps {
     columns: ColumnDef<ProfileUserData, unknown>[]
@@ -40,6 +41,7 @@ export function DataTable({
         pageIndex: 0,
         pageSize: 10,
     })
+    const [open, setOpen] = useState(false);
 
     const { data: users } = useSWR<UserResponse>(
         [pagination.pageIndex],
@@ -105,9 +107,11 @@ export function DataTable({
                     </DropdownMenu>
 
                     <div className="flex gap-4">
-                        <Button className="w-full">
+                        <Button onClick={() => setOpen(true)} className="w-full">
                             <Plus /> Adicionar Usuário
                         </Button>
+
+                        <FormUser open={open} onOpenChange={setOpen} />
                     </div>
                 </div>
             </div>
