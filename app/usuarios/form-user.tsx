@@ -18,7 +18,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, Baby, CalendarIcon, Camera, Check, ContactRound, UserRound } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import dayjs from "dayjs";
 import AvatarUploader from "./avatar-uploader";
@@ -40,18 +40,22 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
         {
             step: 1,
             title: "Usuário",
+            icon: <UserRound className="size-4" />
         },
         {
             step: 2,
-            title: "Dados Pessoais",
+            title: "Informações",
+            icon: <ContactRound className="size-4" />
         },
         {
             step: 3,
             title: "Filiação",
+            icon: <Baby className="size-4" />
         },
         {
             step: 4,
             title: "Foto",
+            icon: <Camera className="size-4" />
         },
     ]
 
@@ -72,10 +76,12 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
                         <DialogTitle className="text-center">Adicionar Usuário</DialogTitle>
                         <DialogDescription className="pt-4 pb-2">
                             <Stepper defaultValue={1} value={currentStep} onValueChange={setCurrentStep}>
-                                {steps.map(({ step, title }) => (
+                                {steps.map(({ step, title, icon }) => (
                                     <StepperItem key={step} step={step} className="relative flex-1 flex-col!">
                                         <StepperTrigger className="flex-col gap-3 rounded">
-                                            <StepperIndicator />
+                                            <StepperIndicator asChild>
+                                                {icon}
+                                            </StepperIndicator>
                                             <StepperTitle>{title}</StepperTitle>
                                         </StepperTrigger>
                                         {step < steps.length && (
@@ -95,18 +101,21 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
                             {currentStep === 4 && <StepPhoto />}
 
                             <DialogFooter className="flex gap-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setCurrentStep((step) => step - 1)}
-                                    disabled={currentStep === 1}
-                                >
-                                    Prev step
-                                </Button>
+                                {currentStep > 1 && (
+                                    <Button
+                                        type="button"
+                                        className="group"
+                                        variant="outline"
+                                        onClick={() => setCurrentStep((step) => step - 1)}
+                                    >
+                                        <ArrowLeftIcon className="-ms-1 opacity-60 transition-transform group-hover:-translate-x-0.5" /> {steps[currentStep - 2]?.title}
+                                    </Button>
+                                )}
 
                                 {currentStep < steps.length ? (
                                     <Button
                                         type="button"
+                                        className="group"
                                         onClick={async () => {
                                             let fieldsToValidate: (keyof UserFormValues)[] = []
 
@@ -124,10 +133,10 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
                                             if (isValid) setCurrentStep((step) => step + 1)
                                         }}
                                     >
-                                        Next step
+                                        {steps[currentStep]?.title} <ArrowRightIcon className="-ms-1 opacity-60 transition-transform group-hover:translate-x-0.5" />
                                     </Button>
                                 ) : (
-                                    <Button type="submit">Finalizar</Button>
+                                    <Button type="submit"><Check />Finalizar</Button>
                                 )}
                             </DialogFooter>
                         </form>
