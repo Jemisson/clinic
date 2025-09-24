@@ -27,15 +27,18 @@ export const UserSchema = z.object({
     .min(3, { message: 'O nome deve ter no mínimo 3 caracteres' })
     .max(100, { message: 'O nome deve ter no máximo 100 caracteres' })
     .trim(),
-  cpf: z
-    .string({ message: 'O CPF é obrigatório' })
-    .min(11, { message: 'O CPF deve ter no mínimo 11 caracteres' })
-    .max(14, { message: 'O CPF deve ter no máximo 14 caracteres' })
-    .trim(),
+  gender: z.enum(['male', 'female', 'other'], {
+    message: 'O gênero é obrigatório',
+  }),
   rg: z
     .string({ message: 'O RG é obrigatório' })
     .min(5, { message: 'O RG deve ter no mínimo 5 caracteres' })
     .max(20, { message: 'O RG deve ter no máximo 20 caracteres' })
+    .trim(),
+  cpf: z
+    .string({ message: 'O CPF é obrigatório' })
+    .min(11, { message: 'O CPF deve ter no mínimo 11 caracteres' })
+    .max(14, { message: 'O CPF deve ter no máximo 14 caracteres' })
     .trim(),
   birthDate: z.string({ message: 'A data de nascimento é obrigatória' }).refine(
     (date) => {
@@ -53,10 +56,10 @@ export const UserSchema = z.object({
     .min(10, { message: 'O telefone deve ter no mínimo 10 caracteres' })
     .max(15, { message: 'O telefone deve ter no máximo 15 caracteres' })
     .trim(),
-  sector: z.enum(['HR', 'FINANCE', 'IT', 'SALES', 'MARKETING', 'SUPPORT'], {
+  sector: z.enum(['administrative', 'comercial', 'clinical', 'finance', 'it'], {
     message: 'O setor é obrigatório',
   }),
-  function: z.enum(['MANAGER', 'EMPLOYEE', 'INTERN'], {
+  function: z.enum(['analyst', 'technique', 'coordinator', 'assistant'], {
     message: 'A função é obrigatória',
   }),
   childName: z
@@ -72,7 +75,7 @@ export const UserSchema = z.object({
       },
       { message: 'Data de nascimento do filho inválida' }
     ),
-  childEducation: z.enum(['HIGH_SCHOOL', 'BACHELOR', 'MASTER', 'DOCTORATE'], {
+  childEducation: z.enum(['fundamental', 'medio', 'superior'], {
     message: 'O nível de escolaridade é obrigatório',
   }),
   photoUrl: z

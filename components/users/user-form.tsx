@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { toast } from 'react-hot-toast'
+import { toast } from "sonner"
 import UsersService from '@/service/users'
 import type { ProfileUserFormInput } from '@/types/user'
 import { cn } from '@/lib/utils'
@@ -229,15 +229,15 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
     try {
       if (mode === 'create') {
         await UsersService.create(payload)
-        toast.success('Usuário criado')
+        toast('Usuário criado')
       } else {
         if (!idForEdit) throw new Error('idForEdit ausente')
         await UsersService.update(idForEdit, payload)
-        toast.success('Usuário atualizado')
+        toast('Usuário atualizado')
       }
       onSuccess?.()
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || 'Falha ao salvar usuário')
+      toast(e?.response?.data?.message || 'Falha ao salvar usuário')
     }
   }
   const submit = handleSubmit(onSubmit)

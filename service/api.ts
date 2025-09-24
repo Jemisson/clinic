@@ -1,7 +1,7 @@
 // service/api.ts
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import Cookies from 'js-cookie'
-import toast from 'react-hot-toast'
+import { toast } from "sonner"
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -43,14 +43,14 @@ api.interceptors.response.use(
     if (status === 401) {
       Cookies.remove('clinic_token', { path: '/' })
       if (typeof window !== 'undefined') {
-        toast.error('Sessão expirada, faça login novamente')
+        toast('Sessão expirada, faça login novamente')
         window.location.href = '/login'
       }
       return Promise.reject(error)
     }
 
     if (!error.response) {
-      if (typeof window !== 'undefined') toast.error('Falha de rede. Verifique sua conexão.')
+      if (typeof window !== 'undefined') toast('Falha de rede. Verifique sua conexão.')
       return Promise.reject(error)
     }
 
@@ -60,7 +60,7 @@ api.interceptors.response.use(
       error.response.data?.error ||
       error.message ||
       'Erro inesperado.'
-    if (typeof window !== 'undefined') toast.error(message)
+    if (typeof window !== 'undefined') toast(message)
 
     return Promise.reject(error)
   }
