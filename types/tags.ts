@@ -1,3 +1,5 @@
+import { Meta } from "./meta";
+
 export interface TagResponse {
   data: TagData[];
   meta: Meta;
@@ -15,13 +17,6 @@ export interface TagAttributes {
   status: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface Meta {
-  total_count: number;
-  total_pages: number;
-  current_page: number;
-  per_page: number;
 }
 
 export interface TagFormInput {

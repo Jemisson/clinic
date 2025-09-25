@@ -12,6 +12,7 @@ import {
   CreditCard,
   Bell,
   LogOut,
+  User,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -87,11 +88,19 @@ export function AppSidebar() {
               </SidebarMenuButton>
           </SidebarMenuItem>
 
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/usuarios">
+              <UserRound /> Usuários
+              </Link>
+              </SidebarMenuButton>
+          </SidebarMenuItem>
+
           <Collapsible className="group/collapsible">
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
-                  <UserRound />
+                  <User />
                   <span>Usuários</span>
                   <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
                 </SidebarMenuButton>

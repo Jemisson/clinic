@@ -16,6 +16,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { Toaster } from "@/components/ui/sonner"
 
 export default function LayoutWrapper({
   children,
@@ -71,6 +72,7 @@ export default function LayoutWrapper({
         </header>
 
         <main>{children}</main>
+        <Toaster />
       </SidebarInset>
     </SidebarProvider>
   );
