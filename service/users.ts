@@ -1,4 +1,4 @@
-import { UserResponse } from '@/types/users';
+import { ProfileUserStatus, ProfileUserStatusUpdateInput, UserResponse } from '@/types/users';
 import api from './api';
 import { UsersShowResponse, toUser, ProfileUserFormInput } from '@/types';
 
@@ -43,7 +43,7 @@ function buildFormData(values: ProfileUserFormInput) {
 
 export const UsersService = {
   list: async (
-    params: { page?: number; per_page?: number; q?: string } = {}
+    params: { page?: number; per_page?: number; q?: string; t?: string } = {}
   ) => {
     const { data } = await api.get<UserResponse>(RESOURCE, { params });
     return {
@@ -73,8 +73,15 @@ export const UsersService = {
     return data;
   },
 
+  setStatus: async (id: string | number, status: ProfileUserStatus) => {
+    const payload: ProfileUserStatusUpdateInput = { profile_user: { status } };
+    const { data } = await api.patch(`${RESOURCE}/${id}`, payload);
+    return data;
+  },
+
   destroy: async (id: string | number) => {
     await api.delete(`${RESOURCE}/${id}`);
   },
 };
+
 export default UsersService;

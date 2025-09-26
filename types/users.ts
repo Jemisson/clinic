@@ -27,6 +27,7 @@ export interface ProfileUserAttributes {
   tags: TagData[];
   photo_url: string | null;
   photo_thumb_url: string | null;
+  status: string
 }
 
 export interface ProfileChild {
@@ -37,4 +38,10 @@ export interface ProfileChild {
   birth: string;
   created_at: string;
   updated_at: string;
+}
+
+export type ProfileUserStatus = "active" | "inactive";
+
+export interface ProfileUserStatusUpdateInput {
+  profile_user: { status: ProfileUserStatus };
 }

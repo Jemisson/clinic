@@ -47,7 +47,7 @@ import { Plus, Settings2 } from "lucide-react"
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu"
 import { CustomPagination } from "@/lib/pagination"
 import TagUpsertDialog from "@/components/tags/TagUpsertDialog"
-import TagStatusDialog from "@/components/tags/TagStatusDialog"
+import StatusConfirmDialog from "@/components/common/StatusConfirmDialog"
 
 interface DataTableProps {
     columns: (
@@ -288,15 +288,25 @@ export function DataTable({ columns }: DataTableProps) {
                     onSuccess={async () => await mutate() }
                 />
 
-                <TagStatusDialog
+                <StatusConfirmDialog
                     open={isStatusOpen}
                     onOpenChange={setIsStatusOpen}
-                    tag={selectedTag}
-                    loading={statusLoading}
                     targetStatus={statusTarget}
+                    entityLabel="tag"
+                    entityName={selectedTag?.attributes.name}
+                    loading={statusLoading}
                     onConfirm={confirmStatusChange}
+                    deactivateDescription={
+                        <>
+                            Ao desativar <b>{selectedTag?.attributes.name}, não ficará visível na listagem de pacientes</b>, mas continuará disponível em <b>relatórios</b>. Você poderá <b>reativar</b> depois.
+                        </>
+                    }
+                    activateDescription={
+                        <>
+                            Ao reativar <b>{selectedTag?.attributes.name}</b>, você poderá vê-lo novamente na <b>listagem de pacientes</b> e permanece disponível nos <b>relatórios</b>.
+                        </>
+                    }
                 />
-
             </div>
 
             <div className="flex flex-col gap-4 items-center md:flex-row md:justify-between md:items-center">

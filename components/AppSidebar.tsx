@@ -95,44 +95,6 @@ export function AppSidebar() {
               </Link>
               </SidebarMenuButton>
           </SidebarMenuItem>
-
-          <Collapsible className="group/collapsible">
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton>
-                  <User />
-                  <span>Usuários</span>
-                  <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="/users">
-                        <UserRoundCheck /> <span>Listar Usuários</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="/users/new">
-                        <UserRoundPlus /> <span>Adicionar Usuário</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="/user/delete">
-                        <UserRoundMinus /> <span>Deletar Usuário</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
         </SidebarMenu>
       </SidebarContent>
 
