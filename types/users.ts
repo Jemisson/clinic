@@ -45,3 +45,25 @@ export type ProfileUserStatus = "active" | "inactive";
 export interface ProfileUserStatusUpdateInput {
   profile_user: { status: ProfileUserStatus };
 }
+
+export interface ProfileUserFormInput {
+  name: string;
+  cpf: string;
+  rg: string;
+  birthdate: string;
+  address: string;
+  mobile_phone: string;
+  sector: string;
+  job_function: string;
+  user: {
+    email: string;
+    role: "user" | "manager" | "admin";
+    password?: string;
+  };
+  profile_children: Array<{
+    name: string;
+    degree: string;
+    birth: string;
+  }>;
+  photo?: File | null;
+}

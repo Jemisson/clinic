@@ -1,6 +1,6 @@
-import { ProfileUserStatus, ProfileUserStatusUpdateInput, UserResponse } from '@/types/users';
+import { ProfileUserStatus, ProfileUserStatusUpdateInput, UserResponse, ProfileUserFormInput  } from '@/types/users';
 import api from './api';
-import { UsersShowResponse, toUser, ProfileUserFormInput } from '@/types';
+import { UsersShowResponse, toUser } from '@/types';
 
 const RESOURCE = '/profile_users';
 
@@ -24,14 +24,8 @@ function buildFormData(values: ProfileUserFormInput) {
 
   values.profile_children.forEach((c, i) => {
     fd.append(`profile_user[profile_children_attributes][${i}][name]`, c.name);
-    fd.append(
-      `profile_user[profile_children_attributes][${i}][degree]`,
-      c.degree
-    );
-    fd.append(
-      `profile_user[profile_children_attributes][${i}][birth]`,
-      c.birth
-    );
+    fd.append(`profile_user[profile_children_attributes][${i}][degree]`, c.degree);
+    fd.append(`profile_user[profile_children_attributes][${i}][birth]`, c.birth);
   });
 
   if (values.photo) {
@@ -46,10 +40,7 @@ export const UsersService = {
     params: { page?: number; per_page?: number; q?: string; t?: string } = {}
   ) => {
     const { data } = await api.get<UserResponse>(RESOURCE, { params });
-    return {
-      data: data.data,
-      meta: data.meta,
-    };
+    return { data: data.data, meta: data.meta };
   },
 
   show: async (id: string | number) => {

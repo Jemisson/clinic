@@ -19,9 +19,17 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import useSWR from "swr"
-import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react"
 import UsersService from "@/service/users"
-import { ProfileUserData, UserResponse } from "@/types/users"
+import {
+  ProfileUserData,
+  UserResponse
+} from "@/types/users"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -34,9 +42,13 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Funnel, Plus, Settings2 } from "lucide-react"
+import {
+  Funnel,
+  Plus,
+  Settings2
+} from "lucide-react"
 import { CustomPagination } from "@/lib/pagination"
-import FormUser from "./form-user"
+import FormUser from "@/components/users/form/FormUser"
 import StatusConfirmDialog from "@/components/common/StatusConfirmDialog"
 
 interface DataTableProps {
@@ -105,15 +117,32 @@ export function DataTable({ columns }: DataTableProps) {
 
   const [open, setOpen] = useState(false)
 
+  const swrKey = useMemo(
+    () => [
+      "profile_users",
+      pagination.pageIndex,
+      pagination.pageSize,
+      globalFilter,
+      filterStatus,
+    ] as const,
+    [pagination.pageIndex, pagination.pageSize, globalFilter, filterStatus]
+  )
+
   const { data: users, isValidating, mutate } = useSWR<UserResponse>(
-    [pagination.pageIndex, pagination.pageSize, globalFilter, filterStatus],
+    swrKey,
     () => UsersService.list({
       page: pagination.pageIndex + 1,
       per_page: pagination.pageSize,
       q: globalFilter,
       t: filterStatus || undefined,
     }),
-    { keepPreviousData: true }
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 30000,
+    }
   )
 
   const data: ProfileUserData[] = users?.data ?? []
