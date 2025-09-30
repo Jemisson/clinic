@@ -27,12 +27,12 @@ import {
 } from "lucide-react"
 
 interface ColumnsHandlers {
-  onRequestStatusChange: (user: ProfileUserData, target: "active" | "inactive") => void
+  onRequestStatusChange: (user: ProfileUserData, target: "active" | "inactive") => void;
+  onEdit?: (user: ProfileUserData) => void;
 }
 
-export const columns = (
-  { onRequestStatusChange }: ColumnsHandlers
-): ColumnDef<ProfileUserData>[] => [
+export const columns = ({ onRequestStatusChange, onEdit }: ColumnsHandlers): ColumnDef<ProfileUserData>[] => [
+
   {
     id: "user",
     accessorKey: "user",
@@ -156,7 +156,9 @@ export const columns = (
       return (
         <div className="flex gap-1">
           <Button variant={"ghost"} size={"icon"}><Eye /></Button>
-          <Button variant={"ghost"} size={"icon"}><Pencil /></Button>
+          <Button variant="ghost" size="icon" title="Editar" onClick={() => onEdit?.(user)}>
+            <Pencil />
+          </Button>
           <Button
             variant={"ghost"}
             size={"icon"}

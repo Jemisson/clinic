@@ -1,6 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import {
+  useEffect,
+  useState
+} from "react"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
@@ -38,11 +41,24 @@ import {
 import dayjs from "dayjs"
 import { toast } from "sonner"
 import UsersService from "@/service/users"
-import type { ProfileUserFormInput } from "@/types/users"
+import {
+  type ProfileUserData,
+  type ProfileUserFormInput
+} from "@/types/users"
 import StepUser from "@/components/users/form/FormUser/StepUser"
 import StepPersonal from "@/components/users/form/FormUser/StepPersonal"
 import StepFiliation from "@/components/users/form/FormUser/StepFiliation"
 import StepPhoto from "@/components/users/form/FormUser/StepPhoto"
+import {
+  ZGender,
+  ZUserFunction,
+  ZUserRole,
+  ZUserSector,
+  isUserRole,
+  isUserSector,
+  isUserFunction,
+  isGender
+} from "@/types/users.enums"
 
 const ChildSchema = z.object({
   name: z.string().min(1, "Informe o nome"),
@@ -53,23 +69,29 @@ const ChildSchema = z.object({
 })
 
 const UserSchema = z.object({
+  // StepUser
   email: z.string().email(),
-  password: z.string().min(6),
-  confirmPassword: z.string().min(6),
-  role: z.enum(["user", "manager", "admin"]),
+  password: z.string().optional().or(z.literal("")),
+  confirmPassword: z.string().optional().or(z.literal("")),
+  role: ZUserRole,
 
+  // StepPersonal
   name: z.string().min(1),
-  gender: z.enum(["female", "male", "other"]).optional(),
+  gender: ZGender.optional(),
   birthDate: z.string().min(1, "Informe a data de nascimento"),
   rg: z.string().min(1),
   cpf: z.string().min(1),
   address: z.string().min(1),
   phone: z.string().min(1),
-  sector: z.enum(["administrative","comercial","clinical","finance","it"]),
-  function: z.enum(["analyst","technique","coordinator","assistant"]),
 
+  // StepPersonal (selects)
+  sector: ZUserSector,
+  function: ZUserFunction,
+
+  // StepFiliation
   children: z.array(ChildSchema).default([]),
 
+  // StepPhoto
   photo: z
     .instanceof(File)
     .optional()
@@ -87,7 +109,7 @@ function buildPayload(values: UserFormInput): ProfileUserFormInput {
     name: c.name,
     degree: c.education,
     birth: dayjs(c.birthDate).format("YYYY-MM-DD"),
-  }));
+  }))
 
   return {
     name: values.name,
@@ -96,24 +118,32 @@ function buildPayload(values: UserFormInput): ProfileUserFormInput {
     birthdate: dayjs(values.birthDate).format("YYYY-MM-DD"),
     address: values.address,
     mobile_phone: values.phone,
-    sector: values.sector!,
+    sector: values.sector,
     job_function: values.function!,
     user: {
       email: values.email,
       role: values.role,
-      password: values.password || undefined,
+      ...(values.password ? { password: values.password } : {}),
     },
     profile_children: children,
-    photo: values.photo ?? null,
-  };
+    photo: values.photo ?? undefined,
+  }
 }
 
 interface DialogFormUserProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  mode?: 'create' | 'edit';
+  userId?: string | number;
+  initialData?: ProfileUserData;
+  onSuccess?: () => void;
+  initialPhotoUrl?: string;
 }
 
-export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
+export default function FormUser({
+  open, onOpenChange, mode = 'create', userId, initialData, onSuccess, initialPhotoUrl
+}: DialogFormUserProps) {
+  const isEdit = mode === 'edit'
   const [currentStep, setCurrentStep] = useState(1)
 
   const steps = [
@@ -123,40 +153,118 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
     { step: 4, title: "Foto",         icon: <Camera className="size-4" /> },
   ]
 
+  const defaultValues: UserFormInput = {
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "user",
+
+    name: "",
+    gender: undefined,
+    birthDate: "",
+    rg: "",
+    cpf: "",
+    address: "",
+    phone: "",
+    sector: undefined as unknown as UserFormInput["sector"],
+    function: undefined as unknown as UserFormInput["function"],
+
+    children: [],
+    photo: null,
+  }
+
   const methods = useForm<UserFormInput>({
-    resolver: zodResolver(UserSchema),
+    resolver: zodResolver(
+      UserSchema.superRefine((val, ctx) => {
+        const pass = val.password ?? ""
+        const confirm = val.confirmPassword ?? ""
+
+        if (!isEdit) {
+          if (!pass) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["password"], message: "Obrigatório" })
+          if (!confirm) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["confirmPassword"], message: "Confirme a senha" })
+        }
+
+        if (pass || confirm) {
+          if (pass.length > 0 && pass.length < 6) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["password"], message: "Mínimo 6 caracteres" })
+          }
+          if (!isEdit && confirm.length > 0 && confirm.length < 6) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["confirmPassword"], message: "Mínimo 6 caracteres" })
+          }
+          if (pass !== confirm) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["confirmPassword"], message: "Senhas não conferem" })
+          }
+        }
+      })
+    ),
     mode: "onBlur",
-    defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-      role: "user",
+    defaultValues,
+  })
 
-      name: "",
-      gender: undefined,
-      birthDate: "",
-      rg: "",
-      cpf: "",
-      address: "",
-      phone: "",
-      sector: undefined,
-      function: undefined,
+  useEffect(() => {
+    if (!open) return
+    ;(async () => {
+      if (!isEdit) return
 
-      children: [],
-      photo: null,
-    },
-  });
+      const record = initialData ?? (userId ? await UsersService.show(userId) : null)
+      if (!record) return
+
+      const a = record.attributes
+      methods.reset({
+        email: a.email ?? "",
+        password: "",
+        confirmPassword: "",
+        role: isUserRole(a.role) ? a.role : "user",
+
+        name: a.name ?? "",
+        gender: isGender(a.gender) ? a.gender : undefined,
+        birthDate: a.birthdate ?? "",
+        rg: a.rg ?? "",
+        cpf: a.cpf ?? "",
+        address: a.address ?? "",
+        phone: a.mobile_phone ?? "",
+
+        sector: isUserSector(a.sector) ? a.sector : "administrative",
+        function: isUserFunction(a.job_function) ? a.job_function : "analyst",
+
+        children: (a.profile_children ?? []).map((c: any) => ({
+          name: c.name,
+          education: c.degree,
+          birthDate: c.birth,
+        })),
+
+        photo: null,
+      })
+    })()
+  }, [open, isEdit, userId, initialData, methods])
+
+  useEffect(() => {
+    if (!open) {
+      methods.reset(defaultValues)
+      setCurrentStep(1)
+    }
+  }, [open])
 
   const onSubmit: SubmitHandler<UserFormInput> = async (values) => {
     try {
       const payload = buildPayload(values)
-      await UsersService.create(payload)
-      toast.success("Usuário cadastrado com sucesso!")
-      methods.reset()
+
+      if (isEdit) {
+        const id = userId ?? initialData?.id
+        if (!id) throw new Error("ID do usuário ausente")
+        await UsersService.update(id, payload)
+        toast.success("Usuário atualizado com sucesso!")
+      } else {
+        await UsersService.create(payload)
+        toast.success("Usuário cadastrado com sucesso!")
+      }
+
+      methods.reset(defaultValues)
       onOpenChange(false)
+      onSuccess?.()
     } catch (err: any) {
       console.error(err)
-      toast.error(err?.message || "Falha ao cadastrar usuário.")
+      toast.error(err?.response?.data?.message || err?.message || "Falha ao salvar usuário.")
     }
   }
 
@@ -165,7 +273,9 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
       <DialogContent className="max-w-6xl w-full">
         <ScrollArea className="max-h-[75vh]">
           <DialogHeader>
-            <DialogTitle className="text-center">Adicionar Usuário</DialogTitle>
+            <DialogTitle className="text-center">
+              {isEdit ? "Editar Usuário" : "Adicionar Usuário"}
+            </DialogTitle>
             <DialogDescription asChild>
               <div className="pt-4 pb-2">
                 <Stepper value={currentStep} onValueChange={setCurrentStep} defaultValue={1}>
@@ -191,7 +301,7 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
               onSubmit={methods.handleSubmit(onSubmit)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && currentStep < steps.length) {
-                  e.preventDefault();
+                  e.preventDefault()
                 }
               }}
               className="space-y-6"
@@ -199,7 +309,7 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
               {currentStep === 1 && <StepUser />}
               {currentStep === 2 && <StepPersonal />}
               {currentStep === 3 && <StepFiliation />}
-              {currentStep === 4 && <StepPhoto />}
+              {currentStep === 4 && <StepPhoto initialPhotoUrl={initialPhotoUrl} />}
 
               <DialogFooter className="flex gap-2">
                 {currentStep > 1 && (
@@ -217,8 +327,8 @@ export default function FormUser({ open, onOpenChange }: DialogFormUserProps) {
                   <Button
                     type="button"
                     onClick={async (e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                      e.preventDefault()
+                      e.stopPropagation()
 
                       const stepFields: Record<number, (keyof UserFormValues)[]> = {
                         1: ["email", "password", "confirmPassword", "role"],

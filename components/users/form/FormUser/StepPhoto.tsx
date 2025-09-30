@@ -2,11 +2,18 @@
 
 import { useFormContext } from "react-hook-form"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import type { UserFormInput } from "./index"
 import AvatarUploader from "@/components/users/form/FormUser/avatar-uploader"
 
-export default function StepPhoto() {
-  const { control } = useFormContext<UserFormInput>()
+export interface StepPhotoProps {
+  initialPhotoUrl?: string
+}
+
+interface FormValues {
+  photo?: File | null
+}
+
+export default function StepPhoto({ initialPhotoUrl }: StepPhotoProps) {
+  const { control } = useFormContext<FormValues>()
 
   return (
     <section className="flex flex-col gap-4">
@@ -18,8 +25,9 @@ export default function StepPhoto() {
             <FormLabel>Foto</FormLabel>
             <FormControl>
               <AvatarUploader
-                value={field.value as File | null}
+                value={field.value ?? null}
                 onChange={(file) => field.onChange(file)}
+                initialUrl={initialPhotoUrl}
               />
             </FormControl>
             <FormMessage />

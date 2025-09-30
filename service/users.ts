@@ -1,6 +1,6 @@
 import { ProfileUserStatus, ProfileUserStatusUpdateInput, UserResponse, ProfileUserFormInput  } from '@/types/users';
 import api from './api';
-import { UsersShowResponse, toUser } from '@/types';
+import { UserShowResponse } from '@/types/users';
 
 const RESOURCE = '/profile_users';
 
@@ -44,8 +44,8 @@ export const UsersService = {
   },
 
   show: async (id: string | number) => {
-    const { data } = await api.get<UsersShowResponse>(`${RESOURCE}/${id}`);
-    return toUser(data.data);
+    const response = await api.get<UserShowResponse>(`${RESOURCE}/${id}`);
+    return response.data.data;
   },
 
   create: async (values: ProfileUserFormInput) => {
@@ -56,9 +56,17 @@ export const UsersService = {
     return data;
   },
 
-  update: async (id: string | number, values: ProfileUserFormInput) => {
-    const formData = buildFormData(values);
-    const { data } = await api.put(`${RESOURCE}/${id}`, formData, {
+  async update(id: string | number, payload: ProfileUserFormInput) {
+    const form = new FormData();
+    Object.entries(payload).forEach(([k, v]) => {
+      if (k === 'photo') {
+        if (v instanceof File) form.append('photo', v);
+        else if (v === null) form.append('remove_photo', '1');
+      } else {
+        form.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v ?? ''));
+      }
+    });
+    const { data } = await api.put(`${RESOURCE}/${id}`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;

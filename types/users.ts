@@ -1,5 +1,9 @@
 import { Meta } from "./meta";
 import { TagData } from "./tags";
+import type {
+  UserRole, UserSector, UserFunction, Gender
+} from "./users.enums";
+
 
 export interface UserResponse {
   data: ProfileUserData[];
@@ -14,15 +18,16 @@ export interface ProfileUserData {
 
 export interface ProfileUserAttributes {
   name: string;
+  gender?: Gender;
   cpf: string;
   rg: string;
   birthdate: string;
   address: string;
   mobile_phone: string;
-  sector: string;
-  job_function: string;
+  sector: UserSector;
+  job_function: UserFunction;
   profile_children: ProfileChild[];
-  role: string;
+  role: UserRole;
   email: string;
   tags: TagData[];
   photo_url: string | null;
@@ -40,6 +45,10 @@ export interface ProfileChild {
   updated_at: string;
 }
 
+export interface UserShowResponse {
+  data: ProfileUserData
+}
+
 export type ProfileUserStatus = "active" | "inactive";
 
 export interface ProfileUserStatusUpdateInput {
@@ -53,11 +62,11 @@ export interface ProfileUserFormInput {
   birthdate: string;
   address: string;
   mobile_phone: string;
-  sector: string;
-  job_function: string;
+  sector: UserSector;
+  job_function: UserFunction;
   user: {
     email: string;
-    role: "user" | "manager" | "admin";
+    role: UserRole;
     password?: string;
   };
   profile_children: Array<{

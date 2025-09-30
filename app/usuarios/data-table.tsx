@@ -1,5 +1,33 @@
 "use client"
 
+import StatusConfirmDialog from "@/components/common/StatusConfirmDialog"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import FormUser from "@/components/users/form/FormUser"
+import { CustomPagination } from "@/lib/pagination"
+import UsersService from "@/service/users"
+import {
+  ProfileUserData,
+  UserResponse
+} from "@/types/users"
 import {
   ColumnDef,
   flexRender,
@@ -11,50 +39,23 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import useSWR from "swr"
+  Funnel,
+  Plus,
+  Settings2
+} from "lucide-react"
 import {
   useEffect,
   useMemo,
   useRef,
   useState
 } from "react"
-import UsersService from "@/service/users"
-import {
-  ProfileUserData,
-  UserResponse
-} from "@/types/users"
-import { Input } from "@/components/ui/input"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import {
-  Funnel,
-  Plus,
-  Settings2
-} from "lucide-react"
-import { CustomPagination } from "@/lib/pagination"
-import FormUser from "@/components/users/form/FormUser"
-import StatusConfirmDialog from "@/components/common/StatusConfirmDialog"
+import useSWR from "swr"
 
 interface DataTableProps {
   columns: (
     handlers: {
       onRequestStatusChange: (user: ProfileUserData, target: "active" | "inactive") => void
+      onEdit?: (user: ProfileUserData) => void
     }
   ) => ColumnDef<ProfileUserData, unknown>[]
 }
@@ -88,6 +89,15 @@ export function DataTable({ columns }: DataTableProps) {
   const inputSearchRef = useRef<HTMLInputElement>(null)
   const debounceMs = 500
 
+  // Modal de CRIAÇÃO
+  const [open, setOpen] = useState(false)
+  const [createFormKey, setCreateFormKey] = useState(0)
+
+  // Modal de EDIÇÃO
+  const [openEdit, setOpenEdit] = useState(false)
+  const [selected, setSelected] = useState<ProfileUserData | null>(null)
+  const [editFormKey, setEditFormKey] = useState(0)
+
   useEffect(() => {
     const id = setTimeout(() => {
       setGlobalFilter(searchValue.trim())
@@ -114,8 +124,6 @@ export function DataTable({ columns }: DataTableProps) {
     input.addEventListener("search", handleSearch)
     return () => input.removeEventListener("search", handleSearch)
   }, [])
-
-  const [open, setOpen] = useState(false)
 
   const swrKey = useMemo(
     () => [
@@ -148,6 +156,7 @@ export function DataTable({ columns }: DataTableProps) {
   const data: ProfileUserData[] = users?.data ?? []
   const meta = users?.meta ?? null
 
+  // Diálogo de status
   const [isStatusOpen, setIsStatusOpen] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
   const [statusTarget, setStatusTarget] = useState<"active" | "inactive">("inactive")
@@ -173,9 +182,17 @@ export function DataTable({ columns }: DataTableProps) {
     }
   }
 
+  // Columns com handler de edição
   const cols = useMemo(
-    () => columns({ onRequestStatusChange }),
-    [columns, users]
+    () => columns({
+      onRequestStatusChange,
+      onEdit: (user) => {
+        setSelected(user)
+        setOpenEdit(true)
+      },
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [columns]
   )
 
   const table = useReactTable({
@@ -250,7 +267,22 @@ export function DataTable({ columns }: DataTableProps) {
               <Plus /> Adicionar Usuário
             </Button>
 
-            <FormUser open={open} onOpenChange={setOpen} />
+            {/* Modal de CRIAÇÃO */}
+            <FormUser
+              key={`create-${createFormKey}`}
+              open={open}
+              onOpenChange={(v) => {
+                // ao FECHAR, limpa o form (força remount) e mantém controle do estado
+                if (!v) setCreateFormKey((k) => k + 1)
+                setOpen(v)
+              }}
+              mode="create"
+              onSuccess={async () => {
+                await mutate()            // atualiza lista
+                setOpen(false)            // fecha modal após salvar
+                setCreateFormKey((k) => k + 1) // limpa form para próxima abertura
+              }}
+            />
           </div>
         </div>
       </div>
@@ -313,15 +345,41 @@ export function DataTable({ columns }: DataTableProps) {
         loading={statusLoading}
         onConfirm={confirmStatusChange}
         deactivateDescription={
-            <>
-                Ao desativar o usuário <b>{selectedUser?.attributes.name}</b>, ele não porerá mais realizar login no sistema, nem efetuar nenhuma opração, mas você ainda pode <b>reativá-lo</b> depois se necessário.
-            </>
+          <>
+            Ao desativar o usuário <b>{selectedUser?.attributes.name}</b>, ele não poderá mais realizar login no sistema,
+            nem efetuar nenhuma operação, mas você ainda pode <b>reativá-lo</b> depois se necessário.
+          </>
         }
         activateDescription={
-            <>
-                Ao reativar o usuário <b>{selectedUser?.attributes.name}</b>, ele voltará a ter todos os acessos ao sistema conforme o nível de acesso que possui.
-            </>
+          <>
+            Ao reativar o usuário <b>{selectedUser?.attributes.name}</b>, ele voltará a ter todos os acessos ao sistema
+            conforme o nível de acesso que possui.
+          </>
         }
+      />
+
+      {/* Modal de EDIÇÃO */}
+      <FormUser
+        key={`edit-${editFormKey}`}
+        open={openEdit}
+        onOpenChange={(v) => {
+          // ao FECHAR, limpa seleção e força remount para limpar form
+          if (!v) {
+            setSelected(null)
+            setEditFormKey((k) => k + 1)
+          }
+          setOpenEdit(v)
+        }}
+        mode="edit"
+        userId={selected?.id}
+        initialData={selected ?? undefined}
+        initialPhotoUrl={selected?.attributes?.photo_thumb_url ?? undefined}
+        onSuccess={async () => {
+          await mutate()                 // atualiza lista
+          setOpenEdit(false)             // fecha modal após salvar
+          setSelected(null)              // limpa seleção
+          setEditFormKey((k) => k + 1)   // limpa form para próxima abertura
+        }}
       />
     </div>
   )

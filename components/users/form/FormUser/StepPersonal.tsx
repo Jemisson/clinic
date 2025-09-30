@@ -26,17 +26,21 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import dayjs from "dayjs";
 import { cn } from "@/lib/utils";
-import {
-  RadioGroup,
-  RadioGroupItem
-} from "@/components/ui/radio-group";
 import type { UserFormInput } from "./index";
+
+// enums centralizados
+import {
+  USER_SECTOR_OPTIONS,
+  USER_FUNCTION_OPTIONS,
+  GENDER_OPTIONS,
+} from "@/types/users.enums";
 
 export default function StepPersonal() {
   const { control } = useFormContext<UserFormInput>();
 
   return (
     <section className="flex flex-col gap-4">
+      {/* Nome */}
       <FormField
         control={control}
         name="name"
@@ -44,41 +48,42 @@ export default function StepPersonal() {
           <FormItem>
             <FormLabel>Nome</FormLabel>
             <FormControl>
-              <Input {...field} value={field.value ?? ""} placeholder="Nome Completo"/> 
+              <Input {...field} value={field.value ?? ""} placeholder="Nome Completo" />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
 
+      {/* Gênero (Select) + Data de Nascimento */}
       <div className="flex flex-col gap-4 lg:flex-row">
+        {/* Gênero (Select) */}
         <FormField
           control={control}
           name="gender"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="w-full">
               <FormLabel>Gênero</FormLabel>
-              <FormControl className="flex w-fit">
-                <RadioGroup value={field.value ?? undefined} onValueChange={field.onChange}>
-                  <FormItem className="flex items-center">
-                    <FormControl><RadioGroupItem value="female" /></FormControl>
-                    <FormLabel>Feminino</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center">
-                    <FormControl><RadioGroupItem value="male" /></FormControl>
-                    <FormLabel>Masculino</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center">
-                    <FormControl><RadioGroupItem value="other" /></FormControl>
-                    <FormLabel>Outro</FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
+              <Select value={field.value ?? undefined} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione o gênero" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {GENDER_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
         />
 
+        {/* Data de Nascimento */}
         <FormField
           control={control}
           name="birthDate"
@@ -92,12 +97,13 @@ export default function StepPersonal() {
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant={"outline"}
-                        className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                        variant="outline"
+                        className={cn(
+                          "pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
                       >
-                        {field.value
-                          ? dayjs(field.value).format("DD/MM/YYYY")
-                          : <span>Selecione a Data</span>}
+                        {field.value ? dayjs(field.value).format("DD/MM/YYYY") : <span>Selecione a Data</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
@@ -119,6 +125,7 @@ export default function StepPersonal() {
         />
       </div>
 
+      {/* RG + CPF */}
       <div className="flex flex-col gap-4 lg:flex-row">
         <FormField
           control={control}
@@ -127,7 +134,7 @@ export default function StepPersonal() {
             <FormItem className="w-full">
               <FormLabel>RG</FormLabel>
               <FormControl>
-                <Input {...field} value={field.value ?? ""} /> 
+                <Input {...field} value={field.value ?? ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -140,7 +147,7 @@ export default function StepPersonal() {
             <FormItem className="w-full">
               <FormLabel>CPF</FormLabel>
               <FormControl>
-                <Input {...field} value={field.value ?? ""} /> 
+                <Input {...field} value={field.value ?? ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -148,6 +155,7 @@ export default function StepPersonal() {
         />
       </div>
 
+      {/* Endereço */}
       <FormField
         control={control}
         name="address"
@@ -155,14 +163,15 @@ export default function StepPersonal() {
           <FormItem>
             <FormLabel>Endereço</FormLabel>
             <FormControl>
-              <Input {...field} value={field.value ?? ""} /> 
+              <Input {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
 
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+      {/* Telefone + Setor + Função */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
         <FormField
           control={control}
           name="phone"
@@ -170,7 +179,7 @@ export default function StepPersonal() {
             <FormItem>
               <FormLabel>Telefone</FormLabel>
               <FormControl>
-                <Input {...field} value={field.value ?? ""} /> 
+                <Input {...field} value={field.value ?? ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -190,11 +199,11 @@ export default function StepPersonal() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="administrative">Administrativo</SelectItem>
-                  <SelectItem value="comercial">Comercial</SelectItem>
-                  <SelectItem value="clinical">Clínico</SelectItem>
-                  <SelectItem value="finance">Financeiro</SelectItem>
-                  <SelectItem value="it">TI</SelectItem>
+                  {USER_SECTOR_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -215,10 +224,11 @@ export default function StepPersonal() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="analyst">Analista</SelectItem>
-                  <SelectItem value="technique">Técnico</SelectItem>
-                  <SelectItem value="coordinator">Coordenador</SelectItem>
-                  <SelectItem value="assistant">Assistente</SelectItem>
+                  {USER_FUNCTION_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />

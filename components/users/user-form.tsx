@@ -8,11 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { toast } from "sonner"
+import { toast } from 'sonner'
 import UsersService from '@/service/users'
-import type { ProfileUserFormInput } from '@/types/user'
+import { type ProfileUserFormInput } from '@/types/users'
 import { cn } from '@/lib/utils'
+import { ZUserFunction, ZUserRole, ZUserSector } from '@/types/users.enums'
 
+/** -----------------------------
+ *  Schemas (fonte única da verdade)
+ *  ----------------------------- */
 const childSchema = z.object({
   name: z.string().min(1, 'Informe o nome'),
   degree: z.string().min(1, 'Informe a escolaridade'),
@@ -22,7 +26,7 @@ const childSchema = z.object({
 const baseSchema = z.object({
   user: z.object({
     email: z.string().email('Email inválido'),
-    role: z.string().min(1, 'Obrigatório'),
+    role: ZUserRole,
     password: z.string().optional(),
     password_confirm: z.string().optional(),
   }),
@@ -32,8 +36,8 @@ const baseSchema = z.object({
   birthdate: z.string().min(1, 'Obrigatório'),
   address: z.string().min(1, 'Obrigatório'),
   mobile_phone: z.string().min(1, 'Obrigatório'),
-  sector: z.string().min(1, 'Obrigatório'),
-  job_function: z.string().min(1, 'Obrigatório'),
+  sector: ZUserSector,
+  job_function: ZUserFunction,
   profile_children: z.array(childSchema),
   photo: z.instanceof(File).optional().or(z.null()).optional(),
 })
@@ -48,6 +52,9 @@ type Props = {
   initialPhotoUrl?: string
 }
 
+/** -----------------------------
+ *  UI: Stepper
+ *  ----------------------------- */
 function Stepper({
   steps,
   current,
@@ -84,8 +91,13 @@ function Stepper({
   )
 }
 
+/** -----------------------------
+ *  Form principal
+ *  ----------------------------- */
 export function UserForm({ mode, defaultValues, idForEdit, onSuccess, initialPhotoUrl }: Props) {
   const [removePhoto, setRemovePhoto] = useState(false)
+
+  // Schema com regras condicionais para senha (create vs edit)
   const schema = useMemo(() => {
     return baseSchema.superRefine((val, ctx) => {
       const pass = val.user.password ?? ''
@@ -134,20 +146,26 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess, initialPho
     })
   }, [mode])
 
+  // useForm alinhado ao MESMO schema do resolver
   const form = useForm<UserFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       user: { email: '', role: 'user', password: '', password_confirm: '' },
+
       name: '',
       cpf: '',
       rg: '',
       birthdate: '',
       address: '',
       mobile_phone: '',
-      sector: '',
-      job_function: '',
+
+      // enums obrigatórios → defina valores válidos por padrão
+      sector: 'administrative',
+      job_function: 'analyst',
+
       profile_children: [],
       photo: undefined,
+
       ...defaultValues,
     },
     mode: 'onBlur',
@@ -216,6 +234,8 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess, initialPho
   }
 
   async function onSubmit(values: UserFormValues) {
+    // Se a UI marcou "remover foto", garantimos photo === null;
+    // (o toggle já faz setValue('photo', null), mas reforçamos regra de negócio aqui se quiser)
     const payload: ProfileUserFormInput = {
       ...values,
       user: {
@@ -224,13 +244,13 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess, initialPho
         ...(values.user.password ? { password: values.user.password } : {}),
       },
       profile_children: values.profile_children ?? [],
-      photo: values.photo ?? undefined,
+      photo: removePhoto ? null : values.photo ?? undefined,
     }
 
     try {
       if (mode === 'create') {
         await UsersService.create(payload)
-        toast('Usuário criado')
+        toast.success('Usuário criado')
       } else {
         if (!idForEdit) throw new Error('idForEdit ausente')
         await UsersService.update(idForEdit, payload)

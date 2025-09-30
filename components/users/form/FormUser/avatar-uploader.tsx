@@ -12,43 +12,51 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-type Props = {
+interface Props {
   value?: File | null
   onChange: (file: File | null) => void
   className?: string
+  initialUrl?: string
 }
 
-export default function AvatarUploader({ value, onChange, className }: Props) {
-  const previewUrl = useMemo(() => {
-    if (!value) return null
-    try {
-      return URL.createObjectURL(value)
-    } catch {
-      return null
-    }
-  }, [value])
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl)
-    }
-  }, [previewUrl])
-
+export default function AvatarUploader({ value, onChange, className, initialUrl }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // URL para prévia:
+  // - se houver File, cria um objectURL
+  // - senão, usa a initialUrl (se existir)
+  const previewUrl = useMemo(() => {
+    if (value instanceof File) {
+      try { return URL.createObjectURL(value) } catch { return null }
+    }
+    return initialUrl ?? null
+  }, [value, initialUrl])
+
+  // Revogar apenas objectURLs criados para File
+  useEffect(() => {
+    if (!(value instanceof File)) return
+    const url = previewUrl
+    return () => {
+      try { url && URL.revokeObjectURL(url) } catch {}
+    }
+  }, [previewUrl, value])
 
   const openPicker = () => inputRef.current?.click()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null
     onChange(file)
+    // Permite re-selecionar o mesmo arquivo no futuro
+    if (inputRef.current) inputRef.current.value = ""
   }
 
   const handleDrop = (e: React.DragEvent<HTMLButtonElement>) => {
     e.preventDefault()
     e.stopPropagation()
-    const file = e.dataTransfer.files?.[0]
+    const file = e.dataTransfer.files?.[0] ?? null
     if (file && file.type.startsWith("image/")) {
       onChange(file)
+      if (inputRef.current) inputRef.current.value = ""
     }
   }
 
@@ -56,12 +64,17 @@ export default function AvatarUploader({ value, onChange, className }: Props) {
     e.preventDefault()
   }
 
-  const clear = () => onChange(null)
+  const clear = () => {
+    onChange(null)
+    if (inputRef.current) inputRef.current.value = ""
+  }
+
+  // Mostrar "X" apenas quando há um File selecionado (não apenas a foto inicial do servidor)
+  const showClear = value instanceof File
 
   return (
     <div className={cn("flex flex-col items-start gap-2", className)}>
       <div className="relative inline-flex">
-
         <button
           type="button"
           onClick={openPicker}
@@ -90,13 +103,13 @@ export default function AvatarUploader({ value, onChange, className }: Props) {
           )}
         </button>
 
-        {previewUrl && (
+        {showClear && (
           <Button
             type="button"
             onClick={clear}
             size="icon"
             className="absolute -top-1 -right-1 size-6 rounded-full border-2 shadow-none"
-            aria-label="Remover imagem"
+            aria-label="Remover imagem selecionada"
           >
             <XIcon className="size-3.5" />
           </Button>
