@@ -156,7 +156,6 @@ export function DataTable({ columns }: DataTableProps) {
   const data: ProfileUserData[] = users?.data ?? []
   const meta = users?.meta ?? null
 
-  // Diálogo de status
   const [isStatusOpen, setIsStatusOpen] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
   const [statusTarget, setStatusTarget] = useState<"active" | "inactive">("inactive")
@@ -182,7 +181,6 @@ export function DataTable({ columns }: DataTableProps) {
     }
   }
 
-  // Columns com handler de edição
   const cols = useMemo(
     () => columns({
       onRequestStatusChange,
@@ -191,7 +189,6 @@ export function DataTable({ columns }: DataTableProps) {
         setOpenEdit(true)
       },
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [columns]
   )
 
@@ -267,20 +264,18 @@ export function DataTable({ columns }: DataTableProps) {
               <Plus /> Adicionar Usuário
             </Button>
 
-            {/* Modal de CRIAÇÃO */}
             <FormUser
               key={`create-${createFormKey}`}
               open={open}
               onOpenChange={(v) => {
-                // ao FECHAR, limpa o form (força remount) e mantém controle do estado
                 if (!v) setCreateFormKey((k) => k + 1)
                 setOpen(v)
               }}
               mode="create"
               onSuccess={async () => {
-                await mutate()            // atualiza lista
-                setOpen(false)            // fecha modal após salvar
-                setCreateFormKey((k) => k + 1) // limpa form para próxima abertura
+                await mutate(undefined, { revalidate: true })
+                setOpen(false)
+                setCreateFormKey((k) => k + 1)
               }}
             />
           </div>
@@ -358,12 +353,10 @@ export function DataTable({ columns }: DataTableProps) {
         }
       />
 
-      {/* Modal de EDIÇÃO */}
       <FormUser
         key={`edit-${editFormKey}`}
         open={openEdit}
         onOpenChange={(v) => {
-          // ao FECHAR, limpa seleção e força remount para limpar form
           if (!v) {
             setSelected(null)
             setEditFormKey((k) => k + 1)
@@ -375,10 +368,10 @@ export function DataTable({ columns }: DataTableProps) {
         initialData={selected ?? undefined}
         initialPhotoUrl={selected?.attributes?.photo_thumb_url ?? undefined}
         onSuccess={async () => {
-          await mutate()                 // atualiza lista
-          setOpenEdit(false)             // fecha modal após salvar
-          setSelected(null)              // limpa seleção
-          setEditFormKey((k) => k + 1)   // limpa form para próxima abertura
+          await mutate()
+          setOpenEdit(false)
+          setSelected(null)
+          setEditFormKey((k) => k + 1)
         }}
       />
     </div>

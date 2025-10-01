@@ -82,13 +82,11 @@ import {
   })
 
 const UserSchema = z.object({
-  // StepUser
   email: z.string().email(),
   password: z.string().optional().or(z.literal("")),
   confirmPassword: z.string().optional().or(z.literal("")),
   role: ZUserRole,
 
-  // StepPersonal
   name: z.string().min(1),
   gender: ZGender.optional(),
   birthDate: z.string().min(1, "Informe a data de nascimento"),
@@ -97,14 +95,11 @@ const UserSchema = z.object({
   address: z.string().min(1),
   phone: z.string().min(1),
 
-  // StepPersonal (selects)
   sector: ZUserSector,
   function: ZUserFunction,
 
-  // StepFiliation
   children: z.array(ChildSchema).default([]),
 
-  // StepPhoto
   photo: z
     .instanceof(File)
     .optional()
@@ -118,15 +113,26 @@ export type UserFormInput  = z.input<typeof UserSchema>;
 export type UserFormValues = z.output<typeof UserSchema>;
 
 function buildPayload(values: UserFormInput): ProfileUserFormInput {
-  const children = (values.children ?? [])
-    .filter((c) => !(c._destroy && c.id == null))
+  type ChildValue = NonNullable<UserFormInput["children"]>[number];
+
+  const isComplete = (c: ChildValue):
+    c is ChildValue & { name: string; education: "fundamental"|"medio"|"superior"; birthDate: string } =>
+      !c._destroy && !!c.name && !!c.education && !!c.birthDate;
+
+  const toUpsert = (values.children ?? [])
+    .filter(isComplete)
     .map((c) => ({
       ...(c.id != null ? { id: c.id } : {}),
       name: c.name,
       degree: c.education,
       birth: dayjs(c.birthDate).format("YYYY-MM-DD"),
-      ...(c.id != null && c._destroy ? { _destroy: true } : {}), 
-    }))
+    } as const));
+
+  const toDestroy = (values.children ?? [])
+    .filter((c): c is ChildValue & { id: number; _destroy: true } => !!c.id && c._destroy === true)
+    .map((c) => ({ id: c.id, _destroy: true as const }));
+
+  const children = [...toUpsert, ...toDestroy];
 
   return {
     name: values.name,

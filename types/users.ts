@@ -55,6 +55,19 @@ export interface ProfileUserStatusUpdateInput {
   profile_user: { status: ProfileUserStatus };
 }
 
+export type ProfileChildUpsertInput = {
+  id?: number;
+  name: string;
+  degree: string;
+  birth: string;
+  _destroy?: false;
+};
+
+export type ProfileChildDestroyInput = {
+  id: number;
+  _destroy: true;
+};
+
 export interface ProfileUserFormInput {
   name: string;
   cpf: string;
@@ -69,12 +82,6 @@ export interface ProfileUserFormInput {
     role: UserRole;
     password?: string;
   };
-  profile_children: Array<{
-    id?: number;  
-    name: string;
-    degree: string;
-    birth: string;
-    _destroy?: boolean;
-  }>;
+  profile_children: Array<ProfileChildUpsertInput | ProfileChildDestroyInput>;
   photo?: File | null;
 }
