@@ -1,6 +1,6 @@
-import { UserResponse } from '@/types/users';
+import { ProfileUserStatus, ProfileUserStatusUpdateInput, UserResponse, ProfileUserFormInput } from '@/types/users';
 import api from './api';
-import { UsersShowResponse, toUser, ProfileUserFormInput } from '@/types';
+import { UserShowResponse } from '@/types/users';
 
 const RESOURCE = '/profile_users';
 
@@ -22,20 +22,32 @@ function buildFormData(values: ProfileUserFormInput) {
     fd.append('profile_user[user_attributes][password]', values.user.password);
   }
 
-  values.profile_children.forEach((c, i) => {
+  (values.profile_children ?? []).forEach((c, i) => {
+    if (c.id != null) {
+      fd.append(`profile_user[profile_children_attributes][${i}][id]`, String(c.id))
+    }
+    if (c._destroy) {
+      fd.append(`profile_user[profile_children_attributes][${i}][_destroy]`, "1");
+      return;
+    }
     fd.append(`profile_user[profile_children_attributes][${i}][name]`, c.name);
-    fd.append(
-      `profile_user[profile_children_attributes][${i}][degree]`,
-      c.degree
-    );
-    fd.append(
-      `profile_user[profile_children_attributes][${i}][birth]`,
-      c.birth
-    );
+    fd.append(`profile_user[profile_children_attributes][${i}][degree]`, c.degree);
+    fd.append(`profile_user[profile_children_attributes][${i}][birth]`, c.birth);
   });
 
-  if (values.photo) {
+  if (values.photo instanceof File) {
     fd.append('photo', values.photo);
+  }
+
+  return fd;
+}
+
+function buildFormDataForUpdate(values: ProfileUserFormInput) {
+  const fd = buildFormData(values);
+
+  // Remoção de foto (mantém a convenção atual: flag "remove_photo" na raiz)
+  if (values.photo === null) {
+    fd.append('remove_photo', '1');
   }
 
   return fd;
@@ -43,18 +55,15 @@ function buildFormData(values: ProfileUserFormInput) {
 
 export const UsersService = {
   list: async (
-    params: { page?: number; per_page?: number; q?: string } = {}
+    params: { page?: number; per_page?: number; q?: string; t?: string } = {}
   ) => {
     const { data } = await api.get<UserResponse>(RESOURCE, { params });
-    return {
-      data: data.data,
-      meta: data.meta,
-    };
+    return { data: data.data, meta: data.meta };
   },
 
   show: async (id: string | number) => {
-    const { data } = await api.get<UsersShowResponse>(`${RESOURCE}/${id}`);
-    return toUser(data.data);
+    const response = await api.get<UserShowResponse>(`${RESOURCE}/${id}`);
+    return response.data.data;
   },
 
   create: async (values: ProfileUserFormInput) => {
@@ -66,10 +75,16 @@ export const UsersService = {
   },
 
   update: async (id: string | number, values: ProfileUserFormInput) => {
-    const formData = buildFormData(values);
+    const formData = buildFormDataForUpdate(values);
     const { data } = await api.put(`${RESOURCE}/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    return data;
+  },
+
+  setStatus: async (id: string | number, status: ProfileUserStatus) => {
+    const payload: ProfileUserStatusUpdateInput = { profile_user: { status } };
+    const { data } = await api.patch(`${RESOURCE}/${id}`, payload);
     return data;
   },
 
@@ -77,4 +92,5 @@ export const UsersService = {
     await api.delete(`${RESOURCE}/${id}`);
   },
 };
+
 export default UsersService;

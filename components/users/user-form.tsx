@@ -8,11 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { toast } from "sonner"
+import { toast } from 'sonner'
 import UsersService from '@/service/users'
-import type { ProfileUserFormInput } from '@/types/user'
+import { type ProfileUserFormInput } from '@/types/users'
 import { cn } from '@/lib/utils'
+import { ZUserFunction, ZUserRole, ZUserSector } from '@/types/users.enums'
 
+/** -----------------------------
+ *  Schemas (fonte única da verdade)
+ *  ----------------------------- */
 const childSchema = z.object({
   name: z.string().min(1, 'Informe o nome'),
   degree: z.string().min(1, 'Informe a escolaridade'),
@@ -22,7 +26,7 @@ const childSchema = z.object({
 const baseSchema = z.object({
   user: z.object({
     email: z.string().email('Email inválido'),
-    role: z.string().min(1, 'Obrigatório'),
+    role: ZUserRole,
     password: z.string().optional(),
     password_confirm: z.string().optional(),
   }),
@@ -32,8 +36,8 @@ const baseSchema = z.object({
   birthdate: z.string().min(1, 'Obrigatório'),
   address: z.string().min(1, 'Obrigatório'),
   mobile_phone: z.string().min(1, 'Obrigatório'),
-  sector: z.string().min(1, 'Obrigatório'),
-  job_function: z.string().min(1, 'Obrigatório'),
+  sector: ZUserSector,
+  job_function: ZUserFunction,
   profile_children: z.array(childSchema),
   photo: z.instanceof(File).optional().or(z.null()).optional(),
 })
@@ -45,8 +49,12 @@ type Props = {
   defaultValues?: Partial<UserFormValues>
   idForEdit?: string | number
   onSuccess?: () => void
+  initialPhotoUrl?: string
 }
 
+/** -----------------------------
+ *  UI: Stepper
+ *  ----------------------------- */
 function Stepper({
   steps,
   current,
@@ -83,8 +91,13 @@ function Stepper({
   )
 }
 
+/** -----------------------------
+ *  Form principal
+ *  ----------------------------- */
+export function UserForm({ mode, defaultValues, idForEdit, onSuccess, initialPhotoUrl }: Props) {
+  const [removePhoto, setRemovePhoto] = useState(false)
 
-export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
+  // Schema com regras condicionais para senha (create vs edit)
   const schema = useMemo(() => {
     return baseSchema.superRefine((val, ctx) => {
       const pass = val.user.password ?? ''
@@ -133,20 +146,26 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
     })
   }, [mode])
 
+  // useForm alinhado ao MESMO schema do resolver
   const form = useForm<UserFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       user: { email: '', role: 'user', password: '', password_confirm: '' },
+
       name: '',
       cpf: '',
       rg: '',
       birthdate: '',
       address: '',
       mobile_phone: '',
-      sector: '',
-      job_function: '',
+
+      // enums obrigatórios → defina valores válidos por padrão
+      sector: 'administrative',
+      job_function: 'analyst',
+
       profile_children: [],
       photo: undefined,
+
       ...defaultValues,
     },
     mode: 'onBlur',
@@ -191,8 +210,8 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
       setPreview(url)
       return () => URL.revokeObjectURL(url)
     }
-    setPreview(null)
-  }, [photo])
+    setPreview(initialPhotoUrl || null)
+  }, [photo, initialPhotoUrl])
 
   const onDropFile = (file?: File) => {
     if (!file) return
@@ -215,6 +234,8 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
   }
 
   async function onSubmit(values: UserFormValues) {
+    // Se a UI marcou "remover foto", garantimos photo === null;
+    // (o toggle já faz setValue('photo', null), mas reforçamos regra de negócio aqui se quiser)
     const payload: ProfileUserFormInput = {
       ...values,
       user: {
@@ -223,17 +244,17 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
         ...(values.user.password ? { password: values.user.password } : {}),
       },
       profile_children: values.profile_children ?? [],
-      photo: values.photo ?? undefined,
+      photo: removePhoto ? null : values.photo ?? undefined,
     }
 
     try {
       if (mode === 'create') {
         await UsersService.create(payload)
-        toast('Usuário criado')
+        toast.success('Usuário criado')
       } else {
         if (!idForEdit) throw new Error('idForEdit ausente')
         await UsersService.update(idForEdit, payload)
-        toast('Usuário atualizado')
+        toast.success('Usuário atualizado')
       }
       onSuccess?.()
     } catch (e: any) {
@@ -389,12 +410,9 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             <div className="flex flex-col items-center gap-3">
               <div className="h-28 w-28 overflow-hidden rounded-full border bg-muted">
-                <img
-                  src={preview || '/avatar.png'}
-                  alt="Pré-visualização"
-                  className="h-full w-full object-cover"
-                />
+                <img src={preview || '/user.jpg'} alt="Pré-visualização" className="h-full w-full object-cover" />
               </div>
+
               <Button
                 type="button"
                 variant="outline"
@@ -403,22 +421,48 @@ export function UserForm({ mode, defaultValues, idForEdit, onSuccess }: Props) {
               >
                 Escolher arquivo
               </Button>
+
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => setValue('photo', e.target.files?.[0] ?? null, { shouldDirty: true })}
+                onChange={(e) => {
+                  setRemovePhoto(false)
+                  setValue('photo', e.target.files?.[0] ?? null, { shouldDirty: true })
+                }}
                 onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }}
                 disabled={isSubmitting}
               />
+
+              {mode === 'edit' && (initialPhotoUrl || preview) && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={removePhoto}
+                    onChange={(e) => {
+                      setRemovePhoto(e.target.checked)
+                      if (e.target.checked) {
+                        setValue('photo', null, { shouldDirty: true })
+                        setPreview(null)
+                      } else {
+                        setPreview(initialPhotoUrl || null)
+                      }
+                    }}
+                  />
+                  Remover foto atual
+                </label>
+              )}
             </div>
 
             <div
               ref={dropRef}
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
-              onDrop={onDrop}
+              onDrop={(e) => {
+                onDrop(e)
+                setRemovePhoto(false)
+              }}
               className="md:col-span-2 flex h-40 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed bg-muted/50 p-4 text-center hover:bg-muted"
               onClick={() => fileInputRef.current?.click()}
             >
