@@ -60,13 +60,26 @@ import {
   isGender
 } from "@/types/users.enums"
 
-const ChildSchema = z.object({
-  name: z.string().min(1, "Informe o nome"),
-  education: z.enum(["fundamental", "medio", "superior"], {
-    message: "Escolaridade inválida",
-  }),
-  birthDate: z.string().min(1, "Informe a data de nascimento"),
-})
+  const ChildSchema = z.object({
+    id: z.number().optional(),
+    _destroy: z.boolean().optional().default(false),
+
+    name: z.string().optional(),
+    education: z.enum(["fundamental", "medio", "superior"]).optional(),
+    birthDate: z.string().optional(),
+  }).superRefine((val, ctx) => {
+    if (!val._destroy) {
+      if (!val.name || !val.name.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["name"], message: "Informe o nome" })
+      }
+      if (!val.education) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["education"], message: "Escolaridade inválida" })
+      }
+      if (!val.birthDate) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["birthDate"], message: "Informe a data de nascimento" })
+      }
+    }
+  })
 
 const UserSchema = z.object({
   // StepUser
@@ -105,11 +118,15 @@ export type UserFormInput  = z.input<typeof UserSchema>;
 export type UserFormValues = z.output<typeof UserSchema>;
 
 function buildPayload(values: UserFormInput): ProfileUserFormInput {
-  const children = (values.children ?? []).map((c) => ({
-    name: c.name,
-    degree: c.education,
-    birth: dayjs(c.birthDate).format("YYYY-MM-DD"),
-  }))
+  const children = (values.children ?? [])
+    .filter((c) => !(c._destroy && c.id == null))
+    .map((c) => ({
+      ...(c.id != null ? { id: c.id } : {}),
+      name: c.name,
+      degree: c.education,
+      birth: dayjs(c.birthDate).format("YYYY-MM-DD"),
+      ...(c.id != null && c._destroy ? { _destroy: true } : {}), 
+    }))
 
   return {
     name: values.name,
@@ -228,9 +245,11 @@ export default function FormUser({
         function: isUserFunction(a.job_function) ? a.job_function : "analyst",
 
         children: (a.profile_children ?? []).map((c: any) => ({
+          id: c.id,
           name: c.name,
           education: c.degree,
           birthDate: c.birth,
+          _destroy: false,
         })),
 
         photo: null,
@@ -333,15 +352,31 @@ export default function FormUser({
                       const stepFields: Record<number, (keyof UserFormValues)[]> = {
                         1: ["email", "password", "confirmPassword", "role"],
                         2: ["name", "birthDate", "rg", "cpf", "address", "phone", "sector", "function"],
-                        3: ["children"],
                       }
-                      const ok = await methods.trigger(stepFields[currentStep] ?? [])
+
+                      if (currentStep === 3) {
+                        const children = methods.getValues("children") ?? []
+                        const childPaths = children
+                          .map((c, i) => (c?._destroy ? [] : [
+                            `children.${i}.name`,
+                            `children.${i}.education`,
+                            `children.${i}.birthDate`,
+                          ]))
+                          .flat()
+
+                        const ok = await methods.trigger(childPaths as any, { shouldFocus: true })
+                        if (ok) setCurrentStep((s) => s + 1)
+                        return
+                      }
+
+                      const ok = await methods.trigger(stepFields[currentStep] ?? [], { shouldFocus: true })
                       if (ok) setCurrentStep((s) => s + 1)
                     }}
                   >
                     {steps[currentStep]?.title}
                     <ArrowRightIcon className="-ms-1 opacity-60" />
                   </Button>
+
                 ) : (
                   <Button type="submit"><Check />Finalizar</Button>
                 )}

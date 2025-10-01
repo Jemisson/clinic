@@ -70,9 +70,11 @@ export interface ProfileUserFormInput {
     password?: string;
   };
   profile_children: Array<{
+    id?: number;  
     name: string;
     degree: string;
     birth: string;
+    _destroy?: boolean;
   }>;
   photo?: File | null;
 }

@@ -1,4 +1,4 @@
-import { ProfileUserStatus, ProfileUserStatusUpdateInput, UserResponse, ProfileUserFormInput  } from '@/types/users';
+import { ProfileUserStatus, ProfileUserStatusUpdateInput, UserResponse, ProfileUserFormInput } from '@/types/users';
 import api from './api';
 import { UserShowResponse } from '@/types/users';
 
@@ -22,14 +22,32 @@ function buildFormData(values: ProfileUserFormInput) {
     fd.append('profile_user[user_attributes][password]', values.user.password);
   }
 
-  values.profile_children.forEach((c, i) => {
+  (values.profile_children ?? []).forEach((c, i) => {
+    if (c.id != null) {
+      fd.append(`profile_user[profile_children_attributes][${i}][id]`, String(c.id))
+    }
+    if (c._destroy) {
+      fd.append(`profile_user[profile_children_attributes][${i}][_destroy]`, "1");
+      return;
+    }
     fd.append(`profile_user[profile_children_attributes][${i}][name]`, c.name);
     fd.append(`profile_user[profile_children_attributes][${i}][degree]`, c.degree);
     fd.append(`profile_user[profile_children_attributes][${i}][birth]`, c.birth);
   });
 
-  if (values.photo) {
+  if (values.photo instanceof File) {
     fd.append('photo', values.photo);
+  }
+
+  return fd;
+}
+
+function buildFormDataForUpdate(values: ProfileUserFormInput) {
+  const fd = buildFormData(values);
+
+  // Remoção de foto (mantém a convenção atual: flag "remove_photo" na raiz)
+  if (values.photo === null) {
+    fd.append('remove_photo', '1');
   }
 
   return fd;
@@ -56,17 +74,9 @@ export const UsersService = {
     return data;
   },
 
-  async update(id: string | number, payload: ProfileUserFormInput) {
-    const form = new FormData();
-    Object.entries(payload).forEach(([k, v]) => {
-      if (k === 'photo') {
-        if (v instanceof File) form.append('photo', v);
-        else if (v === null) form.append('remove_photo', '1');
-      } else {
-        form.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v ?? ''));
-      }
-    });
-    const { data } = await api.put(`${RESOURCE}/${id}`, form, {
+  update: async (id: string | number, values: ProfileUserFormInput) => {
+    const formData = buildFormDataForUpdate(values);
+    const { data } = await api.put(`${RESOURCE}/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;
