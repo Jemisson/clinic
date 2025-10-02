@@ -64,7 +64,7 @@ export default function StepPersonal() {
           render={({ field }) => (
             <FormItem className="w-full">
               <FormLabel>Gênero</FormLabel>
-              <Select value={field.value ?? undefined} onValueChange={field.onChange}>
+              <Select value={field.value ?? ""} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecione o gênero" />

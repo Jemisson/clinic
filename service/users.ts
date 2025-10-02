@@ -10,6 +10,7 @@ function buildFormData(values: ProfileUserFormInput) {
   fd.append('profile_user[name]', values.name);
   fd.append('profile_user[cpf]', values.cpf);
   fd.append('profile_user[rg]', values.rg);
+  fd.append('profile_user[gender]', values.gender);
   fd.append('profile_user[birthdate]', values.birthdate);
   fd.append('profile_user[address]', values.address);
   fd.append('profile_user[mobile_phone]', values.mobile_phone);

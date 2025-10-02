@@ -88,7 +88,7 @@ const UserSchema = z.object({
   role: ZUserRole,
 
   name: z.string().min(1),
-  gender: ZGender.optional(),
+  gender: ZGender,
   birthDate: z.string().min(1, "Informe a data de nascimento"),
   rg: z.string().min(1),
   cpf: z.string().min(1),
@@ -138,6 +138,7 @@ function buildPayload(values: UserFormInput): ProfileUserFormInput {
     name: values.name,
     cpf: values.cpf,
     rg: values.rg,
+    gender: values.gender,
     birthdate: dayjs(values.birthDate).format("YYYY-MM-DD"),
     address: values.address,
     mobile_phone: values.phone,
@@ -183,7 +184,7 @@ export default function FormUser({
     role: "user",
 
     name: "",
-    gender: undefined,
+    gender: undefined as unknown as UserFormInput["gender"],
     birthDate: "",
     rg: "",
     cpf: "",
@@ -233,6 +234,7 @@ export default function FormUser({
       if (!record) return
 
       const a = record.attributes
+
       methods.reset({
         email: a.email ?? "",
         password: "",
@@ -240,7 +242,7 @@ export default function FormUser({
         role: isUserRole(a.role) ? a.role : "user",
 
         name: a.name ?? "",
-        gender: isGender(a.gender) ? a.gender : undefined,
+        gender: isGender(a.gender) ? a.gender : "male",
         birthDate: a.birthdate ?? "",
         rg: a.rg ?? "",
         cpf: a.cpf ?? "",

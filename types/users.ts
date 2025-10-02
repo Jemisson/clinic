@@ -18,9 +18,9 @@ export interface ProfileUserData {
 
 export interface ProfileUserAttributes {
   name: string;
-  gender?: Gender;
   cpf: string;
   rg: string;
+  gender: Gender;
   birthdate: string;
   address: string;
   mobile_phone: string;
@@ -72,6 +72,7 @@ export interface ProfileUserFormInput {
   name: string;
   cpf: string;
   rg: string;
+  gender: Gender;
   birthdate: string;
   address: string;
   mobile_phone: string;
