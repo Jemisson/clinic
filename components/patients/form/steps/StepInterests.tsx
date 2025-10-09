@@ -1,7 +1,7 @@
 "use client"
 
 import { Controller, useFormContext } from "react-hook-form"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import useSWRInfinite from "swr/infinite"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -34,12 +34,12 @@ export function StepInterests() {
 
   const getKey = (pageIndex: number, previous: any) => {
     if (previous && previous.meta && pageIndex + 1 > previous.meta.total_pages) return null
-    return ["tags", pageIndex + 1, query, status] as const
+    return ["tags", pageIndex + 1, query, "active"] as const
   }
 
   const { data, size, setSize, isValidating } = useSWRInfinite(
     getKey,
-    ([, page, qParam, tParam]) =>
+    ([, page, qParam]) =>
       TagsService.list({
         page,
         per_page: PAGE_SIZE,
@@ -50,13 +50,20 @@ export function StepInterests() {
 
   const pages = data ?? []
   const lastMeta = pages.at(-1)?.meta
-  const items: TagData[] = useMemo(
-    () => pages.flatMap((p) => p.data),
-    [pages]
-  )
+  const items: TagData[] = useMemo(() => pages.flatMap((p) => p.data), [pages])
   const reachedEnd = lastMeta ? lastMeta.current_page >= lastMeta.total_pages : true
 
-  const tagMap = useMemo(() => {
+  const tagCacheRef = useRef<Map<number, TagData>>(new Map())
+
+  useEffect(() => {
+    const cache = tagCacheRef.current
+    for (const t of items) {
+      const idNum = toNum(t.id)
+      if (idNum != null && !cache.has(idNum)) cache.set(idNum, t)
+    }
+  }, [items])
+
+  const currentMap = useMemo(() => {
     const m = new Map<number, TagData>()
     for (const t of items) {
       const n = toNum(t.id)
@@ -64,6 +71,10 @@ export function StepInterests() {
     }
     return m
   }, [items])
+
+  const getTag = (idNum: number): TagData | undefined => {
+    return tagCacheRef.current.get(idNum) || currentMap.get(idNum)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -94,7 +105,7 @@ export function StepInterests() {
                   <span className="text-muted-foreground text-sm">Nenhuma tag selecionada.</span>
                 ) : (
                   selected.map((id) => {
-                    const t = tagMap.get(id)
+                    const t = getTag(id)
                     const iconName = t?.attributes?.icon
                     const Icon = iconName ? (LucideIcons as any)[iconName] : null
                     return (

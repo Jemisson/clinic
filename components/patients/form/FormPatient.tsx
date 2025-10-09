@@ -126,10 +126,10 @@ export default function FormPatient({
         rg: a.rg || "",
         cpf: a.cpf || "",
         no_cpf: false,
-        blood_type: null,
+        blood_type: (a.blood_type as any) ?? null,
         spouse_name: a.spouse_name || "",
-        gender: null,
-        civil_status: null,
+        gender: (a.gender as any) ?? null, 
+        civil_status: (a.civil_status as any) ?? null,
         death_date: a.death_date || null,
         occupation: a.occupation || "",
         referrer_person_id: (a.referrer_person_id as any) ?? null,
@@ -178,7 +178,7 @@ export default function FormPatient({
   }, [open, methods])
 
   async function onSubmit(values: PatientFormValues) {
-    const payload = buildPatientPayload(values)
+    const payload = buildPatientPayload(values, isEdit ? initialData : undefined)
     const extra = {
       photo: values.person.photo ?? null,
       remove_photo: values.person.remove_photo || undefined,

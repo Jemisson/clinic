@@ -2,19 +2,19 @@ import { z } from "zod";
 
 // ---- Blood Type ----
 export const BLOOD_TYPES =
-  ['aPositive', 'aNegative', 'bPositive', 'bNegative', 'abPositive', 'abNegative', 'oPositive', 'oNegative'] as const;
+  ['a_positive', 'a_negative', 'b_positive', 'b_negative', 'ab_positive', 'ab_negative', 'o_positive', 'o_negative'] as const;
 export type BloodType = typeof BLOOD_TYPES[number];
 export const ZBloodType = z.enum(BLOOD_TYPES);
 
 export const BLOOD_LABEL: Record<BloodType, string> = {
-  aPositive: 'A+',
-  aNegative: "A-",
-  bPositive: "B+",
-  bNegative: "B-",
-  abPositive: "AB+",
-  abNegative: "AB-",
-  oPositive: "O+",
-  oNegative: "O-"
+  a_positive: 'A+',
+  a_negative: "A-",
+  b_positive: "B+",
+  b_negative: "B-",
+  ab_positive: "AB+",
+  ab_negative: "AB-",
+  o_positive: "O+",
+  o_negative: "O-"
 };
 export const isBloodType = (v: unknown): v is BloodType =>
   BLOOD_TYPES.includes(v as BloodType);
