@@ -206,7 +206,7 @@ export default function FormPatient({
             </DialogTitle>
 
             <DialogDescription asChild>
-              <div className="pt-4 pb-2">
+              <div className="pt-4 pb-8">
                 <Stepper value={currentStep} onValueChange={handleStepperChange} defaultValue={1}>
                   {steps.map(({ step, title, icon }) => (
                     <StepperItem key={step} step={step} className="relative flex-1 flex-col!">

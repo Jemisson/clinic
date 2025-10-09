@@ -196,7 +196,7 @@ export function StepAddress() {
           name={`person.addresses_attributes.${idx}.observation` as const}
           control={control}
           render={({ field }) => (
-            <div className="md:col-span-3">
+            <div className="md:col-span-2">
               <Label htmlFor="addr_obs">Observação</Label>
               <Input id="addr_obs" {...field} />
             </div>

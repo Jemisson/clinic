@@ -3,7 +3,6 @@
 import { useFormContext } from "react-hook-form"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import AvatarUploader from "@/components/users/form/FormUser/avatar-uploader"
-import { Button } from "@/components/ui/button"
 import type { PatientFormValues } from "../schema"
 
 export interface StepPhotoProps {
@@ -11,12 +10,7 @@ export interface StepPhotoProps {
 }
 
 export function StepPhoto({ initialPhotoUrl }: StepPhotoProps) {
-  const { control, setValue, getValues } = useFormContext<PatientFormValues>()
-
-  const handleRemove = () => {
-    setValue("person.photo", null, { shouldDirty: true })
-    setValue("person.remove_photo", true, { shouldDirty: true })
-  }
+  const { control, setValue } = useFormContext<PatientFormValues>()
 
   return (
     <section className="flex flex-col gap-4">
@@ -34,18 +28,16 @@ export function StepPhoto({ initialPhotoUrl }: StepPhotoProps) {
                   field.onChange(file)
                   if (file) setValue("person.remove_photo", false, { shouldDirty: true })
                 }}
+                onClear={(source) => {
+                  field.onChange(null)
+                  setValue("person.remove_photo", source === "initial", { shouldDirty: true })
+                }}
               />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-
-      {initialPhotoUrl && !getValues("person.photo") && (
-        <Button type="button" variant="outline" onClick={handleRemove}>
-          Remover foto atual
-        </Button>
-      )}
     </section>
   )
 }

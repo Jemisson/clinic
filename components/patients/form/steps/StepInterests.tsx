@@ -25,7 +25,6 @@ export function StepInterests() {
   const { control } = useFormContext<PatientFormValues>()
   const [q, setQ] = useState("")
   const [query, setQuery] = useState("")
-  const [status, setStatus] = useState<"" | "active" | "inactive">("")
 
   const onChangeQ = useCallback((val: string) => {
     setQ(val)
@@ -38,14 +37,14 @@ export function StepInterests() {
     return ["tags", pageIndex + 1, query, status] as const
   }
 
-  const { data, size, setSize, isValidating, mutate } = useSWRInfinite(
+  const { data, size, setSize, isValidating } = useSWRInfinite(
     getKey,
     ([, page, qParam, tParam]) =>
       TagsService.list({
         page,
         per_page: PAGE_SIZE,
         q: qParam || undefined,
-        t: tParam || undefined,
+        t: "active",
       })
   )
 
@@ -77,30 +76,6 @@ export function StepInterests() {
             value={q}
             onChange={(e) => onChangeQ(e.target.value)}
           />
-        </div>
-
-        <div className="flex gap-2 md:items-end">
-          <Button
-            type="button"
-            variant={status === "" ? "default" : "outline"}
-            onClick={() => setStatus("")}
-          >
-            Todas
-          </Button>
-          <Button
-            type="button"
-            variant={status === "active" ? "default" : "outline"}
-            onClick={() => setStatus("active")}
-          >
-            Ativas
-          </Button>
-          <Button
-            type="button"
-            variant={status === "inactive" ? "default" : "outline"}
-            onClick={() => setStatus("inactive")}
-          >
-            Inativas
-          </Button>
         </div>
       </div>
 
@@ -157,7 +132,7 @@ export function StepInterests() {
 
           return (
             <div className="flex flex-col gap-3">
-              <div className="text-sm text-muted-foreground">Resultados</div>
+              <div className="text-sm text-muted-foreground">Tags disponíveis</div>
               <div className="flex flex-wrap gap-2">
                 {items.map((t) => {
                   const idNum = toNum(t.id)

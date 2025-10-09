@@ -77,7 +77,7 @@ export const patientColumns = ({
         </DropdownMenu>
       )
     },
-    cell: ({ row }) => <span>PAC-{row.original.attributes.id ?? row.original.id}</span>,
+    cell: ({ row }) => <span>P-{row.original.attributes.id ?? row.original.id}</span>,
     enableSorting: true,
   },
   {

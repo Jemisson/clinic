@@ -10,10 +10,11 @@ export interface StepPhotoProps {
 
 interface FormValues {
   photo?: File | null
+  remove_photo?: boolean
 }
 
 export default function StepPhoto({ initialPhotoUrl }: StepPhotoProps) {
-  const { control } = useFormContext<FormValues>()
+  const { control, setValue } = useFormContext<FormValues>()
 
   return (
     <section className="flex flex-col gap-4">
@@ -26,8 +27,15 @@ export default function StepPhoto({ initialPhotoUrl }: StepPhotoProps) {
             <FormControl>
               <AvatarUploader
                 value={field.value ?? null}
-                onChange={(file) => field.onChange(file)}
                 initialUrl={initialPhotoUrl}
+                onChange={(file) => {
+                  field.onChange(file)
+                  if (file) setValue("remove_photo", false, { shouldDirty: true })
+                }}
+                onClear={(source) => {
+                  field.onChange(null)
+                  setValue("remove_photo", source === "initial", { shouldDirty: true })
+                }}
               />
             </FormControl>
             <FormMessage />

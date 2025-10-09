@@ -1,7 +1,8 @@
 "use client"
 
+import * as LucideIcons from "lucide-react"
 import { Controller, useFormContext } from "react-hook-form"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { PatientFormValues } from "../schema"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,6 +10,9 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BLOOD_TYPE_OPTIONS, GENDER_OPTIONS, CIVIL_STATUS_OPTIONS } from "@/types/patients.enums"
 import { cn } from "@/lib/utils"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 
 export function StepPersonal() {
   const {
@@ -21,6 +25,29 @@ export function StepPersonal() {
   } = useFormContext<PatientFormValues>()
 
   const noCpf = watch("no_cpf")
+  const [openBirth, setOpenBirth] = useState(false)
+  const [openDeath, setOpenDeath] = useState(false)
+
+  const toYMDLocal = (d: Date) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, "0")
+    const day = String(d.getDate()).padStart(2, "0")
+    return `${y}-${m}-${day}`
+  }
+  const fromYMD = (s?: string | null) => {
+    if (!s) return undefined
+    const [y, m, d] = s.split("-").map(Number)
+    if (!y || !m || !d) return undefined
+    return new Date(y, m - 1, d)
+  }
+  const formatBR = (s?: string | null) => {
+    const d = fromYMD(s)
+    if (!d) return "dd/mm/aaaa"
+    const dd = String(d.getDate()).padStart(2, "0")
+    const mm = String(d.getMonth() + 1).padStart(2, "0")
+    const yy = d.getFullYear()
+    return `${dd}/${mm}/${yy}`
+  }
 
   useEffect(() => {
     if (noCpf) clearErrors("cpf")
@@ -74,19 +101,45 @@ export function StepPersonal() {
         render={({ field, fieldState }) => (
           <div>
             <Label htmlFor="birthdate">Data de nascimento</Label>
-            <Input
-              id="birthdate"
-              type="date"
-              {...field}
-              aria-invalid={!!fieldState.error}
-              className={cn(fieldState.error && "border-destructive focus-visible:ring-destructive")}
-            />
+
+            <Popover open={openBirth} onOpenChange={setOpenBirth}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-between",
+                    fieldState.error && "border-destructive focus-visible:ring-destructive"
+                  )}
+                  aria-invalid={!!fieldState.error}
+                >
+                  <span className={cn(!field.value && "text-muted-foreground")}>
+                    {formatBR(field.value)}
+                  </span>
+                  <LucideIcons.Calendar className="ml-2 h-4 w-4 opacity-60" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={fromYMD(field.value)}
+                  onSelect={(d) => {
+                    if (d) field.onChange(toYMDLocal(d))
+                    else field.onChange("")
+                    setOpenBirth(false)
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+
             {fieldState.error && (
               <p className="text-xs text-destructive mt-1">{fieldState.error.message}</p>
             )}
           </div>
         )}
       />
+
 
       <div>
         <Label htmlFor="rg">RG</Label>
@@ -235,8 +288,41 @@ export function StepPersonal() {
 
       <div>
         <Label htmlFor="death_date">Data de óbito</Label>
-        <Input id="death_date" type="date" {...register("death_date")} />
+
+        <Controller
+          name="death_date"
+          control={control}
+          render={({ field }) => (
+            <Popover open={openDeath} onOpenChange={setOpenDeath}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-between"
+                >
+                  <span className={cn(!field.value && "text-muted-foreground")}>
+                    {formatBR(field.value)}
+                  </span>
+                  <LucideIcons.Calendar className="ml-2 h-4 w-4 opacity-60" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={fromYMD(field.value)}
+                  onSelect={(d) => {
+                    if (d) field.onChange(toYMDLocal(d))
+                    else field.onChange("")
+                    setOpenDeath(false)
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+        />
       </div>
+
     </div>
   )
 }
