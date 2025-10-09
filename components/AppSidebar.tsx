@@ -90,11 +90,20 @@ export function AppSidebar() {
 
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
+              <Link href="/pacientes">
+              <UserRoundPlus /> Pacientes
+              </Link>
+              </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
               <Link href="/usuarios">
               <UserRound /> Usuários
               </Link>
               </SidebarMenuButton>
           </SidebarMenuItem>
+
         </SidebarMenu>
       </SidebarContent>
 

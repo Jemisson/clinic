@@ -46,7 +46,6 @@ function buildFormData(values: ProfileUserFormInput) {
 function buildFormDataForUpdate(values: ProfileUserFormInput) {
   const fd = buildFormData(values);
 
-  // Remoção de foto (mantém a convenção atual: flag "remove_photo" na raiz)
   if (values.photo === null) {
     fd.append('remove_photo', '1');
   }
