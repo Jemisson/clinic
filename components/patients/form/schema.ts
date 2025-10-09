@@ -36,6 +36,8 @@ export const PersonSchema = z.object({
   tag_ids: z.array(z.number()).default([]),
   addresses_attributes: z.array(AddressSchema).default([]),
   contacts_attributes: z.array(ContactSchema).default([]),
+  photo: z.any().nullable().optional(),
+  remove_photo: z.boolean().optional().default(false),
 })
 
 export const PatientSchema = z.object({
@@ -103,5 +105,7 @@ export const defaultValues: PatientFormValues = {
       send_email_marketing: false,
       _destroy: false,
     }],
+    photo: null,
+    remove_photo: false,
   },
 }

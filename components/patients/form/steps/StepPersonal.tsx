@@ -148,7 +148,7 @@ export function StepPersonal() {
             <Select value={field.value ?? undefined} onValueChange={field.onChange}>
               <SelectTrigger
                 aria-invalid={!!fieldState.error}
-                className={cn(fieldState.error && "border-destructive focus-visible:ring-destructive")}
+                className={cn('w-full', fieldState.error && "border-destructive focus-visible:ring-destructive")}
               >
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
@@ -176,7 +176,7 @@ export function StepPersonal() {
             <Select value={field.value ?? undefined} onValueChange={field.onChange}>
               <SelectTrigger
                 aria-invalid={!!fieldState.error}
-                className={cn(fieldState.error && "border-destructive focus-visible:ring-destructive")}
+                className={cn('w-full', fieldState.error && "border-destructive focus-visible:ring-destructive")}
               >
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
@@ -204,7 +204,7 @@ export function StepPersonal() {
             <Select value={field.value ?? undefined} onValueChange={field.onChange}>
               <SelectTrigger
                 aria-invalid={!!fieldState.error}
-                className={cn(fieldState.error && "border-destructive focus-visible:ring-destructive")}
+                className={cn('w-full', fieldState.error && "border-destructive focus-visible:ring-destructive")}
               >
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
@@ -223,11 +223,6 @@ export function StepPersonal() {
         )}
       />
 
-      <div>
-        <Label htmlFor="death_date">Data de óbito</Label>
-        <Input id="death_date" type="date" {...register("death_date")} />
-      </div>
-
       <div className="md:col-span-2">
         <Label htmlFor="occupation">Ocupação</Label>
         <Input id="occupation" {...register("occupation")} />
@@ -236,6 +231,11 @@ export function StepPersonal() {
       <div className="md:col-span-2">
         <Label htmlFor="spouse_name">Nome do cônjuge</Label>
         <Input id="spouse_name" {...register("spouse_name")} />
+      </div>
+
+      <div>
+        <Label htmlFor="death_date">Data de óbito</Label>
+        <Input id="death_date" type="date" {...register("death_date")} />
       </div>
     </div>
   )

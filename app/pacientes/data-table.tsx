@@ -58,10 +58,14 @@ export function PatientsDataTable({ columns }: { columns: ColumnBuilders }) {
   const [open, setOpen] = useState(false)
   const [createFormKey, setCreateFormKey] = useState(0)
 
+  const [openEdit, setOpenEdit] = useState(false)
+  const [editFormKey, setEditFormKey] = useState(0)
+  const [editId, setEditId] = useState<string | undefined>(undefined)
+  const [editData, setEditData] = useState<PatientData | undefined>(undefined)
+  const [editPhotoUrl, setEditPhotoUrl] = useState<string | undefined>(undefined)
+
   useEffect(() => {
-    const id = setTimeout(() => {
-      setQuery(q.trim())
-    }, debounceMs)
+    const id = setTimeout(() => setQuery(q.trim()), debounceMs)
     return () => clearTimeout(id)
   }, [q])
 
@@ -76,11 +80,12 @@ export function PatientsDataTable({ columns }: { columns: ColumnBuilders }) {
 
   const { data: patients, isValidating, mutate } = useSWR<PatientResponse>(
     swrKey,
-    () => PatientsService.list({
-      page: pagination.pageIndex + 1,
-      per_page: pagination.pageSize,
-      q: query || undefined,
-    }),
+    () =>
+      PatientsService.list({
+        page: pagination.pageIndex + 1,
+        per_page: pagination.pageSize,
+        q: query || undefined,
+      }),
     {
       keepPreviousData: true,
       revalidateOnFocus: false,
@@ -93,14 +98,36 @@ export function PatientsDataTable({ columns }: { columns: ColumnBuilders }) {
   const data: PatientData[] = patients?.data ?? []
   const meta = patients?.meta ?? null
 
+  const getId = (p: PatientData) => String(p.attributes.id ?? p.id)
+
+  const handleEdit = async (p: PatientData) => {
+    const id = getId(p)
+
+    setEditId(id)
+    setEditData(p)
+    setEditPhotoUrl(
+      p.attributes.person?.photo_url || p.attributes.person?.photo_thumb_url || undefined
+    )
+    setOpenEdit(true)
+
+    try {
+      const fresh = await PatientsService.show(id)
+      setEditData(fresh)
+      setEditPhotoUrl(
+        fresh.attributes.person?.photo_url || fresh.attributes.person?.photo_thumb_url || undefined
+      )
+    } catch {
+      console.log('Erro ao buscar dados atualizados do paciente');
+    }
+  }
+
   const cols = useMemo(
-    () => columns({
-      onView: (p) => console.log("view", p.id),
-      onEdit: (p) => {
-        console.log("edit", p.id)
-      },
-      onOpenNotes: (p) => console.log("notes", p.id),
-    }),
+    () =>
+      columns({
+        onView: (p) => console.log("view", p.id),
+        onEdit: handleEdit,
+        onOpenNotes: (p) => console.log("notes", p.id),
+      }),
     [columns]
   )
 
@@ -221,6 +248,24 @@ export function PatientsDataTable({ columns }: { columns: ColumnBuilders }) {
           onPageChange={(page) => setPagination((prev) => ({ ...prev, pageIndex: page - 1 }))}
         />
       </div>
+
+      <FormPatient
+        key={`edit-${editFormKey}-${editId ?? "none"}`}
+        open={openEdit}
+        onOpenChange={(v) => {
+          if (!v) setEditFormKey((k) => k + 1)
+          setOpenEdit(v)
+        }}
+        mode="edit"
+        patientId={editId}
+        initialData={editData}
+        initialPhotoUrl={editPhotoUrl}
+        onSuccess={async () => {
+          await mutate(undefined, { revalidate: true })
+          setOpenEdit(false)
+          setEditFormKey((k) => k + 1)
+        }}
+      />
     </div>
   )
 }

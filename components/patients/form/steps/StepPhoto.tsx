@@ -1,65 +1,51 @@
 "use client"
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
 
-export function StepPhoto({
-  initialPhotoUrl,
-  onChangeFile,
-  onRemovePhoto,
-}: {
+import { useFormContext } from "react-hook-form"
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import AvatarUploader from "@/components/users/form/FormUser/avatar-uploader"
+import { Button } from "@/components/ui/button"
+import type { PatientFormValues } from "../schema"
+
+export interface StepPhotoProps {
   initialPhotoUrl?: string
-  onChangeFile?: (file: File | null) => void
-  onRemovePhoto?: (remove: boolean) => void
-}) {
-  const [file, setFile] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(initialPhotoUrl ?? null)
+}
+
+export function StepPhoto({ initialPhotoUrl }: StepPhotoProps) {
+  const { control, setValue, getValues } = useFormContext<PatientFormValues>()
+
+  const handleRemove = () => {
+    setValue("person.photo", null, { shouldDirty: true })
+    setValue("person.remove_photo", true, { shouldDirty: true })
+  }
 
   return (
-    <div className="flex items-start gap-4">
-      <div className="size-24 relative rounded overflow-hidden border bg-muted">
-        {preview ? (
-          <img src={preview} alt="preview" className="object-cover w-full h-full" />
-        ) : (
-          <div className="w-full h-full grid place-items-center text-sm text-muted-foreground">Sem foto</div>
+    <section className="flex flex-col gap-4">
+      <FormField
+        control={control}
+        name="person.photo"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Foto do paciente</FormLabel>
+            <FormControl>
+              <AvatarUploader
+                value={field.value ?? null}
+                initialUrl={initialPhotoUrl}
+                onChange={(file) => {
+                  field.onChange(file)
+                  if (file) setValue("person.remove_photo", false, { shouldDirty: true })
+                }}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div className="flex-1 space-y-2">
-        <Label>Foto do paciente</Label>
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const f = e.target.files?.[0] ?? null
-            setFile(f)
-            onChangeFile?.(f)
-            if (f) {
-              const url = URL.createObjectURL(f)
-              setPreview(url)
-              onRemovePhoto?.(false)
-            } else {
-              setPreview(initialPhotoUrl ?? null)
-            }
-          }}
-        />
-        {initialPhotoUrl && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setFile(null)
-              setPreview(null)
-              onChangeFile?.(null)
-              onRemovePhoto?.(true)
-            }}
-          >
-            Remover foto
-          </Button>
-        )}
-        <p className="text-xs text-muted-foreground">Upload opcional (pode ser enviado após salvar o paciente).</p>
-      </div>
-    </div>
+      {initialPhotoUrl && !getValues("person.photo") && (
+        <Button type="button" variant="outline" onClick={handleRemove}>
+          Remover foto atual
+        </Button>
+      )}
+    </section>
   )
 }

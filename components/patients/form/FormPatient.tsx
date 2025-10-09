@@ -60,8 +60,6 @@ export default function FormPatient({
 }: FormPatientProps) {
   const isEdit = mode === "edit"
   const [currentStep, setCurrentStep] = useState(1)
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
-  const [removePhoto, setRemovePhoto] = useState(false)
 
   const steps = [
     { step: 1, title: "Dados pessoais", icon: <UserRound className="size-4" /> },
@@ -163,6 +161,7 @@ export default function FormPatient({
             send_email_marketing: Boolean(c.send_email_marketing),
             _destroy: false,
           })),
+          photo: null,
         },
       })
     } else {
@@ -180,13 +179,17 @@ export default function FormPatient({
 
   async function onSubmit(values: PatientFormValues) {
     const payload = buildPatientPayload(values)
+    const extra = {
+      photo: values.person.photo ?? null,
+      remove_photo: values.person.remove_photo || undefined,
+    }
 
     if (isEdit) {
       const id = patientId ?? initialData?.id
       if (!id) throw new Error("ID do paciente ausente")
-      await PatientsService.update(String(id), payload)
+      await PatientsService.update(String(id), payload, extra)
     } else {
-      await PatientsService.create(payload)
+      await PatientsService.create(payload, extra)
     }
     await onSuccess?.()
     methods.reset(defaultValues)
@@ -232,7 +235,11 @@ export default function FormPatient({
               noValidate
             >
               {currentStep === 1 && <StepPersonal />}
-              {currentStep === 2 && <StepReferrer />}
+              {currentStep === 2 && (
+                <StepReferrer
+                  initialReferrerName={initialData?.attributes?.referrer || undefined}
+                />
+              )}
               {currentStep === 3 && <StepAddress />}
               {currentStep === 4 && <StepContact />}
               {currentStep === 5 && <StepPhoto initialPhotoUrl={initialPhotoUrl} />}
