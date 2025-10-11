@@ -1,30 +1,27 @@
-"use client"
+'use client'
 
-import { Controller, useFormContext } from "react-hook-form"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import useSWRInfinite from "swr/infinite"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { PatientFormValues } from "../schema"
-import { TagsService } from "@/service/tags"
-import type { TagData } from "@/types/tags"
-import * as LucideIcons from "lucide-react"
-import { SquareDashed } from "lucide-react"
-import { cn } from "@/lib/utils"
+import TagBadges, { TagLike } from '@/components/tags/TagBadges'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { TagsService } from '@/service/tags'
+import type { TagData } from '@/types/tags'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Controller, useFormContext } from 'react-hook-form'
+import useSWRInfinite from 'swr/infinite'
+import { PatientFormValues } from '../schema'
 
 const PAGE_SIZE = 24
 
-function toNum(id: string): number | null {
+function toNum(id: string | number): number | null {
   const n = Number(id)
   return Number.isFinite(n) ? n : null
 }
 
 export function StepInterests() {
   const { control } = useFormContext<PatientFormValues>()
-  const [q, setQ] = useState("")
-  const [query, setQuery] = useState("")
+  const [q, setQ] = useState('')
+  const [query, setQuery] = useState('')
 
   const onChangeQ = useCallback((val: string) => {
     setQ(val)
@@ -33,8 +30,9 @@ export function StepInterests() {
   }, [])
 
   const getKey = (pageIndex: number, previous: any) => {
-    if (previous && previous.meta && pageIndex + 1 > previous.meta.total_pages) return null
-    return ["tags", pageIndex + 1, query, "active"] as const
+    if (previous && previous.meta && pageIndex + 1 > previous.meta.total_pages)
+      return null
+    return ['tags', pageIndex + 1, query, 'active'] as const
   }
 
   const { data, size, setSize, isValidating } = useSWRInfinite(
@@ -44,17 +42,19 @@ export function StepInterests() {
         page,
         per_page: PAGE_SIZE,
         q: qParam || undefined,
-        t: "active",
-      })
+        t: 'active',
+      }),
   )
 
   const pages = data ?? []
   const lastMeta = pages.at(-1)?.meta
   const items: TagData[] = useMemo(() => pages.flatMap((p) => p.data), [pages])
-  const reachedEnd = lastMeta ? lastMeta.current_page >= lastMeta.total_pages : true
+  const reachedEnd = lastMeta
+    ? lastMeta.current_page >= lastMeta.total_pages
+    : true
 
+  // cache para manter nomes/ícones mesmo quando não estiverem na página atual
   const tagCacheRef = useRef<Map<number, TagData>>(new Map())
-
   useEffect(() => {
     const cache = tagCacheRef.current
     for (const t of items) {
@@ -63,18 +63,21 @@ export function StepInterests() {
     }
   }, [items])
 
-  const currentMap = useMemo(() => {
-    const m = new Map<number, TagData>()
-    for (const t of items) {
-      const n = toNum(t.id)
-      if (n != null) m.set(n, t)
-    }
-    return m
-  }, [items])
-
   const getTag = (idNum: number): TagData | undefined => {
-    return tagCacheRef.current.get(idNum) || currentMap.get(idNum)
+    return tagCacheRef.current.get(idNum)
   }
+
+  // lista para a grade “disponíveis”
+  const availableTagItems: TagLike[] = useMemo(
+    () =>
+      items.map((t) => ({
+        id: Number(t.id),
+        name: t.attributes.name,
+        icon: t.attributes.icon ?? undefined,
+        status: t.attributes.status as 'active' | 'inactive',
+      })),
+    [items],
+  )
 
   return (
     <div className="flex flex-col gap-4">
@@ -90,44 +93,52 @@ export function StepInterests() {
         </div>
       </div>
 
+      {/* Selecionadas */}
       <Controller
         control={control}
         name="person.tag_ids"
         render={({ field }) => {
           const selected: number[] = field.value ?? []
+
+          // monta itens a partir do cache para mostrar nome/ícone
+          const selectedItems: TagLike[] = selected.map((id) => {
+            const t = getTag(id)
+            return t
+              ? {
+                  id,
+                  name: t.attributes.name,
+                  icon: t.attributes.icon ?? undefined,
+                  status: t.attributes.status as 'active' | 'inactive',
+                }
+              : { id, name: `Tag #${id}` }
+          })
+
           return (
             <div className="flex flex-col gap-2">
               <div className="text-sm text-muted-foreground">
                 Selecionadas ({selected.length})
               </div>
-              <div className="flex flex-wrap gap-2">
-                {selected.length === 0 ? (
-                  <span className="text-muted-foreground text-sm">Nenhuma tag selecionada.</span>
-                ) : (
-                  selected.map((id) => {
-                    const t = getTag(id)
-                    const iconName = t?.attributes?.icon
-                    const Icon = iconName ? (LucideIcons as any)[iconName] : null
-                    return (
-                      <Badge
-                        key={id}
-                        variant="default"
-                        className="gap-1 cursor-pointer"
-                        onClick={() => field.onChange(selected.filter((x) => x !== id))}
-                        title="Clique para remover"
-                      >
-                        {Icon ? <Icon /> : <SquareDashed />}
-                        {t?.attributes?.name ?? `Tag #${id}`}
-                      </Badge>
-                    )
-                  })
-                )}
-              </div>
+
+              <TagBadges
+                items={selectedItems}
+                selectedIds={selected}
+                onToggle={(id) =>
+                  field.onChange(selected.filter((x) => x !== id))
+                }
+                size="md"
+              />
+
+              {selected.length === 0 && (
+                <span className="text-muted-foreground text-sm">
+                  Nenhuma tag selecionada.
+                </span>
+              )}
             </div>
           )
         }}
       />
 
+      {/* Disponíveis */}
       <Controller
         control={control}
         name="person.tag_ids"
@@ -143,29 +154,16 @@ export function StepInterests() {
 
           return (
             <div className="flex flex-col gap-3">
-              <div className="text-sm text-muted-foreground">Tags disponíveis</div>
-              <div className="flex flex-wrap gap-2">
-                {items.map((t) => {
-                  const idNum = toNum(t.id)
-                  if (idNum == null) return null
-                  const active = selected.includes(idNum)
-                  const iconName = t.attributes.icon
-                  const Icon = iconName ? (LucideIcons as any)[iconName] : null
-
-                  return (
-                    <Badge
-                      key={t.id}
-                      variant={active ? "default" : "outline"}
-                      className={cn("gap-1 cursor-pointer", t.attributes.status === "inactive" && "opacity-70")}
-                      onClick={() => toggle(idNum)}
-                      title={active ? "Clique para remover" : "Clique para adicionar"}
-                    >
-                      {Icon ? <Icon /> : <SquareDashed />}
-                      {t.attributes.name}
-                    </Badge>
-                  )
-                })}
+              <div className="text-sm text-muted-foreground">
+                Tags disponíveis
               </div>
+
+              <TagBadges
+                items={availableTagItems}
+                selectedIds={selected}
+                onToggle={toggle}
+                size="md"
+              />
 
               <div className="flex justify-center pt-2">
                 <Button
@@ -174,7 +172,11 @@ export function StepInterests() {
                   disabled={isValidating || reachedEnd}
                   onClick={() => setSize(size + 1)}
                 >
-                  {reachedEnd ? "Fim da lista" : isValidating ? "Carregando..." : "Carregar mais"}
+                  {reachedEnd
+                    ? 'Fim da lista'
+                    : isValidating
+                    ? 'Carregando...'
+                    : 'Carregar mais'}
                 </Button>
               </div>
             </div>

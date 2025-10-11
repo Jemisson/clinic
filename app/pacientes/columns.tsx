@@ -314,10 +314,13 @@ export const patientColumns = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onView(patient)}>
-              <span className="flex gap-1 items-center">
+            <DropdownMenuItem asChild>
+              <a
+                href={`/pacientes/${patient.attributes.id ?? patient.id}`}
+                className="flex gap-1 items-center"
+              >
                 <LucideIcons.Eye /> Ver detalhes
-              </span>
+              </a>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(patient)}>
               <span className="flex gap-1 items-center">

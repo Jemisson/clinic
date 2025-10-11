@@ -26,7 +26,7 @@ export function PatientAge({ birthdate, until, compact = true, prefix }: Props) 
     : `${years} anos, ${months} meses e ${days} dias`
 
   return (
-    <span className="text-xs text-muted-foreground">
+    <span>
       {prefix}{label}
     </span>
   )
