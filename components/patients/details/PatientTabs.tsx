@@ -17,6 +17,7 @@ import {
   Camera,
   HeartHandshake,
   IdCard,
+  ImagePlus,
   Info,
   MapPin,
   MessageCircle,
@@ -24,18 +25,51 @@ import {
   Tag,
   User,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import PatientPhotoDialog from '../patient-photos/PatientPhotoDialog'
+import { Button } from '@/components/ui/button'
+import { PatientPhotosService } from '@/service/patient-photos'
+import { PatientPhoto } from '@/types/patients.photos'
 
 export default function PatientTabs({ patient }: { patient: PatientData }) {
-  const [tab, setTab] = useState<
-    'general' | 'contacts' | 'address' | 'tags' | 'photos'
-  >('general')
+  const [photos, setPhotos] = useState<PatientPhoto[] | null>(null)
+  const [loadingPhotos, setLoadingPhotos] = useState(false)
+  const [photosError, setPhotosError] = useState<string | null>(null)
+  const [tab, setTab] = useState<'general' | 'contacts' | 'address' | 'tags' | 'photos'>('general')
 
   const a = patient.attributes
   const p = a.person
   const address = p.addresses?.[0]
   const contacts = p.contacts ?? []
   const tags = p.tags ?? []
+
+  const patientId = useMemo(
+    () => patient?.attributes?.id ?? patient?.id ?? null,
+    [patient]
+  )
+
+  async function loadPhotos(id: string | number) {
+    try {
+      setLoadingPhotos(true)
+      setPhotosError(null)
+      const result = await PatientPhotosService.list(id)
+      setPhotos(result.data)
+    } catch (e: any) {
+      setPhotosError(e?.message ?? "Falha ao carregar fotos")
+    } finally {
+      setLoadingPhotos(false)
+    }
+  }
+
+  async function handlePhotosSaved() {
+    if (patientId == null) return
+    await loadPhotos(patientId)
+  }
+
+  useEffect(() => {
+    if (patientId == null) return
+    loadPhotos(patientId)
+  }, [patientId])
 
   return (
     <Tabs
@@ -266,7 +300,61 @@ export default function PatientTabs({ patient }: { patient: PatientData }) {
       <TabsContent value="photos">
         <Card className="border-none shadow-none p-0">
           <CardContent className="pt-4 px-0 text-muted-foreground">
-            <b>Em breve:</b> galeria de fotos do paciente.
+             <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium">Fotos do paciente</h3>
+
+                <PatientPhotoDialog
+                  patientId={patientId as number}
+                  onSaved={handlePhotosSaved}
+                >
+                  <Button size="sm" className="gap-2">
+                    <ImagePlus className="h-4 w-4" />
+                    Nova imagem
+                  </Button>
+                </PatientPhotoDialog>
+              </div>
+
+              {loadingPhotos && (
+                <p className="text-muted-foreground">Carregando fotos…</p>
+              )}
+
+              {photosError && (
+                <p className="text-destructive">Erro: {photosError}</p>
+              )}
+
+              {!loadingPhotos && !photosError && (!photos || photos.length === 0) && (
+                <p className="text-muted-foreground">
+                  Em breve: galeria de fotos do paciente.
+                </p>
+              )}
+
+              {!loadingPhotos && !photosError && photos && photos.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {photos.map((p) => {
+                    const src =
+                      p.attributes.image_variants?.thumb ??
+                      p.attributes.image_url ??
+                      ""
+                    return (
+                      <div key={p.id} className="rounded-md border p-2">
+                        {src ? (
+                          <img
+                            src={src}
+                            alt={p.attributes.title ?? p.attributes.label}
+                            className="w-full h-28 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-full h-28 bg-muted rounded" />
+                        )}
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          <span className="uppercase">{p.attributes.label}</span>
+                          {p.attributes.title ? ` — ${p.attributes.title}` : null}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
           </CardContent>
         </Card>
       </TabsContent>

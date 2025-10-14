@@ -50,3 +50,13 @@ export function formatAddress(addr?: Addresses | null): string {
 
   return out
 }
+
+export function toOffsetDateTime(localInput: string): string {
+  const d = new Date(localInput)
+  const tz = -d.getTimezoneOffset()
+  const sign = tz >= 0 ? "+" : "-"
+  const hh = String(Math.floor(Math.abs(tz) / 60)).padStart(2, "0")
+  const mm = String(Math.abs(tz) % 60).padStart(2, "0")
+  const withSeconds = localInput.length === 16 ? `${localInput}:00` : localInput
+  return `${withSeconds}${sign}${hh}:${mm}`
+}
