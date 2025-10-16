@@ -1,7 +1,8 @@
+import { Meta } from "./meta"
 
 export type PatientPhotoLabel = "before" | "after" | "named"
 
-export type PatientPhotoAttributes = {
+export interface PatientPhotoFlat {
   id: number
   patient_id: number
   title?: string | null
@@ -16,27 +17,18 @@ export type PatientPhotoAttributes = {
   } | null
 }
 
-export type PatientPhoto = {
-  id: string | number
-  type?: string
-  attributes: PatientPhotoAttributes
+export type PatientPhotoGroups = Record<string, PatientPhotoFlat[]>
+
+export interface PatientPhotosGroupedResponse {
+  data: PatientPhotoGroups
+  meta?: Meta
 }
 
-export type PatientPhotosResponse = {
-  data: PatientPhoto[]
-  meta?: {
-    total_count?: number
-    total_pages?: number
-    current_page?: number
-    per_page?: number
-  }
+export interface PatientPhotoShowResponse {
+  data: PatientPhotoFlat
 }
 
-export type PatientPhotoShowResponse = {
-  data: PatientPhoto
-}
-
-export type CreateOrUpdatePatientPhotoInput = {
+export interface CreateOrUpdatePatientPhotoInput {
   image?: File
   label: PatientPhotoLabel
   title?: string

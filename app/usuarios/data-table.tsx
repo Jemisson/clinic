@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import StatusConfirmDialog from "@/components/common/StatusConfirmDialog"
-import { Button } from "@/components/ui/button"
+import ConfirmDialog from '@/components/common/ConfirmDialog'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -10,9 +10,9 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -20,14 +20,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import FormUser from "@/components/users/form/FormUser"
-import { CustomPagination } from "@/lib/pagination"
-import UsersService from "@/service/users"
-import {
-  ProfileUserData,
-  UserResponse
-} from "@/types/users"
+} from '@/components/ui/table'
+import FormUser from '@/components/users/form/FormUser'
+import { CustomPagination } from '@/lib/pagination'
+import UsersService from '@/service/users'
+import { ProfileUserData, UserResponse } from '@/types/users'
 import {
   ColumnDef,
   flexRender,
@@ -37,43 +34,36 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
-} from "@tanstack/react-table"
-import {
-  Funnel,
-  Plus,
-  Settings2
-} from "lucide-react"
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react"
-import useSWR from "swr"
+} from '@tanstack/react-table'
+import { Funnel, Plus, Settings2 } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import useSWR from 'swr'
 
 interface DataTableProps {
-  columns: (
-    handlers: {
-      onRequestStatusChange: (user: ProfileUserData, target: "active" | "inactive") => void
-      onEdit?: (user: ProfileUserData) => void
-    }
-  ) => ColumnDef<ProfileUserData, unknown>[]
+  columns: (handlers: {
+    onRequestStatusChange: (
+      user: ProfileUserData,
+      target: 'active' | 'inactive',
+    ) => void
+    onEdit?: (user: ProfileUserData) => void
+  }) => ColumnDef<ProfileUserData, unknown>[]
 }
 
 function humanizeId(id: string) {
   return id
-    .replace(/[_\-]+/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/\s+/g, " ")
+    .replace(/[_\-]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\s+/g, ' ')
     .trim()
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 function getColumnMenuLabel(col: any): string {
-  const metaLabel = (col?.columnDef?.meta as { label?: string } | undefined)?.label
+  const metaLabel = (col?.columnDef?.meta as { label?: string } | undefined)
+    ?.label
   if (metaLabel) return String(metaLabel)
   const header = col?.columnDef?.header
-  if (typeof header === "string") return header
-  return humanizeId(String(col?.id ?? ""))
+  if (typeof header === 'string') return header
+  return humanizeId(String(col?.id ?? ''))
 }
 
 export function DataTable({ columns }: DataTableProps) {
@@ -84,8 +74,8 @@ export function DataTable({ columns }: DataTableProps) {
     pageSize: 10,
   })
 
-  const [searchValue, setSearchValue] = useState("")
-  const [globalFilter, setGlobalFilter] = useState("")
+  const [searchValue, setSearchValue] = useState('')
+  const [globalFilter, setGlobalFilter] = useState('')
   const inputSearchRef = useRef<HTMLInputElement>(null)
   const debounceMs = 500
 
@@ -105,7 +95,9 @@ export function DataTable({ columns }: DataTableProps) {
     return () => clearTimeout(id)
   }, [searchValue])
 
-  const [filterStatus, setFilterStatus] = useState<"" | "active" | "inactive">("")
+  const [filterStatus, setFilterStatus] = useState<'' | 'active' | 'inactive'>(
+    '',
+  )
 
   useEffect(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }))
@@ -116,41 +108,47 @@ export function DataTable({ columns }: DataTableProps) {
     if (!input) return
     const handleSearch = (e: Event) => {
       const target = e.target as HTMLInputElement
-      if (target.value === "") {
-        setSearchValue("")
-        setGlobalFilter("")
+      if (target.value === '') {
+        setSearchValue('')
+        setGlobalFilter('')
       }
     }
-    input.addEventListener("search", handleSearch)
-    return () => input.removeEventListener("search", handleSearch)
+    input.addEventListener('search', handleSearch)
+    return () => input.removeEventListener('search', handleSearch)
   }, [])
 
   const swrKey = useMemo(
-    () => [
-      "profile_users",
-      pagination.pageIndex,
-      pagination.pageSize,
-      globalFilter,
-      filterStatus,
-    ] as const,
-    [pagination.pageIndex, pagination.pageSize, globalFilter, filterStatus]
+    () =>
+      [
+        'profile_users',
+        pagination.pageIndex,
+        pagination.pageSize,
+        globalFilter,
+        filterStatus,
+      ] as const,
+    [pagination.pageIndex, pagination.pageSize, globalFilter, filterStatus],
   )
 
-  const { data: users, isValidating, mutate } = useSWR<UserResponse>(
+  const {
+    data: users,
+    isValidating,
+    mutate,
+  } = useSWR<UserResponse>(
     swrKey,
-    () => UsersService.list({
-      page: pagination.pageIndex + 1,
-      per_page: pagination.pageSize,
-      q: globalFilter,
-      t: filterStatus || undefined,
-    }),
+    () =>
+      UsersService.list({
+        page: pagination.pageIndex + 1,
+        per_page: pagination.pageSize,
+        q: globalFilter,
+        t: filterStatus || undefined,
+      }),
     {
       keepPreviousData: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       revalidateIfStale: false,
       dedupingInterval: 30000,
-    }
+    },
   )
 
   const data: ProfileUserData[] = users?.data ?? []
@@ -158,10 +156,15 @@ export function DataTable({ columns }: DataTableProps) {
 
   const [isStatusOpen, setIsStatusOpen] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
-  const [statusTarget, setStatusTarget] = useState<"active" | "inactive">("inactive")
+  const [statusTarget, setStatusTarget] = useState<'active' | 'inactive'>(
+    'inactive',
+  )
   const [selectedUser, setSelectedUser] = useState<ProfileUserData | null>(null)
 
-  function onRequestStatusChange(user: ProfileUserData, target: "active" | "inactive") {
+  function onRequestStatusChange(
+    user: ProfileUserData,
+    target: 'active' | 'inactive',
+  ) {
     setSelectedUser(user)
     setStatusTarget(target)
     setIsStatusOpen(true)
@@ -182,14 +185,15 @@ export function DataTable({ columns }: DataTableProps) {
   }
 
   const cols = useMemo(
-    () => columns({
-      onRequestStatusChange,
-      onEdit: (user) => {
-        setSelected(user)
-        setOpenEdit(true)
-      },
-    }),
-    [columns]
+    () =>
+      columns({
+        onRequestStatusChange,
+        onEdit: (user) => {
+          setSelected(user)
+          setOpenEdit(true)
+        },
+      }),
+    [columns],
   )
 
   const table = useReactTable({
@@ -204,7 +208,7 @@ export function DataTable({ columns }: DataTableProps) {
 
   const columnsForMenu = useMemo(
     () => table.getAllLeafColumns().filter((c) => c.getCanHide()),
-    [table]
+    [table],
   )
 
   return (
@@ -222,17 +226,32 @@ export function DataTable({ columns }: DataTableProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant={"outline"} className="border-dashed"><Funnel />Filtrar</Button>
+              <Button
+                variant={'outline'}
+                className="border-dashed"
+              >
+                <Funnel />
+                Filtrar
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuRadioGroup
                 value={filterStatus}
-                onValueChange={(v) => setFilterStatus(v as "active" | "inactive" | "")}
+                onValueChange={(v) =>
+                  setFilterStatus(v as 'active' | 'inactive' | '')
+                }
               >
-                <DropdownMenuRadioItem value="active">Ativo</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="inactive">Inativo</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="active">
+                  Ativo
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="inactive">
+                  Inativo
+                </DropdownMenuRadioItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setFilterStatus("")} className="flex justify-center">
+                <DropdownMenuItem
+                  onClick={() => setFilterStatus('')}
+                  className="flex justify-center"
+                >
                   Limpar Filtro
                 </DropdownMenuItem>
               </DropdownMenuRadioGroup>
@@ -243,7 +262,10 @@ export function DataTable({ columns }: DataTableProps) {
         <div className="flex flex-col gap-4 lg:flex-row">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant={"outline"}><Settings2 />Colunas</Button>
+              <Button variant={'outline'}>
+                <Settings2 />
+                Colunas
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {columnsForMenu.map((column) => (
@@ -260,7 +282,10 @@ export function DataTable({ columns }: DataTableProps) {
           </DropdownMenu>
 
           <div className="flex gap-4">
-            <Button onClick={() => setOpen(true)} className="w-full">
+            <Button
+              onClick={() => setOpen(true)}
+              className="w-full"
+            >
               <Plus /> Adicionar Usuário
             </Button>
 
@@ -291,7 +316,10 @@ export function DataTable({ columns }: DataTableProps) {
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -300,18 +328,27 @@ export function DataTable({ columns }: DataTableProps) {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={cols.length} className="h-24 text-center">
-                  {isValidating ? "Carregando..." : "Não há dados para exibir."}
+                <TableCell
+                  colSpan={cols.length}
+                  className="h-24 text-center"
+                >
+                  {isValidating ? 'Carregando...' : 'Não há dados para exibir.'}
                 </TableCell>
               </TableRow>
             )}
@@ -327,11 +364,13 @@ export function DataTable({ columns }: DataTableProps) {
         <CustomPagination
           currentPage={meta?.current_page ?? 1}
           totalPages={meta?.total_pages ?? 1}
-          onPageChange={(page) => setPagination((prev) => ({ ...prev, pageIndex: page - 1 }))}
+          onPageChange={(page) =>
+            setPagination((prev) => ({ ...prev, pageIndex: page - 1 }))
+          }
         />
       </div>
 
-      <StatusConfirmDialog
+      <ConfirmDialog
         open={isStatusOpen}
         onOpenChange={setIsStatusOpen}
         targetStatus={statusTarget}
@@ -341,14 +380,17 @@ export function DataTable({ columns }: DataTableProps) {
         onConfirm={confirmStatusChange}
         deactivateDescription={
           <>
-            Ao desativar o usuário <b>{selectedUser?.attributes.name}</b>, ele não poderá mais realizar login no sistema,
-            nem efetuar nenhuma operação, mas você ainda pode <b>reativá-lo</b> depois se necessário.
+            Ao desativar o usuário <b>{selectedUser?.attributes.name}</b>, ele
+            não poderá mais realizar login no sistema, nem efetuar nenhuma
+            operação, mas você ainda pode <b>reativá-lo</b> depois se
+            necessário.
           </>
         }
         activateDescription={
           <>
-            Ao reativar o usuário <b>{selectedUser?.attributes.name}</b>, ele voltará a ter todos os acessos ao sistema
-            conforme o nível de acesso que possui.
+            Ao reativar o usuário <b>{selectedUser?.attributes.name}</b>, ele
+            voltará a ter todos os acessos ao sistema conforme o nível de acesso
+            que possui.
           </>
         }
       />

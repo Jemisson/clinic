@@ -50,14 +50,14 @@ export default function PatientDetailsPage() {
           <ConfidentialNotesCarousel patientId={patient.id} />
 
           <section>
-            <h3 className="mb-2 text-xl font-medium">
+            <h1 className="mb-2 text-xl font-medium">
               Interesses
-            </h3>
+            </h1>
             <TagBadges items={tagItems} size="sm" />
           </section>
 
           <section>
-            <h1 className="mt-8 text-2xl font-medium">Últimos Atendimentos</h1>
+            <h1 className="mt-8 text-xl font-medium">Últimos Atendimentos</h1>
             <p  className="mt-2 text-sm text-muted-foreground"><b>Em breve:</b> resumos dos últimos atendimentos do paciente</p>
           </section>
         </div>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PatientPhotoLabel } from "./patients.photos";
 
 // ---- Blood Type ----
 export const BLOOD_TYPES =
@@ -55,3 +56,17 @@ export type Option = { value: string; label: string };
 export const BLOOD_TYPE_OPTIONS: Option[] = BLOOD_TYPES.map(b => ({ value: b, label: BLOOD_LABEL[b] }));
 export const GENDER_OPTIONS: Option[] = GENDERS.map(g => ({ value: g, label: GENDER_LABEL[g] }));
 export const CIVIL_STATUS_OPTIONS: Option[] = CIVIL_STATUS.map(c => ({ value: c, label: CIVIL_STATUS_LABEL[c] }));
+
+
+// ---- Patient Photo Label ----
+export const PATIENT_PHOTO_LABEL: Record<PatientPhotoLabel, string> = {
+  before: "Antes",
+  after: "Depois",
+  named: "Outra (especificar)",
+}
+
+export const PATIENT_PHOTO_LABEL_SHORT: Record<PatientPhotoLabel, string> = {
+  before: "Antes",
+  after: "Depois",
+  named: "Outra",
+}

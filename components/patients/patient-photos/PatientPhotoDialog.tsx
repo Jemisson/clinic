@@ -1,5 +1,6 @@
 'use client'
 
+import CameraCapture from '@/components/media/CameraCapture'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -25,13 +26,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { PatientPhotosService } from '@/service/patient-photos'
+import { PATIENT_PHOTO_LABEL } from '@/types/patients.enums'
 import {
   CreateOrUpdatePatientPhotoInput,
   PatientPhotoLabel,
 } from '@/types/patients.photos'
 import { toOffsetDateTime } from '@/utils/formatters'
 import clsx from 'clsx'
-import { CalendarDays, Clock, ImagePlus, Upload } from 'lucide-react'
+import { CalendarDays, CameraIcon, ImagePlus, Upload } from 'lucide-react'
 import * as React from 'react'
 import { useState } from 'react'
 
@@ -66,6 +68,8 @@ export default function PatientPhotoDialog({
   const [dragOver, setDragOver] = useState(false)
   const [saving, setSaving] = useState(false)
   const canSave = !!file
+
+  const [cameraOpen, setCameraOpen] = React.useState(false)
 
   function pad(n: number) {
     return String(n).padStart(2, '0')
@@ -170,7 +174,6 @@ export default function PatientPhotoDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-
           <div className="space-y-2">
             <Label>Imagem</Label>
             <label
@@ -212,6 +215,13 @@ export default function PatientPhotoDialog({
             />
           </div>
 
+          <div className="flex justify-end gap-2">
+            <Button type="button" onClick={() => setCameraOpen(true)}>
+              <CameraIcon className="mr-1 h-4 w-4" />
+              Usar câmera
+            </Button>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
             <div className="space-y-2 sm:col-span-1">
               <Label>Tipo da imagem</Label>
@@ -220,16 +230,17 @@ export default function PatientPhotoDialog({
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="before">Antes</SelectItem>
-                  <SelectItem value="after">Depois</SelectItem>
-                  <SelectItem value="named">Outra (especificar)</SelectItem>
+                  {(Object.keys(PATIENT_PHOTO_LABEL) as PatientPhotoLabel[]).map((k) => (
+                    <SelectItem key={k} value={k}>
+                      {PATIENT_PHOTO_LABEL[k]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2 sm:col-span-2">
               <Label className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
                 Data/Hora da captura
               </Label>
 
@@ -241,10 +252,15 @@ export default function PatientPhotoDialog({
                       className="h-10 w-full min-w-0 justify-start font-normal"
                     >
                       <CalendarDays className="mr-2 h-4 w-4 shrink-0" />
-                      {selectedDate ? selectedDate.toLocaleDateString('pt-BR') : 'Selecione a data'}
+                      {selectedDate
+                        ? selectedDate.toLocaleDateString('pt-BR')
+                        : 'Selecione a data'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="p-0 w-auto" align="start">
+                  <PopoverContent
+                    className="p-0 w-auto"
+                    align="start"
+                  >
                     <Calendar
                       mode="single"
                       selected={selectedDate}
@@ -298,6 +314,15 @@ export default function PatientPhotoDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <CameraCapture
+        open={cameraOpen}
+        onOpenChange={setCameraOpen}
+        title="Câmera"
+        onCapture={(file) => {
+          handleFile(file)
+        }}
+      />
     </Dialog>
   )
 }
