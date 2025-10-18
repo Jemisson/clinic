@@ -15,7 +15,7 @@ import * as React from "react"
 
 type StatusValue = "active" | "inactive"
 
-export interface StatusConfirmDialogProps {
+export interface ConfirmDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   targetStatus: StatusValue
@@ -31,7 +31,7 @@ export interface StatusConfirmDialogProps {
   onConfirm: () => Promise<void> | void
 }
 
-export default function StatusConfirmDialog({
+export default function ConfirmDialog({
   open,
   onOpenChange,
   targetStatus,
@@ -44,7 +44,7 @@ export default function StatusConfirmDialog({
   description,
   loading = false,
   onConfirm,
-}: StatusConfirmDialogProps) {
+}: ConfirmDialogProps) {
   const isDeactivate = String(targetStatus) === "inactive"
 
   const TitleIcon = isDeactivate ? AlertTriangle : CheckCircle2
