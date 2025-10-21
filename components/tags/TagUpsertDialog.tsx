@@ -1,65 +1,101 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import * as LucideIcons from "lucide-react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import z from "zod"
+import { useEffect, useMemo, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import * as LucideIcons from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 
-import { TagSchema } from "@/lib/schemas/tag"
-import TagsService from "@/service/tags"
-import { TagData, TagFormInput } from "@/types/tags"
-import { tagIcons } from "@/utils/tagIcons"
+import { TagSchema } from "@/lib/schemas/tag";
+import TagsService from "@/service/tags";
+import type { TagData, TagFormInput } from "@/types/tags";
+import { tagIcons } from "@/utils/tagIcons";
+import type { LucideIcon } from "lucide-react";
 
 type Props = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess?: (saved: TagData) => void
-  tag?: TagData | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: (saved: TagData) => void;
+  tag?: TagData | null;
+};
+
+// Caso o service retorne { data: TagData } (axios-like) ou TagData direto
+type TagSaveResult = TagData | { data: TagData };
+function extractTag(x: TagSaveResult): TagData {
+  return (x as { data?: TagData })?.data ?? (x as TagData);
 }
 
-export default function TagUpsertDialog({ open, onOpenChange, onSuccess, tag }: Props) {
-  const [submitting, setSubmitting] = useState(false)
-  const lucideIcons = LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>
+export default function TagUpsertDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+  tag,
+}: Props) {
+  const [submitting, setSubmitting] = useState(false);
 
-  const isEdit = Boolean(tag?.id)
+  const lucideIcons = LucideIcons as unknown as Record<string, LucideIcon>;
 
-  const defaultValues = useMemo(() => ({
-    name: tag?.attributes.name ?? "",
-    icon: tag?.attributes.icon ?? "",
-  }), [tag])
+  const isEdit = Boolean(tag?.id);
+
+  const defaultValues = useMemo(
+    () => ({
+      name: tag?.attributes.name ?? "",
+      icon: tag?.attributes.icon ?? "",
+    }),
+    [tag]
+  );
 
   const form = useForm<z.infer<typeof TagSchema>>({
     resolver: zodResolver(TagSchema),
     defaultValues,
-  })
+  });
 
   useEffect(() => {
-    if (open) form.reset(defaultValues)
-  }, [open, defaultValues, form])
+    if (open) form.reset(defaultValues);
+  }, [open, defaultValues, form]);
 
   async function onSubmit(values: z.infer<typeof TagSchema>) {
-    const payload: TagFormInput = { tag: { ...values } }
+    const payload: TagFormInput = { tag: { ...values } };
     try {
-      setSubmitting(true)
-      let saved: any
+      setSubmitting(true);
+      let saved: TagSaveResult;
       if (isEdit && tag) {
-        saved = await TagsService.update(tag.id, payload)
+        saved = await TagsService.update(tag.id, payload);
       } else {
-        saved = await TagsService.create(payload)
+        saved = await TagsService.create(payload);
       }
-      form.reset()
-      onSuccess?.(saved?.data ?? saved)
-      onOpenChange(false)
+      form.reset();
+      onSuccess?.(extractTag(saved));
+      onOpenChange(false);
     } catch (e) {
-      console.error(e)
+      console.error(e);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
@@ -74,7 +110,10 @@ export default function TagUpsertDialog({ open, onOpenChange, onSuccess, tag }: 
         </DialogHeader>
 
         <Form {...form}>
-          <form className="flex flex-col gap-4 mt-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            className="flex flex-col gap-4 mt-4"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
             <FormField
               control={form.control}
               name="name"
@@ -102,7 +141,7 @@ export default function TagUpsertDialog({ open, onOpenChange, onSuccess, tag }: 
                       </SelectTrigger>
                       <SelectContent>
                         {tagIcons.map((iconName) => {
-                          const IconComponent = lucideIcons[iconName]
+                          const IconComponent = lucideIcons[iconName];
                           return (
                             <SelectItem key={iconName} value={iconName}>
                               {IconComponent && (
@@ -112,7 +151,7 @@ export default function TagUpsertDialog({ open, onOpenChange, onSuccess, tag }: 
                               )}{" "}
                               {iconName}
                             </SelectItem>
-                          )
+                          );
                         })}
                       </SelectContent>
                     </Select>
@@ -124,15 +163,23 @@ export default function TagUpsertDialog({ open, onOpenChange, onSuccess, tag }: 
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline" type="button">Cancelar</Button>
+                <Button variant="outline" type="button">
+                  Cancelar
+                </Button>
               </DialogClose>
               <Button type="submit" disabled={submitting}>
-                {submitting ? (isEdit ? "Salvando..." : "Adicionando...") : (isEdit ? "Salvar" : "Adicionar")}
+                {submitting
+                  ? isEdit
+                    ? "Salvando..."
+                    : "Adicionando..."
+                  : isEdit
+                  ? "Salvar"
+                  : "Adicionar"}
               </Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

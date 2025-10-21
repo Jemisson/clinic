@@ -1,7 +1,7 @@
 'use client'
 
 import { Input } from '@/components/ui/input'
-import { X, Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 type Props = {
@@ -25,17 +25,19 @@ export function SearchInput({
 }: Props) {
   const [internal, setInternal] = useState(value)
 
+  // Sincroniza estado interno com o valor externo
   useEffect(() => {
     setInternal(value)
   }, [value])
 
+  // Aplica debounce e notifica o pai
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (internal !== value) onChange(internal)
     }, debounceMs)
 
     return () => clearTimeout(timeout)
-  }, [internal])
+  }, [internal, debounceMs, onChange, value]) // ✅ dependências completas
 
   const handleClear = () => {
     setInternal('')
