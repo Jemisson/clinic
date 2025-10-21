@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -14,17 +14,15 @@ export default function ConfidentialNotesCarousel({ patientId }: { patientId: st
   const [idx, setIdx] = useState(0)
   const [openNew, setOpenNew] = useState(false)
 
-  async function fetchNotes() {
+  const fetchNotes = useCallback(async () => {
     const res = await ConfidentialNotesService.list(patientId)
     setNotes(res ?? [])
     setIdx(0)
-  }
+  }, [patientId])
 
   useEffect(() => {
-    ;(async () => {
-      await fetchNotes()
-    })()
-  }, [patientId])
+    fetchNotes()
+  }, [fetchNotes])
 
   const total = notes.length
   const current = notes[idx] ?? null
@@ -35,7 +33,6 @@ export default function ConfidentialNotesCarousel({ patientId }: { patientId: st
 
   return (
     <div>
-      {/* Título + botão de nova observação */}
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-xl font-medium">Observações</h3>
 
@@ -95,7 +92,6 @@ export default function ConfidentialNotesCarousel({ patientId }: { patientId: st
                 </p>
               </div>
 
-              {/* Dots */}
               <div className="mt-3 flex justify-center gap-1">
                 {dots.map((i) => (
                   <button

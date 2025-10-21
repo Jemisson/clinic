@@ -1,43 +1,59 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { FormProvider, Resolver, useForm } from "react-hook-form"
+import { Button } from '@/components/ui/button'
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
-  Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger,
-} from "@/components/ui/stepper"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button } from "@/components/ui/button"
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperSeparator,
+  StepperTitle,
+  StepperTrigger,
+} from '@/components/ui/stepper'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState } from 'react'
+import {
+  FormProvider,
+  Resolver,
+  useForm,
+  type FieldPath,
+} from 'react-hook-form'
 
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  UserRound,
+  Bookmark,
+  Camera,
+  Check,
   ContactRound,
   MapPin,
   Phone,
-  Camera,
-  Bookmark,
-  Check,
-} from "lucide-react"
+  UserRound,
+} from 'lucide-react'
 
-import PatientsService from "@/service/patients"
-import { PatientData } from "@/types/patients"
+import PatientsService from '@/service/patients'
+import { Addresses, Contacts, PatientData } from '@/types/patients'
 
-import { PatientSchema, type PatientFormValues, defaultValues } from "./schema"
-import { buildPatientPayload } from "./mappers"
+import { buildPatientPayload } from './mappers'
+import { defaultValues, PatientSchema, type PatientFormValues } from './schema'
 
-import { StepPersonal } from "./steps/StepPersonal"
-import { StepReferrer } from "./steps/StepReferrer"
-import { StepAddress } from "./steps/StepAddress"
-import { StepContact } from "./steps/StepContact"
-import { StepPhoto } from "./steps/StepPhoto"
-import { StepInterests } from "./steps/StepInterests"
+import { StepAddress } from './steps/StepAddress'
+import { StepContact } from './steps/StepContact'
+import { StepInterests } from './steps/StepInterests'
+import { StepPersonal } from './steps/StepPersonal'
+import { StepPhoto } from './steps/StepPhoto'
+import { StepReferrer } from './steps/StepReferrer'
+import { TagLike } from '@/types/tags'
 
-type Mode = "create" | "edit"
+type Mode = 'create' | 'edit'
 
 interface FormPatientProps {
   open: boolean
@@ -52,46 +68,50 @@ interface FormPatientProps {
 export default function FormPatient({
   open,
   onOpenChange,
-  mode = "create",
+  mode = 'create',
   patientId,
   initialData,
   onSuccess,
   initialPhotoUrl,
 }: FormPatientProps) {
-  const isEdit = mode === "edit"
+  const isEdit = mode === 'edit'
   const [currentStep, setCurrentStep] = useState(1)
 
   const steps = [
-    { step: 1, title: "Dados pessoais", icon: <UserRound className="size-4" /> },
-    { step: 2, title: "Indicação",      icon: <ContactRound className="size-4" /> },
-    { step: 3, title: "Endereço",       icon: <MapPin className="size-4" /> },
-    { step: 4, title: "Contato",        icon: <Phone className="size-4" /> },
-    { step: 5, title: "Foto",           icon: <Camera className="size-4" /> },
-    { step: 6, title: "Interesses",     icon: <Bookmark className="size-4" /> },
+    {
+      step: 1,
+      title: 'Dados pessoais',
+      icon: <UserRound className="size-4" />,
+    },
+    { step: 2, title: 'Indicação', icon: <ContactRound className="size-4" /> },
+    { step: 3, title: 'Endereço', icon: <MapPin className="size-4" /> },
+    { step: 4, title: 'Contato', icon: <Phone className="size-4" /> },
+    { step: 5, title: 'Foto', icon: <Camera className="size-4" /> },
+    { step: 6, title: 'Interesses', icon: <Bookmark className="size-4" /> },
   ] as const
 
   const methods = useForm<PatientFormValues>({
     resolver: zodResolver(PatientSchema) as Resolver<PatientFormValues>,
     defaultValues,
-    mode: "onBlur",
+    mode: 'onBlur',
   })
 
-  function getStepFields(step: number): string[] {
+  function getStepFields(step: number): FieldPath<PatientFormValues>[] {
     if (step === 1) {
-      return ["person.name", "naturalness", "birthdate", "cpf"]
+      return ['person.name', 'naturalness', 'birthdate', 'cpf']
     }
     if (step === 3) {
-      const paths: string[] = []
-      const addrs = methods.getValues("person.addresses_attributes") ?? []
+      const paths: FieldPath<PatientFormValues>[] = []
+      const addrs = methods.getValues('person.addresses_attributes') ?? []
       addrs.forEach((a, i) => {
         if (!a?._destroy) {
           paths.push(
-            `person.addresses_attributes.${i}.zip_code`,
-            `person.addresses_attributes.${i}.street`,
-            `person.addresses_attributes.${i}.number`,
-            `person.addresses_attributes.${i}.neighborhood`,
-            `person.addresses_attributes.${i}.city`,
-            `person.addresses_attributes.${i}.state`,
+            `person.addresses_attributes.${i}.zip_code` as FieldPath<PatientFormValues>,
+            `person.addresses_attributes.${i}.street` as FieldPath<PatientFormValues>,
+            `person.addresses_attributes.${i}.number` as FieldPath<PatientFormValues>,
+            `person.addresses_attributes.${i}.neighborhood` as FieldPath<PatientFormValues>,
+            `person.addresses_attributes.${i}.city` as FieldPath<PatientFormValues>,
+            `person.addresses_attributes.${i}.state` as FieldPath<PatientFormValues>,
           )
         }
       })
@@ -103,7 +123,7 @@ export default function FormPatient({
   async function validateCurrentStep(): Promise<boolean> {
     const fields = getStepFields(currentStep)
     if (!fields.length) return true
-    return methods.trigger(fields as any, { shouldFocus: true })
+    return methods.trigger(fields, { shouldFocus: true })
   }
 
   async function handleStepperChange(nextStep: number) {
@@ -121,38 +141,41 @@ export default function FormPatient({
     if (isEdit && initialData) {
       const a = initialData.attributes
       methods.reset({
-        naturalness: a.naturalness || "",
-        birthdate: a.birthdate || "",
-        rg: a.rg || "",
-        cpf: a.cpf || "",
+        naturalness: a.naturalness || '',
+        birthdate: a.birthdate || '',
+        rg: a.rg || '',
+        cpf: a.cpf || '',
         no_cpf: false,
-        blood_type: (a.blood_type as any) ?? null,
-        spouse_name: a.spouse_name || "",
-        gender: (a.gender as any) ?? null, 
-        civil_status: (a.civil_status as any) ?? null,
+        blood_type: (a.blood_type as PatientFormValues["blood_type"]) ?? null,
+        spouse_name: a.spouse_name || '',
+        gender: (a.gender as PatientFormValues["gender"]) ?? null,
+        civil_status: (a.civil_status as PatientFormValues["civil_status"]) ?? null,
         death_date: a.death_date || null,
-        occupation: a.occupation || "",
-        referrer_person_id: (a.referrer_person_id as any) ?? null,
+        occupation: a.occupation || '',
+        referrer_person_id: (a.referrer_person_id ?? null) as PatientFormValues["referrer_person_id"],
         person: {
           id: a.person?.id,
-          name: a.person?.name || "",
-          tag_ids: (a.person?.tags ?? []).map((t: any) => Number(t.id ?? t)),
-          addresses_attributes: (a.person?.addresses ?? []).map((addr: any) => ({
-            id: addr.id,
-            street: addr.street ?? "",
-            number: addr.number ?? "",
-            neighborhood: addr.neighborhood ?? "",
-            city: addr.city ?? "",
-            state: addr.state ?? "",
-            country: addr.country ?? "Brasil",
-            zip_code: addr.zip_code ?? "",
-            observation: addr.observation ?? "",
-            _destroy: false,
-          })),
-          contacts_attributes: (a.person?.contacts ?? []).map((c: any) => ({
+          name: a.person?.name || '',
+          tag_ids: (a.person?.tags ?? []).map((t: TagLike) =>
+            Number(typeof t === "object" && t !== null && "id" in t ? (t).id : t)
+          ),
+          addresses_attributes: (a.person?.addresses ?? []).map((addr: Addresses) => ({
+              id: addr.id,
+              street: addr.street ?? '',
+              number: addr.number ?? '',
+              neighborhood: addr.neighborhood ?? '',
+              city: addr.city ?? '',
+              state: addr.state ?? '',
+              country: addr.country ?? 'Brasil',
+              zip_code: addr.zip_code ?? '',
+              observation: addr.observation ?? '',
+              _destroy: false,
+            }),
+          ),
+          contacts_attributes: (a.person?.contacts ?? []).map((c: Contacts) => ({
             id: c.id,
-            phone: c.phone ?? "",
-            cellphone: c.cellphone ?? "",
+            phone: c.phone ?? '',
+            cellphone: c.cellphone ?? '',
             send_sms: Boolean(c.send_sms),
             send_wpp_confirmation: Boolean(c.send_wpp_confirmation),
             send_wpp_marketing: Boolean(c.send_wpp_marketing),
@@ -178,7 +201,10 @@ export default function FormPatient({
   }, [open, methods])
 
   async function onSubmit(values: PatientFormValues) {
-    const payload = buildPatientPayload(values, isEdit ? initialData : undefined)
+    const payload = buildPatientPayload(
+      values,
+      isEdit ? initialData : undefined,
+    )
     const extra = {
       photo: values.person.photo ?? null,
       remove_photo: values.person.remove_photo || undefined,
@@ -186,7 +212,7 @@ export default function FormPatient({
 
     if (isEdit) {
       const id = patientId ?? initialData?.id
-      if (!id) throw new Error("ID do paciente ausente")
+      if (!id) throw new Error('ID do paciente ausente')
       await PatientsService.update(String(id), payload, extra)
     } else {
       await PatientsService.create(payload, extra)
@@ -197,19 +223,30 @@ export default function FormPatient({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="max-w-6xl w-full">
         <ScrollArea className="max-h-[75vh]">
           <DialogHeader>
             <DialogTitle className="text-center">
-              {isEdit ? "Editar Paciente" : "Adicionar Paciente"}
+              {isEdit ? 'Editar Paciente' : 'Adicionar Paciente'}
             </DialogTitle>
 
             <DialogDescription asChild>
               <div className="pt-4 pb-8">
-                <Stepper value={currentStep} onValueChange={handleStepperChange} defaultValue={1}>
+                <Stepper
+                  value={currentStep}
+                  onValueChange={handleStepperChange}
+                  defaultValue={1}
+                >
                   {steps.map(({ step, title, icon }) => (
-                    <StepperItem key={step} step={step} className="relative flex-1 flex-col!">
+                    <StepperItem
+                      key={step}
+                      step={step}
+                      className="relative flex-1 flex-col!"
+                    >
                       <StepperTrigger className="flex-col gap-3 rounded">
                         <StepperIndicator asChild>{icon}</StepperIndicator>
                         <StepperTitle>{title}</StepperTitle>
@@ -229,7 +266,7 @@ export default function FormPatient({
             <form
               onSubmit={(e) => e.preventDefault()}
               onKeyDown={(e) => {
-                if (e.key === "Enter") e.preventDefault()
+                if (e.key === 'Enter') e.preventDefault()
               }}
               className="space-y-6"
               noValidate
@@ -237,12 +274,16 @@ export default function FormPatient({
               {currentStep === 1 && <StepPersonal />}
               {currentStep === 2 && (
                 <StepReferrer
-                  initialReferrerName={initialData?.attributes?.referrer || undefined}
+                  initialReferrerName={
+                    initialData?.attributes?.referrer || undefined
+                  }
                 />
               )}
               {currentStep === 3 && <StepAddress />}
               {currentStep === 4 && <StepContact />}
-              {currentStep === 5 && <StepPhoto initialPhotoUrl={initialPhotoUrl} />}
+              {currentStep === 5 && (
+                <StepPhoto initialPhotoUrl={initialPhotoUrl} />
+              )}
               {currentStep === 6 && <StepInterests />}
 
               <DialogFooter className="flex gap-2">

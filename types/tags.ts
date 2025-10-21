@@ -1,5 +1,7 @@
 import { Meta } from "./meta";
 
+export type TagLike = { id?: number | string } | number | string
+
 export interface TagResponse {
   data: TagData[];
   meta: Meta;

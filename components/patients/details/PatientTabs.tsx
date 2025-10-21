@@ -1,6 +1,5 @@
 'use client'
 
-import ImageLightbox, { LightboxItem } from '@/components/media/ImageLightbox'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -31,10 +30,6 @@ export default function PatientTabs({ patient }: { patient: PatientData }) {
   const [tab, setTab] = useState<
     'general' | 'contacts' | 'address' | 'tags' | 'photos'
   >('general')
-
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [lightboxItems, setLightboxItems] = useState<LightboxItem[]>([])
-  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   const a = patient.attributes
   const p = a.person
@@ -281,13 +276,6 @@ export default function PatientTabs({ patient }: { patient: PatientData }) {
           </Card>
         </TabsContent>
       </Tabs>
-
-      <ImageLightbox
-        open={lightboxOpen}
-        onOpenChange={setLightboxOpen}
-        items={lightboxItems}
-        initialIndex={lightboxIndex}
-      />
     </>
   )
 }

@@ -17,13 +17,15 @@ import type {
 import { PATIENT_PHOTO_LABEL_SHORT } from "@/types/patients.enums"
 import MagnifyImage from "@/components/media/MagnifyImage"
 import ImageLightbox, { type LightboxItem } from "@/components/media/ImageLightbox"
+import Image from "next/image"
+import { useMemo, useState } from "react"
 
 export default function PhotosByDatePage() {
   const params = useParams<{ id: string; date: string }>()
   const patientId = params.id
   const dateKey = params.date
 
-  const [useLens, setUseLens] = React.useState(true)
+  const [useLens, setUseLens] = useState(true)
 
   const { data: groups, error, isLoading } = useSWR<PatientPhotoGroups>(
     patientId ? (["patient_photos", patientId] as const) : null,
@@ -34,17 +36,17 @@ export default function PhotosByDatePage() {
     { revalidateOnFocus: false, revalidateOnReconnect: false, dedupingInterval: 2000 }
   )
 
-  const items = React.useMemo<PatientPhotoFlat[] | null>(() => {
+  const items = useMemo<PatientPhotoFlat[] | null>(() => {
     if (!groups) return null
     const order: Record<PatientPhotoLabel, number> = { before: 0, after: 1, named: 2 }
     const arr = groups[dateKey] ?? []
     return [...arr].sort((a, b) => order[a.label] - order[b.label])
   }, [groups, dateKey])
 
-  const [lightboxOpen, setLightboxOpen] = React.useState(false)
-  const [lightboxIndex, setLightboxIndex] = React.useState(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
-  const lightboxItems = React.useMemo<LightboxItem[]>(() => {
+  const lightboxItems = useMemo<LightboxItem[]>(() => {
     if (!items) return []
     return items.map((p) => ({
       src: p.image_url ?? p.image_variants?.medium ?? "",
@@ -80,7 +82,11 @@ export default function PhotosByDatePage() {
       </div>
 
       {isLoading && <p className="text-muted-foreground">Carregando fotos…</p>}
-      {error && <p className="text-destructive">Erro ao carregar: {(error as any)?.message ?? "Falha"}</p>}
+      {error && (
+        <p className="text-destructive">
+          Erro ao carregar: {error instanceof Error ? error.message : "Falha"}
+        </p>
+      )}
 
       {!isLoading && !error && (!items || items.length === 0) && (
         <Card className="p-6">
@@ -117,8 +123,10 @@ export default function PhotosByDatePage() {
                       />
                     </div>
                   ) : (
-                    <img
+                    <Image
                       src={src}
+                      width={800}
+                      height={800}
                       alt={p.title ?? label}
                       className="w-full h-[480px] sm:h-[560px] object-cover cursor-zoom-in"
                       onClick={() => openLightboxAt(i)}

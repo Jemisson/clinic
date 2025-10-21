@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
 import { SquareDashed } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 type Status = "active" | "inactive";
 
@@ -19,7 +20,7 @@ type Size = "sm" | "md";
 
 export interface TagBadgesProps {
   items: TagLike[];
-  selectedIds?: number[] | string[];
+  selectedIds?: Array<number | string>;
   onToggle?: (id: number) => void;
   readOnly?: boolean;
   size?: Size;
@@ -32,6 +33,8 @@ const toNum = (v: number | string): number | null => {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
+
+type LucideIconName = keyof typeof LucideIcons;
 
 export function TagBadges({
   items,
@@ -46,8 +49,8 @@ export function TagBadges({
   const sel = React.useMemo(() => {
     if (!selectedIds) return new Set<number>();
     const s = new Set<number>();
-    selectedIds.forEach((v) => {
-      const n = toNum(v as any);
+    (selectedIds as Array<number | string>).forEach((v) => {
+      const n = toNum(v);
       if (n != null) s.add(n);
     });
     return s;
@@ -62,7 +65,10 @@ export function TagBadges({
         if (idNum == null) return null;
 
         const active = sel.has(idNum);
-        const Icon = t.icon ? (LucideIcons as any)[t.icon] : null;
+
+        const icons = LucideIcons as unknown as Record<LucideIconName, LucideIcon>;
+        const Icon: LucideIcon | null =
+          t.icon && icons[t.icon as LucideIconName] ? icons[t.icon as LucideIconName] : null;
 
         const commonCls = cn(
           "gap-1",
@@ -88,11 +94,7 @@ export function TagBadges({
         }
 
         return (
-          <Badge
-            key={t.id}
-            variant="secondary"
-            className={cn("select-none", commonCls)}
-          >
+          <Badge key={t.id} variant="secondary" className={cn("select-none", commonCls)}>
             {Icon ? <Icon className="size-4" /> : <SquareDashed className="size-4" />}
             {t.name}
           </Badge>

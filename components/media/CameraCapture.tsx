@@ -4,6 +4,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CameraIcon } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 
 type Props = {
   open: boolean
@@ -20,12 +21,12 @@ export default function CameraCapture({
   title = "Câmera",
   constraints = { facingMode: { ideal: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } },
 }: Props) {
-  const videoRef = React.useRef<HTMLVideoElement>(null)
-  const canvasRef = React.useRef<HTMLCanvasElement>(null)
-  const streamRef = React.useRef<MediaStream | null>(null)
-  const [error, setError] = React.useState<string | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) return
 
     async function start() {
@@ -42,8 +43,12 @@ export default function CameraCapture({
         video.playsInline = true
         video.muted = true
         await video.play()
-      } catch (e: any) {
-        setError(e?.message || "Não foi possível acessar a câmera.")
+      } catch (e: unknown) {
+          if (e instanceof Error) {
+            setError(e.message)
+          } else {
+            setError("Não foi possível acessar a câmera.")
+          }
       }
     }
     start()

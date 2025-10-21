@@ -34,6 +34,7 @@ import {
 import { toOffsetDateTime } from '@/utils/formatters'
 import clsx from 'clsx'
 import { CalendarDays, CameraIcon, ImagePlus, Upload } from 'lucide-react'
+import Image from 'next/image'
 import * as React from 'react'
 import { useState } from 'react'
 
@@ -192,9 +193,11 @@ export default function PatientPhotoDialog({
               htmlFor="patient-photo-input"
             >
               {preview ? (
-                <img
+                <Image
                   src={preview}
                   alt="preview"
+                  width={48}
+                  height={48}
                   className="max-h-48 rounded-md object-contain"
                 />
               ) : (

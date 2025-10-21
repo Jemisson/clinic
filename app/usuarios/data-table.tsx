@@ -26,6 +26,7 @@ import { CustomPagination } from '@/lib/pagination'
 import UsersService from '@/service/users'
 import { ProfileUserData, UserResponse } from '@/types/users'
 import {
+  Column,
   ColumnDef,
   flexRender,
   getCoreRowModel,
@@ -57,12 +58,14 @@ function humanizeId(id: string) {
     .trim()
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
-function getColumnMenuLabel(col: any): string {
+export function getColumnMenuLabel<TData>(col: Column<TData, unknown>): string {
   const metaLabel = (col?.columnDef?.meta as { label?: string } | undefined)
     ?.label
   if (metaLabel) return String(metaLabel)
+
   const header = col?.columnDef?.header
   if (typeof header === 'string') return header
+
   return humanizeId(String(col?.id ?? ''))
 }
 

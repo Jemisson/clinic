@@ -16,11 +16,12 @@ import { CustomPagination } from "@/lib/pagination"
 import PatientsService from "@/service/patients"
 import { PatientData, PatientResponse } from "@/types/patients"
 import {
+  Column,
   ColumnDef, flexRender, getCoreRowModel, getSortedRowModel,
   PaginationState, SortingState, useReactTable, VisibilityState,
 } from "@tanstack/react-table"
 import { Plus, Settings2 } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import useSWR from "swr"
 
 function humanizeId(id: string) {
@@ -31,11 +32,13 @@ function humanizeId(id: string) {
     .trim()
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
-function getColumnMenuLabel(col: any): string {
+function getColumnMenuLabel<TData>(col: Column<TData, unknown>): string {
   const metaLabel = (col?.columnDef?.meta as { label?: string } | undefined)?.label
   if (metaLabel) return String(metaLabel)
+
   const header = col?.columnDef?.header
   if (typeof header === "string") return header
+
   return humanizeId(String(col?.id ?? ""))
 }
 
@@ -100,7 +103,7 @@ export function PatientsDataTable({ columns }: { columns: ColumnBuilders }) {
 
   const getId = (p: PatientData) => String(p.attributes.id ?? p.id)
 
-  const handleEdit = async (p: PatientData) => {
+const handleEdit = useCallback(async (p: PatientData) => {
     const id = getId(p)
 
     setEditId(id)
@@ -119,7 +122,7 @@ export function PatientsDataTable({ columns }: { columns: ColumnBuilders }) {
     } catch {
       console.log('Erro ao buscar dados atualizados do paciente');
     }
-  }
+  }, [])
 
   const cols = useMemo(
     () =>
@@ -128,7 +131,7 @@ export function PatientsDataTable({ columns }: { columns: ColumnBuilders }) {
         onEdit: handleEdit,
         onOpenNotes: (p) => console.log("notes", p.id),
       }),
-    [columns]
+    [columns, handleEdit]
   )
 
   const table = useReactTable({

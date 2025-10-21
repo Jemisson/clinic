@@ -18,42 +18,54 @@ function toNum(id: string | number): number | null {
   return Number.isFinite(n) ? n : null
 }
 
+type TagsListMeta = {
+  current_page: number
+  total_pages: number
+}
+type TagsListResponse = {
+  data: TagData[]
+  meta: TagsListMeta
+}
+
 export function StepInterests() {
   const { control } = useFormContext<PatientFormValues>()
   const [q, setQ] = useState('')
   const [query, setQuery] = useState('')
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onChangeQ = useCallback((val: string) => {
     setQ(val)
-    clearTimeout((onChangeQ as any)._t)
-    ;(onChangeQ as any)._t = setTimeout(() => setQuery(val.trim()), 350)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setQuery(val.trim()), 350)
   }, [])
 
-  const getKey = (pageIndex: number, previous: any) => {
-    if (previous && previous.meta && pageIndex + 1 > previous.meta.total_pages)
+  const getKey = (pageIndex: number, previous: TagsListResponse | null) => {
+    if (previous && previous.meta && pageIndex + 1 > previous.meta.total_pages) {
       return null
+    }
     return ['tags', pageIndex + 1, query, 'active'] as const
   }
 
-  const { data, size, setSize, isValidating } = useSWRInfinite(
+  const { data, setSize, isValidating } = useSWRInfinite<TagsListResponse, Error>(
     getKey,
-    ([, page, qParam]) =>
-      TagsService.list({
+    async (_tag: 'tags', page: number, qParam: string) => {
+      return TagsService.list({
         page,
         per_page: PAGE_SIZE,
         q: qParam || undefined,
         t: 'active',
-      }),
+      })
+    }
   )
 
-  const pages = data ?? []
-  const lastMeta = pages.at(-1)?.meta
-  const items: TagData[] = useMemo(() => pages.flatMap((p) => p.data), [pages])
-  const reachedEnd = lastMeta
-    ? lastMeta.current_page >= lastMeta.total_pages
-    : true
+  const items: TagData[] = useMemo(() => {
+    if (!data) return []
+    return data.flatMap((p) => p.data)
+  }, [data])
 
-  // cache para manter nomes/ícones mesmo quando não estiverem na página atual
+  const lastMeta = data?.at(-1)?.meta
+  const reachedEnd = lastMeta ? lastMeta.current_page >= lastMeta.total_pages : true
+
   const tagCacheRef = useRef<Map<number, TagData>>(new Map())
   useEffect(() => {
     const cache = tagCacheRef.current
@@ -67,7 +79,6 @@ export function StepInterests() {
     return tagCacheRef.current.get(idNum)
   }
 
-  // lista para a grade “disponíveis”
   const availableTagItems: TagLike[] = useMemo(
     () =>
       items.map((t) => ({
@@ -93,7 +104,6 @@ export function StepInterests() {
         </div>
       </div>
 
-      {/* Selecionadas */}
       <Controller
         control={control}
         name="person.tag_ids"
@@ -122,9 +132,7 @@ export function StepInterests() {
               <TagBadges
                 items={selectedItems}
                 selectedIds={selected}
-                onToggle={(id) =>
-                  field.onChange(selected.filter((x) => x !== id))
-                }
+                onToggle={(id) => field.onChange(selected.filter((x) => x !== id))}
                 size="md"
               />
 
@@ -138,7 +146,6 @@ export function StepInterests() {
         }}
       />
 
-      {/* Disponíveis */}
       <Controller
         control={control}
         name="person.tag_ids"
@@ -154,9 +161,7 @@ export function StepInterests() {
 
           return (
             <div className="flex flex-col gap-3">
-              <div className="text-sm text-muted-foreground">
-                Tags disponíveis
-              </div>
+              <div className="text-sm text-muted-foreground">Tags disponíveis</div>
 
               <TagBadges
                 items={availableTagItems}
@@ -170,7 +175,7 @@ export function StepInterests() {
                   type="button"
                   variant="outline"
                   disabled={isValidating || reachedEnd}
-                  onClick={() => setSize(size + 1)}
+                  onClick={() => setSize((s) => s + 1)}
                 >
                   {reachedEnd
                     ? 'Fim da lista'

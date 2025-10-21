@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { CircleUserRoundIcon, UploadIcon, XIcon, CameraIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 type ClearSource = "initial" | "new"
 
@@ -200,7 +201,7 @@ export default function AvatarUploader({
             aria-label={previewUrl ? "Pré-visualização da foto" : "Sem foto"}
           >
             {previewUrl ? (
-              <img
+              <Image
                 src={previewUrl}
                 alt="Pré-visualização do avatar"
                 className="size-full object-cover"
