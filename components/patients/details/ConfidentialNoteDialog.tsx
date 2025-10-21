@@ -106,7 +106,6 @@ export default function ConfidentialNoteDialog({
 
       await ConfidentialNotesService.create(patientId, payload)
 
-      // reset simples
       setTitle('')
       setContent('')
       setVisibilityRoles([])

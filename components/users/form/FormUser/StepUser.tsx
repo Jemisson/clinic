@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import type { UserFormInput } from "./index";
 
-// opções do enum centralizado
 import { USER_ROLE_OPTIONS } from "@/types/users.enums";
 
 export default function StepUser() {

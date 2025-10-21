@@ -345,7 +345,6 @@ export default function FormUser({
       onOpenChange(false)
       onSuccess?.()
     } catch (err: unknown) {
-      // ✅ sem any
       console.error(err)
       const apiMsg = (err as { response?: { data?: { message?: string } } })
         ?.response?.data?.message
@@ -460,7 +459,6 @@ export default function FormUser({
                           )
                           .flat()
 
-                        // ✅ tipagem correta dos paths (sem any)
                         const ok = await methods.trigger(
                           childPaths as FieldPath<UserFormInput>[],
                           { shouldFocus: true },

@@ -82,11 +82,9 @@ export function DataTable({ columns }: DataTableProps) {
   const inputSearchRef = useRef<HTMLInputElement>(null)
   const debounceMs = 500
 
-  // Modal de CRIAÇÃO
   const [open, setOpen] = useState(false)
   const [createFormKey, setCreateFormKey] = useState(0)
 
-  // Modal de EDIÇÃO
   const [openEdit, setOpenEdit] = useState(false)
   const [selected, setSelected] = useState<ProfileUserData | null>(null)
   const [editFormKey, setEditFormKey] = useState(0)

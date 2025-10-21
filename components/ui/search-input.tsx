@@ -25,19 +25,17 @@ export function SearchInput({
 }: Props) {
   const [internal, setInternal] = useState(value)
 
-  // Sincroniza estado interno com o valor externo
   useEffect(() => {
     setInternal(value)
   }, [value])
 
-  // Aplica debounce e notifica o pai
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (internal !== value) onChange(internal)
     }, debounceMs)
 
     return () => clearTimeout(timeout)
-  }, [internal, debounceMs, onChange, value]) // ✅ dependências completas
+  }, [internal, debounceMs, onChange, value])
 
   const handleClear = () => {
     setInternal('')

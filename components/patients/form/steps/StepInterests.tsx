@@ -110,7 +110,6 @@ export function StepInterests() {
         render={({ field }) => {
           const selected: number[] = field.value ?? []
 
-          // monta itens a partir do cache para mostrar nome/ícone
           const selectedItems: TagLike[] = selected.map((id) => {
             const t = getTag(id)
             return t

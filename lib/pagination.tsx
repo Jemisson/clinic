@@ -12,7 +12,7 @@ import {
 
 function getPageNumbers(current: number, total: number): (number | string)[] {
   const delta = 1
-  const range: number[] = [] // ✅ agora só aceita números
+  const range: number[] = []
   const rangeWithDots: (number | string)[] = []
   let last: number | undefined
 

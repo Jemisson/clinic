@@ -44,7 +44,6 @@ type Props = {
   tag?: TagData | null;
 };
 
-// Caso o service retorne { data: TagData } (axios-like) ou TagData direto
 type TagSaveResult = TagData | { data: TagData };
 function extractTag(x: TagSaveResult): TagData {
   return (x as { data?: TagData })?.data ?? (x as TagData);
