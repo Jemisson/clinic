@@ -21,7 +21,6 @@ export function StepPersonal() {
     watch,
     getValues,
     clearErrors,
-    formState: { errors },
   } = useFormContext<PatientFormValues>()
 
   const noCpf = watch("no_cpf")

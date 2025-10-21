@@ -1,11 +1,17 @@
-"use client"
+'use client'
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import { CircleUserRoundIcon, UploadIcon, XIcon, CameraIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import {
+  CameraIcon,
+  CircleUserRoundIcon,
+  UploadIcon,
+  XIcon,
+} from 'lucide-react'
+import Image from 'next/image'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-type ClearSource = "initial" | "new"
+type ClearSource = 'initial' | 'new'
 
 interface Props {
   value?: File | null
@@ -46,7 +52,9 @@ export default function AvatarUploader({
     const url = previewUrl
     return () => {
       try {
-        url && URL.revokeObjectURL(url)
+        if (url) {
+          URL.revokeObjectURL(url)
+        }
       } catch {}
     }
   }, [previewUrl, value])
@@ -56,16 +64,16 @@ export default function AvatarUploader({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null
     onChange(file)
-    if (inputRef.current) inputRef.current.value = ""
+    if (inputRef.current) inputRef.current.value = ''
   }
 
   const handleDrop = (e: React.DragEvent<HTMLButtonElement>) => {
     e.preventDefault()
     e.stopPropagation()
     const file = e.dataTransfer.files?.[0] ?? null
-    if (file && file.type.startsWith("image/")) {
+    if (file && file.type.startsWith('image/')) {
       onChange(file)
-      if (inputRef.current) inputRef.current.value = ""
+      if (inputRef.current) inputRef.current.value = ''
     }
   }
 
@@ -76,10 +84,10 @@ export default function AvatarUploader({
   const clear = (e?: React.MouseEvent) => {
     e?.preventDefault()
     e?.stopPropagation()
-    const source: ClearSource = value instanceof File ? "new" : "initial"
+    const source: ClearSource = value instanceof File ? 'new' : 'initial'
     onChange(null)
     onClear?.(source)
-    if (inputRef.current) inputRef.current.value = ""
+    if (inputRef.current) inputRef.current.value = ''
   }
 
   const showClear = Boolean(previewUrl)
@@ -87,7 +95,7 @@ export default function AvatarUploader({
   const openCamera = async () => {
     setCamError(null)
     if (!navigator.mediaDevices?.getUserMedia) {
-      setCamError("Acesso à câmera não suportado neste navegador.")
+      setCamError('Acesso à câmera não suportado neste navegador.')
       setCamOpen(true)
       return
     }
@@ -97,7 +105,7 @@ export default function AvatarUploader({
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: { ideal: "user" },
+          facingMode: { ideal: 'user' },
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
@@ -114,17 +122,17 @@ export default function AvatarUploader({
         }, 10)
       })
 
-      const video = videoRef.current!
-      video.srcObject = stream
+      const video = videoRef.current!;
+      (video as HTMLVideoElement).srcObject = stream;
       video.playsInline = true
       video.muted = true
 
       await new Promise<void>((resolve) => {
         const onLoaded = () => {
-          video.removeEventListener("loadedmetadata", onLoaded)
+          video.removeEventListener('loadedmetadata', onLoaded)
           resolve()
         }
-        video.addEventListener("loadedmetadata", onLoaded, { once: true })
+        video.addEventListener('loadedmetadata', onLoaded, { once: true })
       })
 
       try {
@@ -132,15 +140,15 @@ export default function AvatarUploader({
       } catch {
         await new Promise<void>((resolve) => {
           const onCanPlay = () => {
-            video.removeEventListener("canplay", onCanPlay)
+            video.removeEventListener('canplay', onCanPlay)
             resolve()
           }
-          video.addEventListener("canplay", onCanPlay, { once: true })
+          video.addEventListener('canplay', onCanPlay, { once: true })
         })
         await video.play()
       }
-    } catch (err: any) {
-      setCamError(err?.message || "Não foi possível acessar a câmera.")
+    } catch (err: unknown) {
+      setCamError(err instanceof Error ? err.message : "Não foi possível acessar a câmera.");
     }
   }
 
@@ -167,7 +175,7 @@ export default function AvatarUploader({
     canvas.width = w
     canvas.height = h
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.drawImage(video, 0, 0, w, h)
 
@@ -175,13 +183,15 @@ export default function AvatarUploader({
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            const file = new File([blob], `camera_${Date.now()}.jpg`, { type: "image/jpeg" })
+            const file = new File([blob], `camera_${Date.now()}.jpg`, {
+              type: 'image/jpeg',
+            })
             onChange(file)
           }
           resolve()
         },
-        "image/jpeg",
-        0.92
+        'image/jpeg',
+        0.92,
       )
     })
 
@@ -190,17 +200,17 @@ export default function AvatarUploader({
 
   return (
     <>
-      <div className={cn("flex items-start gap-4", className)}>
+      <div className={cn('flex items-start gap-4', className)}>
         <div className="relative inline-flex group">
           <div
             className={cn(
-              "relative flex size-24 md:size-28 items-center justify-center overflow-hidden rounded-full",
-              "border border-dashed border-input bg-muted"
+              'relative flex size-24 md:size-28 items-center justify-center overflow-hidden rounded-full',
+              'border border-dashed border-input bg-muted',
             )}
-            aria-label={previewUrl ? "Pré-visualização da foto" : "Sem foto"}
+            aria-label={previewUrl ? 'Pré-visualização da foto' : 'Sem foto'}
           >
             {previewUrl ? (
-              <img
+              <Image
                 src={previewUrl}
                 alt="Pré-visualização do avatar"
                 className="size-full object-cover"
@@ -222,8 +232,8 @@ export default function AvatarUploader({
               size="icon"
               variant="secondary"
               className={cn(
-                "absolute -top-1 -right-1 size-6 rounded-full border-2 shadow-none",
-                "hidden group-hover:flex"
+                'absolute -top-1 -right-1 size-6 rounded-full border-2 shadow-none',
+                'hidden group-hover:flex',
               )}
               aria-label="Remover imagem"
               title="Remover imagem"
@@ -241,11 +251,11 @@ export default function AvatarUploader({
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             className={cn(
-              "border-input hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-ring/50",
-              "relative flex h-28 w-full max-w-md items-center justify-center overflow-hidden rounded-md",
-              "border border-dashed transition-colors outline-none focus-visible:ring-[3px] bg-background"
+              'border-input hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-ring/50',
+              'relative flex h-28 w-full max-w-md items-center justify-center overflow-hidden rounded-md',
+              'border border-dashed transition-colors outline-none focus-visible:ring-[3px] bg-background',
             )}
-            aria-label={previewUrl ? "Trocar foto" : "Enviar foto"}
+            aria-label={previewUrl ? 'Trocar foto' : 'Enviar foto'}
           >
             <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground px-2">
               <UploadIcon className="size-5 opacity-70" />
@@ -257,7 +267,11 @@ export default function AvatarUploader({
           </button>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={openPicker}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={openPicker}
+            >
               Selecionar arquivo
             </Button>
             <Button
@@ -309,15 +323,25 @@ export default function AvatarUploader({
             </div>
 
             <div className="p-4 flex items-center justify-end gap-2 border-t">
-              <Button type="button" variant="outline" onClick={closeCamera}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeCamera}
+              >
                 Cancelar
               </Button>
-              <Button type="button" onClick={capturePhoto}>
+              <Button
+                type="button"
+                onClick={capturePhoto}
+              >
                 Capturar
               </Button>
             </div>
 
-            <canvas ref={canvasRef} className="hidden" />
+            <canvas
+              ref={canvasRef}
+              className="hidden"
+            />
           </div>
         </div>
       )}

@@ -35,9 +35,11 @@ export default function PatientHero({ patient }: { patient: PatientData }) {
       <div className="relative h-24 sm:h-28 md:h-32 overflow-hidden rounded-b-xl">
         <div className="absolute inset-0 bg-gradient-to-b from-background/10 to-background/60 z-10" />
         {photo ? (
-          <img
+          <Image
             src={photo}
             alt=""
+            width={600}
+            height={400}
             className="absolute inset-0 h-full w-full object-cover object-top blur-md scale-110 opacity-80"
           />
         ) : (
@@ -45,6 +47,8 @@ export default function PatientHero({ patient }: { patient: PatientData }) {
             src={pattern}
             alt="background pattern"
             fill
+            width={600}
+            height={400}
             className="object-cover blur-md scale-110 opacity-60"
             priority
           />

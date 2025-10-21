@@ -12,6 +12,17 @@ const CIVIL_TO_NUM:  Record<string, number> = {
   single: 0, married: 1, divorced: 2, widowed: 3, separated: 4, stableUnion: 5, stable_union: 5,
 }
 
+type AddressComparable = {
+  street?: string
+  number?: number | string | null | ""
+  neighborhood?: string
+  city?: string
+  state?: string
+  country?: string
+  zip_code?: string
+  observation?: string
+}
+
 function asEnumNum(v: unknown, map?: Record<string, number>): number | null {
   if (v == null || v === "") return null
   if (typeof v === "number" && Number.isFinite(v)) return v
@@ -46,6 +57,17 @@ type OrigContact = {
   send_email_marketing?: boolean
 }
 
+type ContactComparable = {
+  phone?: string | null
+  cellphone?: string | null
+  send_sms?: boolean
+  send_wpp_confirmation?: boolean
+  send_wpp_marketing?: boolean
+  send_wpp_congrats?: boolean
+  send_email_appointment?: boolean
+  send_email_marketing?: boolean
+}
+
 function makeOrigAddressesMap(baseline?: PatientData) {
   const m = new Map<number, OrigAddress>()
   const list = baseline?.attributes?.person?.addresses ?? []
@@ -55,7 +77,7 @@ function makeOrigAddressesMap(baseline?: PatientData) {
       m.set(id, {
         id,
         street: a.street ?? "",
-        number: a.number as any,
+        number: a.number as number | string | null,
         neighborhood: a.neighborhood ?? "",
         city: a.city ?? "",
         state: a.state ?? "",
@@ -90,7 +112,7 @@ function makeOrigContactsMap(baseline?: PatientData) {
   return m
 }
 
-function isAddressChanged(next: any, orig?: OrigAddress | null): boolean {
+function isAddressChanged(next: AddressComparable , orig?: OrigAddress | null): boolean {
   if (!orig) return true
   return (
     (next.street ?? "") !== (orig.street ?? "") ||
@@ -104,7 +126,7 @@ function isAddressChanged(next: any, orig?: OrigAddress | null): boolean {
   )
 }
 
-function isContactChanged(next: any, orig?: OrigContact | null): boolean {
+function isContactChanged(next: ContactComparable, orig?: OrigContact | null): boolean {
   if (!orig) return true
   return (
     (next.phone ?? "") !== (orig.phone ?? "") ||

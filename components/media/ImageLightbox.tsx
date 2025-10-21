@@ -9,8 +9,9 @@ import {
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import clsx from 'clsx'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import Image from 'next/image'
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export type LightboxItem = {
   src: string
@@ -45,18 +46,25 @@ export default function ImageLightbox({
   const canPrev = hasItems && index > 0
   const canNext = hasItems && index < items.length - 1
 
-  const goPrev = () => setIndex((i) => (i > 0 ? i - 1 : i))
-  const goNext = () => setIndex((i) => (i < items.length - 1 ? i + 1 : i))
+  const goPrev = useCallback(() => {
+    setIndex((i) => (i > 0 ? i - 1 : i))
+  }, [])
+
+  const goNext = useCallback(() => {
+    setIndex((i) => (i < items.length - 1 ? i + 1 : i))
+  }, [items.length])
 
   useEffect(() => {
     if (!open) return
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') goPrev()
-      if (e.key === 'ArrowRight') goNext()
+      if (e.key === "ArrowLeft") goPrev()
+      if (e.key === "ArrowRight") goNext()
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [open, goPrev, goNext])
 
   const current = hasItems ? items[index] : null
   const titleText = hasItems
@@ -117,9 +125,11 @@ export default function ImageLightbox({
 
         <div className="flex items-center justify-center p-3">
           {current ? (
-            <img
+            <Image
               src={current.src}
               alt={current.alt ?? ''}
+              width={800}
+              height={600}
               className="max-h-[85vh] w-auto object-contain select-none"
               draggable={false}
             />

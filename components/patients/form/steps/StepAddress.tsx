@@ -28,7 +28,7 @@ export function StepAddress() {
         _destroy: false,
       })
     }
-  }, [fields.length])
+  }, [fields.length, append])
 
   const [loadingCep, setLoadingCep] = useState(false)
   const [cepError, setCepError] = useState<string | null>(null)
@@ -49,8 +49,9 @@ export function StepAddress() {
       setValue("person.addresses_attributes.0.city", addr.city, { shouldValidate: true })
       setValue("person.addresses_attributes.0.state", addr.state, { shouldValidate: true })
       lastCepRef.current = clean
-    } catch (e: any) {
-      setCepError(e?.message || "Falha ao buscar o CEP.")
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Falha ao buscar o CEP."
+      setCepError(msg)
     } finally {
       setLoadingCep(false)
     }

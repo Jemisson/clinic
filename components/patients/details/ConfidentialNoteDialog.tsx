@@ -19,7 +19,7 @@ import clsx from 'clsx'
 import { Check, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-type Props = {
+interface Props {
   patientId: string | number
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -106,7 +106,6 @@ export default function ConfidentialNoteDialog({
 
       await ConfidentialNotesService.create(patientId, payload)
 
-      // reset simples
       setTitle('')
       setContent('')
       setVisibilityRoles([])

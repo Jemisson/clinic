@@ -37,7 +37,7 @@ import {
 } from '@tanstack/react-table'
 import * as LucideIcons from 'lucide-react'
 import { Plus, Settings2 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useSWR from 'swr'
 
 interface DataTableProps {
@@ -95,6 +95,11 @@ export function DataTable({ columns }: DataTableProps) {
     }
   }
 
+  const openEdit = useCallback((tag: TagData) => {
+    setSelectedTag(tag)
+    setIsDialogOpen(true)
+  }, [])
+
   const cols = useMemo(
     () =>
       columns({
@@ -107,11 +112,6 @@ export function DataTable({ columns }: DataTableProps) {
 
   function openCreate() {
     setSelectedTag(null)
-    setIsDialogOpen(true)
-  }
-
-  function openEdit(tag: TagData) {
-    setSelectedTag(tag)
     setIsDialogOpen(true)
   }
 

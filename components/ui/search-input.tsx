@@ -1,7 +1,7 @@
 'use client'
 
 import { Input } from '@/components/ui/input'
-import { X, Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 type Props = {
@@ -35,7 +35,7 @@ export function SearchInput({
     }, debounceMs)
 
     return () => clearTimeout(timeout)
-  }, [internal])
+  }, [internal, debounceMs, onChange, value])
 
   const handleClear = () => {
     setInternal('')

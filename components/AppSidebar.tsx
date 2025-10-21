@@ -1,23 +1,4 @@
 import {
-  ChevronDown,
-  Home,
-  Bookmark,
-  UserRound,
-  UserRoundCheck,
-  UserRoundPlus,
-  UserRoundMinus,
-  ChevronsUpDown,
-  Sparkles,
-  BadgeCheck,
-  CreditCard,
-  Bell,
-  LogOut,
-  User,
-} from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
-
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -25,19 +6,24 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
   SidebarRail,
-} from '@/components/ui/sidebar';
-
+} from '@/components/ui/sidebar'
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+  BadgeCheck,
+  Bell,
+  Bookmark,
+  ChevronsUpDown,
+  CreditCard,
+  Home,
+  LogOut,
+  Sparkles,
+  UserRound,
+  UserRoundPlus,
+} from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
 
-import { SITE_NAME } from '@/utils/constants';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,8 +32,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useIsMobile } from '@/hooks/use-mobile';
+} from '@/components/ui/dropdown-menu'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { SITE_NAME } from '@/utils/constants'
 
 export function AppSidebar() {
   return (
@@ -64,7 +51,7 @@ export function AppSidebar() {
                   className="object-cover"
                 />
               </div>
-              <span className='font-semibold'>{SITE_NAME}</span>
+              <span className="font-semibold">{SITE_NAME}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -73,7 +60,10 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive>
+            <SidebarMenuButton
+              asChild
+              isActive
+            >
               <Link href="/">
                 <Home /> <span>Home</span>
               </Link>
@@ -83,27 +73,26 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link href="/tags">
-              <Bookmark /> Tags
+                <Bookmark /> Tags
               </Link>
-              </SidebarMenuButton>
+            </SidebarMenuButton>
           </SidebarMenuItem>
 
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link href="/pacientes">
-              <UserRoundPlus /> Pacientes
+                <UserRoundPlus /> Pacientes
               </Link>
-              </SidebarMenuButton>
+            </SidebarMenuButton>
           </SidebarMenuItem>
 
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link href="/usuarios">
-              <UserRound /> Usuários
+                <UserRound /> Usuários
               </Link>
-              </SidebarMenuButton>
+            </SidebarMenuButton>
           </SidebarMenuItem>
-
         </SidebarMenu>
       </SidebarContent>
 
@@ -117,7 +106,10 @@ export function AppSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar>
-                    <AvatarImage src="/user.webp" alt="Foto de Geisa" />
+                    <AvatarImage
+                      src="/user.webp"
+                      alt="Foto de Geisa"
+                    />
                     <AvatarFallback className="rounded-lg">GG</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
@@ -140,7 +132,10 @@ export function AppSidebar() {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar>
-                      <AvatarImage src="/user.webp" alt="Foto de Geisa" />
+                      <AvatarImage
+                        src="/user.webp"
+                        alt="Foto de Geisa"
+                      />
                       <AvatarFallback className="rounded-lg">GG</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
@@ -187,5 +182,5 @@ export function AppSidebar() {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }

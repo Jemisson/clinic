@@ -28,7 +28,6 @@ import dayjs from "dayjs";
 import { cn } from "@/lib/utils";
 import type { UserFormInput } from "./index";
 
-// enums centralizados
 import {
   USER_SECTOR_OPTIONS,
   USER_FUNCTION_OPTIONS,

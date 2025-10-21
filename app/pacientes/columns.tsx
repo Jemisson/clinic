@@ -40,11 +40,9 @@ const getCity = (pd: PatientData): string => {
 }
 
 export const patientColumns = ({
-  onView,
   onEdit,
   onOpenNotes,
 }: {
-  onView: (patient: PatientData) => void
   onEdit: (patient: PatientData) => void
   onOpenNotes: (patient: PatientData) => void
 }): ColumnDef<PatientData, string>[] => [

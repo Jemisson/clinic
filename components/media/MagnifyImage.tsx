@@ -3,6 +3,7 @@
 import * as React from "react";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 type Props = {
   src: string;
@@ -68,10 +69,12 @@ export default function MagnifyImage({
       onMouseLeave={() => setShowLens(false)}
       onMouseMove={onMove}
     >
-      <img
+      <Image
         ref={imgRef}
         src={src}
         alt={alt}
+        width={800}
+        height={600}
         draggable={false}
         className={clsx("block w-full", imgClassName)}
       />

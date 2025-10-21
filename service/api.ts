@@ -1,4 +1,3 @@
-// service/api.ts
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import Cookies from 'js-cookie'
 import { toast } from "sonner"
