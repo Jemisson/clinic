@@ -15,6 +15,7 @@ import {
   Briefcase,
   CalendarDays,
   Camera,
+  FileCheck2,
   HeartHandshake,
   IdCard,
   Info,
@@ -24,6 +25,7 @@ import {
   User,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import PatientAttachmentsTab from '../patient-attachments/PatientAttachmentsTab'
 import PatientPhotosCard from '../patient-photos/PatientPhotosCard'
 
 export default function PatientTabs({ patient }: { patient: PatientData }) {
@@ -116,6 +118,23 @@ export default function PatientTabs({ patient }: { patient: PatientData }) {
                   </TabsTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Fotos</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger
+                    value="attachments"
+                    className="
+                      group
+                      aria-selected:bg-primary aria-selected:text-white
+                      rounded-md p-2 transition-all duration-300
+                      flex items-center justify-center
+                    "
+                  >
+                    <FileCheck2 className="size-5 group-aria-selected:text-white" />
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Arquivos</TooltipContent>
               </Tooltip>
             </TabsList>
           </div>
@@ -272,6 +291,14 @@ export default function PatientTabs({ patient }: { patient: PatientData }) {
               ) : (
                 <p className="text-muted-foreground">Paciente inválido.</p>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="attachments">
+          <Card className="border-none shadow-none p-0">
+            <CardContent className="pt-4 px-0 text-muted-foreground">
+              <PatientAttachmentsTab patientId={patientId} />
             </CardContent>
           </Card>
         </TabsContent>
