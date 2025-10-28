@@ -1,4 +1,3 @@
-// service/api/patientAttachments.ts
 import api from './api';
 import {
   CreateOrUpdatePatientAttachmentInput,
@@ -37,7 +36,7 @@ export const PatientAttachmentsService = {
     const { data } = await api.post(RESOURCE(patientId), formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return data; // JSON:API { data: ... }
+    return data;
   },
 
   update: async (
@@ -50,7 +49,7 @@ export const PatientAttachmentsService = {
     const { data } = await api.put(`${RESOURCE(patientId)}/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return data; // JSON:API { data: ... }
+    return data;
   },
 
   destroy: async (patientId: string | number, id: string | number) => {

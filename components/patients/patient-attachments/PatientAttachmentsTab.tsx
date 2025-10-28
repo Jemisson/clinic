@@ -1,19 +1,19 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import PatientAttachmentsService from '@/service/patient-attachments'
 import {
   AttachmentAttributes,
   AttachmentResource,
 } from '@/types/patient.attachment'
 import { buildRequiredAttachmentCards } from '@/utils/requiredAttachments'
-import { FilePlus, FileText, ImagePlus, Info, Upload } from 'lucide-react'
+import { FilePlus, FileText, Info } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import useSWR from 'swr'
 import AddAttachmentDialog from './AddAttachmentDialog'
 import AttachmentItem from './AttachmentItem'
-import { Button } from '@/components/ui/button'
 
-type Props = {
+interface Props {
   patientId: string | number
 }
 
@@ -67,8 +67,7 @@ export default function PatientAttachmentsTabLayout({ patientId }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Header com título e botão Adicionar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-1">
         <h3 className="text-xl font-medium text-primary">
           Arquivos e Consentimentos
         </h3>
@@ -90,16 +89,22 @@ export default function PatientAttachmentsTabLayout({ patientId }: Props) {
         </p>
       </div>
 
-      {/* Grid dos cards */}
-      <div className="flex flex-wrap gap-6">
+      <p className="text-primary">Documentos Obrigatórios</p>
+
+      <div className="flex flex-wrap justify-start gap-6">
         {requiredCards.map((card) => (
           <AttachmentItem
-            key={card.key}
             icon={<FileText className="h-8 w-8" />}
             title={card.title}
             url={card.url}
             date={card.date}
             status={card.status}
+            patientId={patientId}
+            attachmentId={card.matchedAttachmentId}
+            key={card.key}
+            onDeleted={async () => {
+              await mutate()
+            }}
           />
         ))}
 
@@ -114,30 +119,42 @@ export default function PatientAttachmentsTabLayout({ patientId }: Props) {
             Não foi possível carregar os anexos.
           </div>
         )}
-
-        {otherAttachments.map((resource) => {
-          const a: AttachmentAttributes = resource.attributes
-          return (
-            <AttachmentItem
-              key={resource.id}
-              icon={<FileText className="h-8 w-8" />}
-              title={a.title || '(sem título)'}
-              url={a.file_url || '#'}
-              date={formatDate(a.captured_at || a.created_at)}
-              status={null}
-            />
-          )
-        })}
       </div>
 
-      {/* Modal */}
+      <div>
+        <p className="text-primary mb-2">Outros Documentos</p>
+
+        {!otherAttachments || otherAttachments.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic mb-4">
+            Não há outros documentos anexados a este paciente.
+          </p>
+        ) : (
+          otherAttachments.map((resource) => {
+            const a: AttachmentAttributes = resource.attributes
+            return (
+              <AttachmentItem
+                key={resource.id}
+                icon={<FileText className="h-8 w-8" />}
+                title={a.title || '(sem título)'}
+                url={a.file_url || '#'}
+                date={formatDate(a.captured_at || a.created_at)}
+                status={'ok'}
+                patientId={patientId}
+                attachmentId={resource.id}
+                onDeleted={async () => {
+                  await mutate()
+                }}
+              />
+            )
+          })
+        )}
+      </div>
+
       <AddAttachmentDialog
         open={openDialog}
         onOpenChange={setOpenDialog}
         patientId={patientId}
-        // no futuro:
         onDidUpload={async () => {
-          // depois que enviar com sucesso:
           await mutate()
         }}
       />

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import DragAndDropField from './DragAndDropField';
+import { FormEvent, useEffect, useState } from 'react';
+import PatientAttachmentsService from '@/service/patient-attachments';
 
 type Props = {
   open: boolean;
@@ -34,17 +35,16 @@ export default function AddAttachmentDialog({
   patientId,
   onDidUpload,
 }: Props) {
-  const [isRequiredType, setIsRequiredType] = React.useState(false);
-  const [title, setTitle] = React.useState('');
-  const [requiredTitle, setRequiredTitle] = React.useState(
+  const [isRequiredType, setIsRequiredType] = useState(false);
+  const [title, setTitle] = useState('');
+  const [requiredTitle, setRequiredTitle] = useState(
     REQUIRED_OPTIONS[0].value,
   );
-  const [file, setFile] = React.useState<File | null>(null);
-  const [submitting, setSubmitting] = React.useState(false);
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // reset ao fechar
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) {
       setIsRequiredType(false);
       setTitle('');
@@ -55,7 +55,7 @@ export default function AddAttachmentDialog({
     }
   }, [open]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!file) {
       setErrorMsg('Selecione um arquivo.');
@@ -65,17 +65,10 @@ export default function AddAttachmentDialog({
     setSubmitting(true);
     setErrorMsg(null);
 
-    // (a) determinar o título que vamos mandar
     const finalTitle = isRequiredType ? requiredTitle : title || requiredTitle;
 
-    // (b) determinar o kind
-    // regra inicial: se o nome parece um exame, podemos mandar 'exam', senão 'document'.
-    // por enquanto vamos mandar sempre 'document' porque é mais seguro em termos legais.
-    const kind: 'document' | 'exam' = 'document';
+    const kind = 'document';
 
-    // (c) montar payload pra PatientAttachmentsService.create
-    // vamos deixar comentado agora; plugar depois
-    /*
     try {
       await PatientAttachmentsService.create(patientId, {
         title: finalTitle,
@@ -95,15 +88,6 @@ export default function AddAttachmentDialog({
     } finally {
       setSubmitting(false);
     }
-    */
-
-    // por enquanto só fecha e imprime
-    console.log('Enviar:', {
-      patientId,
-      finalTitle,
-      kind,
-      file,
-    });
     setSubmitting(false);
     onOpenChange(false);
   }
@@ -119,7 +103,6 @@ export default function AddAttachmentDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Switch: marcar como documento obrigatório */}
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
               <Label className="text-sm font-medium">
@@ -136,7 +119,6 @@ export default function AddAttachmentDialog({
             />
           </div>
 
-          {/* Se for obrigatório: select fixo dos obrigatórios */}
           {isRequiredType ? (
             <div className="space-y-2">
               <Label className="text-sm font-medium">
@@ -155,7 +137,6 @@ export default function AddAttachmentDialog({
               </select>
             </div>
           ) : (
-            // Se NÃO for obrigatório: campo livre de nome
             <div className="space-y-2">
               <Label className="text-sm font-medium">Nome do documento *</Label>
               <Input
@@ -167,7 +148,6 @@ export default function AddAttachmentDialog({
             </div>
           )}
 
-          {/* Drag & Drop */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">Arquivo *</Label>
             <DragAndDropField file={file} onFileChange={setFile} />

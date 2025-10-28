@@ -5,7 +5,7 @@ export type AttachmentAttributes = {
   patient_id: number;
   title: string | null;
   kind: AttachmentKind;
-  captured_at: string | null; // ISO8601
+  captured_at: string | null;
   created_at: string;
   updated_at: string;
   file_url: string | null;
@@ -15,7 +15,7 @@ export type AttachmentAttributes = {
 };
 
 export type AttachmentResource = {
-  id: string;      // JSON:API usa string para id no topo
+  id: string;
   type: 'patient_attachment';
   attributes: AttachmentAttributes;
 };
@@ -36,13 +36,12 @@ export type ShowResponse = {
   data: AttachmentResource;
 };
 
-// payloads de create/update (sem file/thumb gerados pela API)
 export type CreateOrUpdatePatientAttachmentInput = {
   title?: string | null;
   kind: AttachmentKind;
-  captured_at?: string | null; // ISO8601
+  captured_at?: string | null;
 };
 
 export type ExtraUpload = {
-  file?: File | null; // opcional em update
+  file?: File | null;
 };
