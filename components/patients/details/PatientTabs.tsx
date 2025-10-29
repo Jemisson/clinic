@@ -16,6 +16,7 @@ import {
   CalendarDays,
   Camera,
   FileCheck2,
+  FilePlus,
   HeartHandshake,
   IdCard,
   Info,
@@ -135,6 +136,23 @@ export default function PatientTabs({ patient }: { patient: PatientData }) {
                   </TabsTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Arquivos</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger
+                    value="exams"
+                    className="
+                      group
+                      aria-selected:bg-primary aria-selected:text-white
+                      rounded-md p-2 transition-all duration-300
+                      flex items-center justify-center
+                    "
+                  >
+                    <FilePlus className="size-5 group-aria-selected:text-white" />
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Exames</TooltipContent>
               </Tooltip>
             </TabsList>
           </div>
@@ -298,7 +316,31 @@ export default function PatientTabs({ patient }: { patient: PatientData }) {
         <TabsContent value="attachments">
           <Card className="border-none shadow-none p-0">
             <CardContent className="pt-4 px-0 text-muted-foreground">
-              <PatientAttachmentsTab patientId={patientId} />
+              <PatientAttachmentsTab
+                patientId={patientId}
+                singularLabel="Documento"
+                pluralLabel="Documentos"
+                headerTitle="Arquivos e Consentimentos"
+                addButtonLabel="Adicionar Documento"
+                showRequired={true}
+                kindFilter="document"
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="exams">
+          <Card className="border-none shadow-none p-0">
+            <CardContent className="pt-4 px-0 text-muted-foreground">
+              <PatientAttachmentsTab
+                patientId={patientId}
+                singularLabel="Exame"
+                pluralLabel="Exames"
+                headerTitle="Exames do Paciente"
+                addButtonLabel="Adicionar Exame"
+                showRequired={false}
+                kindFilter="exam"
+              />
             </CardContent>
           </Card>
         </TabsContent>

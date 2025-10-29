@@ -213,6 +213,7 @@ export default function FormPatient({
     if (isEdit) {
       const id = patientId ?? initialData?.id
       if (!id) throw new Error('ID do paciente ausente')
+
       await PatientsService.update(String(id), payload, extra)
     } else {
       await PatientsService.create(payload, extra)

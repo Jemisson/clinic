@@ -1,125 +1,142 @@
-'use client';
+'use client'
 
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import DragAndDropField from './DragAndDropField';
-import { FormEvent, useEffect, useState } from 'react';
-import PatientAttachmentsService from '@/service/patient-attachments';
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import PatientAttachmentsService from '@/service/patient-attachments'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
+import DragAndDropField from './DragAndDropField'
 
 type Props = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  patientId: string | number;
-  onDidUpload?: () => void;
-};
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  patientId: string | number
+  onDidUpload?: () => void
+  kind: 'document' | 'exam'
+  enableRequiredOptions?: boolean
+  titlePlaceholder?: string
+}
 
 const REQUIRED_OPTIONS = [
   { value: 'Anamnese', label: 'Anamnese' },
   { value: 'Uso de Imagem', label: 'Uso de Imagem' },
-];
+]
 
 export default function AddAttachmentDialog({
   open,
   onOpenChange,
   patientId,
   onDidUpload,
+  kind,
+  enableRequiredOptions = true,
+  titlePlaceholder = 'Ex: Exame Raio-X, Laudo, Receita...',
 }: Props) {
-  const [isRequiredType, setIsRequiredType] = useState(false);
-  const [title, setTitle] = useState('');
-  const [requiredTitle, setRequiredTitle] = useState(
-    REQUIRED_OPTIONS[0].value,
-  );
-  const [file, setFile] = useState<File | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const canChooseRequired = useMemo(
+    () => enableRequiredOptions && kind === 'document',
+    [enableRequiredOptions, kind],
+  )
+
+  const [isRequiredType, setIsRequiredType] = useState(false)
+  const [title, setTitle] = useState('')
+  const [requiredTitle, setRequiredTitle] = useState(REQUIRED_OPTIONS[0].value)
+  const [file, setFile] = useState<File | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
-      setIsRequiredType(false);
-      setTitle('');
-      setRequiredTitle(REQUIRED_OPTIONS[0].value);
-      setFile(null);
-      setSubmitting(false);
-      setErrorMsg(null);
+      setIsRequiredType(false)
+      setTitle('')
+      setRequiredTitle(REQUIRED_OPTIONS[0].value)
+      setFile(null)
+      setSubmitting(false)
+      setErrorMsg(null)
     }
-  }, [open]);
+  }, [open])
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+    e.preventDefault()
     if (!file) {
-      setErrorMsg('Selecione um arquivo.');
-      return;
+      setErrorMsg('Selecione um arquivo.')
+      return
     }
 
-    setSubmitting(true);
-    setErrorMsg(null);
+    setSubmitting(true)
+    setErrorMsg(null)
 
-    const finalTitle = isRequiredType ? requiredTitle : title || requiredTitle;
-
-    const kind = 'document';
+    const finalTitle =
+      canChooseRequired && isRequiredType
+        ? requiredTitle
+        : title || requiredTitle
 
     try {
-      await PatientAttachmentsService.create(patientId, {
-        title: finalTitle,
-        kind,
-        captured_at: new Date().toISOString(),
-      }, {
-        file,
-      });
+      await PatientAttachmentsService.create(
+        patientId,
+        {
+          title: finalTitle,
+          kind,
+          captured_at: new Date().toISOString(),
+        },
+        { file },
+      )
 
-      if (onDidUpload) {
-        await onDidUpload();
-      }
-
-      onOpenChange(false);
+      if (onDidUpload) await onDidUpload()
+      onOpenChange(false)
     } catch (err: any) {
-      setErrorMsg(err.message || 'Falha ao enviar arquivo.');
+      setErrorMsg(err.message || 'Falha ao enviar arquivo.')
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-    setSubmitting(false);
-    onOpenChange(false);
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="sm:max-w-md rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Novo arquivo</DialogTitle>
+          <DialogTitle>
+            {kind === 'exam' ? 'Novo exame' : 'Novo arquivo'}
+          </DialogTitle>
           <DialogDescription>
             Envie PDF ou imagem. Campos obrigatórios marcados com *.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium">
-                Termos, condições e anamnese
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Marque se este arquivo é um documento obrigatório (ex. Anamnese,
-                Uso de Imagem).
-              </p>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
+          {canChooseRequired && (
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">
+                  Termos, condições e anamnese
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Marque se este arquivo é um documento obrigatório (ex.
+                  Anamnese, Uso de Imagem).
+                </p>
+              </div>
+              <Switch
+                checked={isRequiredType}
+                onCheckedChange={(checked) => setIsRequiredType(checked)}
+              />
             </div>
-            <Switch
-              checked={isRequiredType}
-              onCheckedChange={(checked) => setIsRequiredType(checked)}
-            />
-          </div>
+          )}
 
-          {isRequiredType ? (
+          {canChooseRequired && isRequiredType ? (
             <div className="space-y-2">
               <Label className="text-sm font-medium">
                 Documento obrigatório *
@@ -130,7 +147,10 @@ export default function AddAttachmentDialog({
                 onChange={(e) => setRequiredTitle(e.target.value)}
               >
                 {REQUIRED_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
+                  <option
+                    key={opt.value}
+                    value={opt.value}
+                  >
                     {opt.label}
                   </option>
                 ))}
@@ -138,11 +158,13 @@ export default function AddAttachmentDialog({
             </div>
           ) : (
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Nome do documento *</Label>
+              <Label className="text-sm font-medium">
+                {kind === 'exam' ? 'Nome do exame *' : 'Nome do documento *'}
+              </Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Exame Raio-X, Laudo, Receita..."
+                placeholder={titlePlaceholder}
                 required
               />
             </div>
@@ -150,7 +172,10 @@ export default function AddAttachmentDialog({
 
           <div className="space-y-2">
             <Label className="text-sm font-medium">Arquivo *</Label>
-            <DragAndDropField file={file} onFileChange={setFile} />
+            <DragAndDropField
+              file={file}
+              onFileChange={setFile}
+            />
             <p className="text-[11px] text-muted-foreground">
               Formatos aceitos: PDF, JPG, PNG, WEBP, HEIC (máx 25MB).
             </p>
@@ -182,5 +207,5 @@ export default function AddAttachmentDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
