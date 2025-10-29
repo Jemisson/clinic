@@ -92,8 +92,12 @@ export default function AddAttachmentDialog({
 
       if (onDidUpload) await onDidUpload()
       onOpenChange(false)
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Falha ao enviar arquivo.')
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setErrorMsg(err.message || 'Falha ao enviar arquivo.')
+      } else {
+        setErrorMsg(String(err) || 'Falha ao enviar arquivo.')
+      }
     } finally {
       setSubmitting(false)
     }
