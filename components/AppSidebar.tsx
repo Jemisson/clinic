@@ -17,6 +17,7 @@ import {
   Home,
   LogOut,
   Sparkles,
+  Syringe,
   UserRound,
   UserRoundPlus,
 } from 'lucide-react'
@@ -93,6 +94,15 @@ export function AppSidebar() {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/procedimentos">
+                <Syringe /> Procedimentos
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
         </SidebarMenu>
       </SidebarContent>
 

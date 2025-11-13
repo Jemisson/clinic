@@ -60,3 +60,12 @@ export function toOffsetDateTime(localInput: string): string {
   const withSeconds = localInput.length === 16 ? `${localInput}:00` : localInput
   return `${withSeconds}${sign}${hh}:${mm}`
 }
+
+export function formatCurrencyBRL(value: string) {
+  const num = Number(value)
+  if (Number.isNaN(num)) return value
+  return num.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  })
+}

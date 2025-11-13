@@ -127,10 +127,8 @@ export default function AttachmentItem({
           confirmLabel="Excluir"
           deactivateDescription={
             <>
-              <p>
-                Tem certeza que deseja <b>excluir</b> o arquivo <b>{title}</b>?
-                Essa ação não pode ser desfeita depois.
-              </p>
+              Tem certeza que deseja <b>excluir</b> o arquivo <b>{title}</b>?
+              Essa ação não pode ser desfeita depois.
             </>
           }
           loading={deleting}
