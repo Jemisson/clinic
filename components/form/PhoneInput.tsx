@@ -41,7 +41,7 @@ export function PhoneInput<TFieldValues extends FieldValues = FieldValues>({
               onChange={field.onChange}
               disabled={disabled}
             >
-              {(inputProps: any) => (
+              {(inputProps:  React.InputHTMLAttributes<HTMLInputElement>) => (
                 <Input
                   {...inputProps}
                   id={name as string}
