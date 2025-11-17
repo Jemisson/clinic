@@ -163,7 +163,7 @@ export const columns = ({
       const count = row.original.attributes.sessions_count
       return (
         <span>
-          {count} sess{count > 1 ? 'es' : 'ão'}
+          {count} sess{count > 1 ? 'ões' : 'ão'}
         </span>
       )
     },
