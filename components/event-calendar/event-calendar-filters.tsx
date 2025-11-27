@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQueryStates, parseAsArrayOf, parseAsString } from 'nuqs';
-import { Search, X, Tag, Repeat, Clock } from 'lucide-react';
+import { Search, X, Tag, Repeat, Clock, CalendarPlus2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -117,7 +117,7 @@ export const EventCalendarFilters = () => {
           className="h-9 gap-2 px-4 text-sm font-medium transition-all"
         >
           <Search className="h-4 w-4" />
-          Search Events
+          Pesquisar
           {filters.search && (
             <Badge variant="secondary" className="ml-1">
               1
@@ -130,8 +130,8 @@ export const EventCalendarFilters = () => {
               variant={filters.categories.length > 0 ? 'default' : 'outline'}
               className="h-9 gap-2 px-4 text-sm font-medium transition-all"
             >
-              <Tag className="h-4 w-4" />
-              Categories
+              <CalendarPlus2 className="h-4 w-4" />
+              Tipo de agendamento
               {filters.categories.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {filters.categories.length}
@@ -142,7 +142,7 @@ export const EventCalendarFilters = () => {
           <PopoverContent className="w-64 p-4">
             <div className="space-y-3">
               <h4 className="text-muted-foreground text-sm font-medium">
-                Select Categories
+                Selecione um ou mais tipo
               </h4>
               <div className="max-h-48 space-y-3 overflow-y-auto">
                 {CATEGORY_OPTIONS.map((category, index) => (
@@ -166,79 +166,7 @@ export const EventCalendarFilters = () => {
             </div>
           </PopoverContent>
         </Popover>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={filters.colors.length > 0 ? 'default' : 'outline'}
-              className="h-9 gap-2 px-4 text-sm font-medium transition-all"
-            >
-              <div className="h-4 w-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 ring-2 ring-white" />
-              Colors
-              {filters.colors.length > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {filters.colors.length}
-                </Badge>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-4">
-            <div className="space-y-3">
-              <h4 className="text-muted-foreground text-sm font-medium">
-                Select Colors
-              </h4>
-              <div className="grid grid-cols-2 gap-3">
-                {EVENT_COLORS.map((color) => {
-                  const validColors = getColorClasses(color.value);
-                  return (
-                    <div
-                      key={color.value}
-                      className="flex items-center space-x-3"
-                    >
-                      <Checkbox
-                        id={`color-${color.value}`}
-                        checked={filters.colors.includes(color.value)}
-                        onCheckedChange={() =>
-                          toggleArrayFilter('colors', color.value)
-                        }
-                      />
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`h-4 w-4 rounded-full border-2 border-white shadow-sm ${validColors.bg}`}
-                        />
-                        <Label
-                          htmlFor={`color-${color.value}`}
-                          className="cursor-pointer text-sm font-normal"
-                        >
-                          {color.label}
-                        </Label>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-        <Select
-          value={filters.isRepeating}
-          onValueChange={(value) => updateSingleFilter('isRepeating', value)}
-        >
-          <SelectTrigger className="h-9 w-[160px] gap-2 text-sm font-medium">
-            <Repeat className="h-4 w-4" />
-            <SelectValue placeholder="All Events" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all" className="text-sm">
-              All Events
-            </SelectItem>
-            <SelectItem value="repeating" className="text-sm">
-              Repeating Only
-            </SelectItem>
-            <SelectItem value="single" className="text-sm">
-              Single Events
-            </SelectItem>
-          </SelectContent>
-        </Select>
+
         {filters.isRepeating === 'repeating' && (
           <Popover>
             <PopoverTrigger asChild>
@@ -292,8 +220,8 @@ export const EventCalendarFilters = () => {
           <>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-muted-foreground text-sm font-medium">
-                {activeFiltersCount} active filter
-                {activeFiltersCount > 1 ? 's' : ''}:
+                {activeFiltersCount}
+                {activeFiltersCount > 1 ? ' filtros aplicados' : ' filtro aplicado'}:
               </span>
               {filters.search && (
                 <Badge
@@ -403,7 +331,7 @@ export const EventCalendarFilters = () => {
               className="text-muted-foreground hover:text-foreground hover:bg-muted border-muted-foreground/30 hover:border-muted-foreground/50 h-7 gap-1.5 border border-dashed px-3 text-xs font-medium transition-all"
             >
               <X className="h-3.5 w-3.5" />
-              Clear All
+              Limpar Filtros
             </Button>
           </>
         )}

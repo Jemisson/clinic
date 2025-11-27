@@ -1,6 +1,6 @@
 import { EVENT_VIEW_CONFIG } from '@/components/event-calendar/event-list'
 import { CATEGORY_OPTIONS, LOCALES } from '@/constants/calendar-constant'
-import { EventTypes } from '@/db/schema'
+import { Events } from '@/types/event'
 import {
   CalendarViewType,
   EventPosition,
@@ -82,17 +82,17 @@ export function useWeekDays(
 /**
  * Filters and categorizes events into single-day and multi-day events
  * @memberof EventUtils
- * @param {EventTypes[]} events - Array of events to filter
+ * @param {Events[]} events - Array of events to filter
  * @param {Date[]} daysInWeek - Array of dates representing the current week
  * @returns {Object} Filtered events categorized by duration
  *
  * @example
  * const { singleDayEvents, multiDayEvents } = useFilteredEvents(events, weekDays);
  */
-export function useFilteredEvents(events: EventTypes[], daysInWeek: Date[]) {
+export function useFilteredEvents(events: Events[], daysInWeek: Date[]) {
   return useMemo(() => {
-    const singleDayEvents: EventTypes[] = []
-    const multiDayEvents: EventTypes[] = []
+    const singleDayEvents: Events[] = []
+    const multiDayEvents: Events[] = []
 
     const [firstDayOfWeek, lastDayOfWeek] = [daysInWeek[0], daysInWeek[6]]
 
@@ -127,7 +127,7 @@ export function useFilteredEvents(events: EventTypes[], daysInWeek: Date[]) {
 /**
  * Calculates positions for single-day events to prevent visual overlaps
  * @memberof EventPositioning
- * @param {EventTypes[]} singleDayEvents - Array of single-day events
+ * @param {Events[]} singleDayEvents - Array of single-day events
  * @param {Date[]} daysInWeek - Array of dates representing the current week
  * @param {number} hourHeight - Height in pixels for one hour in the calendar
  * @returns {Record<string, EventPosition>} Positions keyed by event-day identifier
@@ -136,7 +136,7 @@ export function useFilteredEvents(events: EventTypes[], daysInWeek: Date[]) {
  * const eventPositions = useEventPositions(singleDayEvents, weekDays, 60);
  */
 export function useEventPositions(
-  singleDayEvents: EventTypes[],
+  singleDayEvents: Events[],
   daysInWeek: Date[],
   hourHeight: number,
 ) {
@@ -144,7 +144,7 @@ export function useEventPositions(
     const positions: Record<string, EventPosition> = {}
     const dayEvents: Record<
       number,
-      Array<{ event: EventTypes; start: number; end: number }>
+      Array<{ event: Events; start: number; end: number }>
     > = {}
 
     // Initialize day events structure
@@ -216,19 +216,19 @@ export function useEventPositions(
 /**
  * Calculates positions for multi-day events to prevent visual overlaps
  * @memberof EventPositioning
- * @param {EventTypes[]} multiDayEvents - Array of multi-day events
+ * @param {Events[]} multiDayEvents - Array of multi-day events
  * @param {Date[]} daysInWeek - Array of dates representing the current week
- * @returns {Array<MultiDayEventRowType & { event: EventTypes }>} Array of positioned multi-day events
+ * @returns {Array<MultiDayEventRowType & { event: Events }>} Array of positioned multi-day events
  *
  * @example
  * const multiDayRows = useMultiDayEventRows(multiDayEvents, weekDays);
  */
 export function useMultiDayEventRows(
-  multiDayEvents: EventTypes[],
+  multiDayEvents: Events[],
   daysInWeek: Date[],
 ) {
   return useMemo(() => {
-    const rows: Array<MultiDayEventRowType & { event: EventTypes }> = []
+    const rows: Array<MultiDayEventRowType & { event: Events }> = []
     const [weekStart, weekEnd] = [daysInWeek[0], daysInWeek[6]]
 
     multiDayEvents.forEach((event) => {
@@ -280,14 +280,14 @@ export function useMultiDayEventRows(
 /**
  * Calculates positions for day-view events to prevent visual overlaps
  * @memberof EventPositioning
- * @param {EventTypes[]} events - Array of events for the day
+ * @param {Events[]} events - Array of events for the day
  * @param {number} hourHeight - Height in pixels for one hour in the calendar
  * @returns {Record<string, EventPosition>} Positions keyed by event ID
  *
  * @example
  * const dayEventPositions = useDayEventPositions(dayEvents, 60);
  */
-export function useDayEventPositions(events: EventTypes[], hourHeight: number) {
+export function useDayEventPositions(events: Events[], hourHeight: number) {
   return useMemo(() => {
     const positions: Record<string, EventPosition> = {}
 
@@ -357,17 +357,17 @@ export function useDayEventPositions(events: EventTypes[], hourHeight: number) {
 /**
  * Filters events based on current view type
  * @memberof EventOrganization
- * @param {EventTypes[]} events - Array of events to filter
+ * @param {Events[]} events - Array of events to filter
  * @param {Date} currentDate - Reference date for filtering
  * @param {CalendarViewType} viewType - Current calendar view type
  * @param {Locale} [locale] - Optional locale for date calculations
- * @returns {EventTypes[]} Filtered array of events
+ * @returns {Events[]} Filtered array of events
  *
  * @example
  * const filteredEvents = useEventFilter(events, currentDate, CalendarViewType.WEEK);
  */
 export function useEventFilter(
-  events: EventTypes[],
+  events: Events[],
   currentDate: Date,
   viewType: CalendarViewType,
 ) {
@@ -388,7 +388,7 @@ export function useEventFilter(
 /**
  * Groups events by time or date based on view type
  * @memberof EventOrganization
- * @param {EventTypes[]} events - Array of events to group
+ * @param {Events[]} events - Array of events to group
  * @param {CalendarViewType} viewType - Current calendar view type
  * @param {TimeFormatType} timeFormat - Time format for display (12h or 24h)
  * @param {Locale} [locale] - Optional locale for date formatting
@@ -398,7 +398,7 @@ export function useEventFilter(
  * const groupedEvents = useEventGrouper(events, CalendarViewType.DAY, TimeFormatType.HOUR_12);
  */
 export function useEventGrouper(
-  events: EventTypes[],
+  events: Events[],
   viewType: CalendarViewType,
   timeFormat: TimeFormatType,
   locale?: Locale,
@@ -426,7 +426,7 @@ export function useEventGrouper(
       }
       acc[groupKey].events.push(event)
       return acc
-    }, {} as Record<string, { key: string; title: string; events: EventTypes[] }>)
+    }, {} as Record<string, { key: string; title: string; events: Events[] }>)
 
     return Object.values(groupMap).sort((a, b) => a.key.localeCompare(b.key))
   }, [events, viewType, timeFormat, locale])

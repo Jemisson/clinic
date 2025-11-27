@@ -1,23 +1,23 @@
-'use client';
+'use client'
 
-import { EventsList } from './event-list';
-import { EventCalendarDay } from './event-calendar-day';
-import { EventCalendarWeek } from './event-calendar-week';
-import EventDialog from './event-dialog';
-import { useEventCalendarStore } from '@/hooks/use-event';
-import { EventCalendarMonth } from './event-calendar-month';
-import { MonthDayEventsDialog } from './day-events-dialog';
-import EventCreateDialog from './event-create-dialog';
-import { useShallow } from 'zustand/shallow';
-import { useMemo } from 'react';
-import { EventCalendarYear } from './event-calendar-year';
-import { EventCalendarDays } from './event-calendar-days';
-import CalendarToolbar from './event-calendar-toolbar';
-import { Events } from '@/types/event';
+import { useEventCalendarStore } from '@/hooks/use-event'
+import { Events } from '@/types/event'
+import { useMemo } from 'react'
+import { useShallow } from 'zustand/shallow'
+import { MonthDayEventsDialog } from './day-events-dialog'
+import { EventCalendarDay } from './event-calendar-day'
+import { EventCalendarDays } from './event-calendar-days'
+import { EventCalendarMonth } from './event-calendar-month'
+import CalendarToolbar from './event-calendar-toolbar'
+import { EventCalendarWeek } from './event-calendar-week'
+import { EventCalendarYear } from './event-calendar-year'
+import EventCreateDialog from './event-create-dialog'
+import EventDialog from './event-dialog'
+import { EventsList } from './event-list'
 
 interface EventCalendarProps {
-  events: Events[];
-  initialDate: Date;
+  events: Events[]
+  initialDate: Date
 }
 
 export function EventCalendar({ initialDate, events }: EventCalendarProps) {
@@ -27,15 +27,25 @@ export function EventCalendar({ initialDate, events }: EventCalendarProps) {
       currentView: state.currentView,
       daysCount: state.daysCount,
     })),
-  );
+  )
 
   const renderCalendarView = useMemo(() => {
     if (viewMode === 'list') {
-      return <EventsList events={events} currentDate={initialDate} />;
+      return (
+        <EventsList
+          events={events}
+          currentDate={initialDate}
+        />
+      )
     }
     switch (currentView) {
       case 'day':
-        return <EventCalendarDay events={events} currentDate={initialDate} />;
+        return (
+          <EventCalendarDay
+            events={events}
+            currentDate={initialDate}
+          />
+        )
       case 'days':
         return (
           <EventCalendarDays
@@ -43,17 +53,37 @@ export function EventCalendar({ initialDate, events }: EventCalendarProps) {
             daysCount={daysCount}
             currentDate={initialDate}
           />
-        );
+        )
       case 'week':
-        return <EventCalendarWeek events={events} currentDate={initialDate} />;
+        return (
+          <EventCalendarWeek
+            events={events}
+            currentDate={initialDate}
+          />
+        )
       case 'month':
-        return <EventCalendarMonth events={events} baseDate={initialDate} />;
+        return (
+          <EventCalendarMonth
+            events={events}
+            baseDate={initialDate}
+          />
+        )
       case 'year':
-        return <EventCalendarYear events={events} currentDate={initialDate} />;
+        return (
+          <EventCalendarYear
+            events={events}
+            currentDate={initialDate}
+          />
+        )
       default:
-        return <EventCalendarDay events={events} currentDate={initialDate} />;
+        return (
+          <EventCalendarDay
+            events={events}
+            currentDate={initialDate}
+          />
+        )
     }
-  }, [currentView, daysCount, events, initialDate, viewMode]);
+  }, [currentView, daysCount, events, initialDate, viewMode])
 
   return (
     <>
@@ -65,5 +95,5 @@ export function EventCalendar({ initialDate, events }: EventCalendarProps) {
         <div className="overflow-hidden p-0">{renderCalendarView}</div>
       </div>
     </>
-  );
+  )
 }

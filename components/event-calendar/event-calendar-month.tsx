@@ -108,6 +108,7 @@ export function EventCalendarMonth({ events, baseDate }: CalendarMonthProps) {
             key={`day-cell-${index}`}
             date={date}
             baseDate={baseDate}
+            isOutsideMonth={date.getMonth() !== baseDate.getMonth()}
             eventsByDate={eventsGroupedByDate}
             locale={localeObj}
             timeFormat={timeFormat}
@@ -119,6 +120,7 @@ export function EventCalendarMonth({ events, baseDate }: CalendarMonthProps) {
             onOpenEvent={openEventDialog}
           />
         ))}
+
       </div>
     </div>
   );

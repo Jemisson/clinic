@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useTransition, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Transition } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { CalendarViewType } from '@/types/event';
 import { MoreHorizontal, ChevronDown } from 'lucide-react';
@@ -29,31 +29,26 @@ type TabConfig = {
 
 const tabsConfig: TabConfig[] = [
   {
-    label: 'Day',
+    label: 'Dia',
     value: CalendarViewType.DAY,
   },
   {
-    label: 'Days',
-    value: CalendarViewType.DAYS,
-    hasDropdown: true,
-  },
-  {
-    label: 'Week',
+    label: 'Semana',
     value: CalendarViewType.WEEK,
   },
   {
-    label: 'Month',
+    label: 'Mês',
     value: CalendarViewType.MONTH,
   },
   {
-    label: 'Year',
+    label: 'Ano',
     value: CalendarViewType.YEAR,
   },
 ];
 
 const daysOptions = [3, 5, 7, 10, 14, 31];
 
-const transition = {
+const transition: Transition = {
   type: 'tween',
   ease: 'easeOut',
   duration: 0.15,

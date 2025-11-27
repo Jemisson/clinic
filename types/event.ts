@@ -91,6 +91,7 @@ export interface MonthViewConfig {
   eventLimit: number;
   showMoreEventsIndicator: boolean;
   hideOutsideDays: boolean;
+  maxEventsPerDay: number;
 }
 
 export interface YearViewConfig {

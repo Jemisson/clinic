@@ -1,18 +1,8 @@
-'use client';
+'use client'
 
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { Button } from '../ui/button';
-import { TimeFormatToggle } from './ui/time-format-toggel';
-import { TodayButton } from './ui/today-button';
-import { ViewModeToggle } from './ui/view-mode-toggle';
-import { SearchYearPicker } from './ui/search-year-picker';
-import { SearchMonthPicker } from './ui/search-month-picker';
-import { SearchDayPicker } from './ui/search-day-picker';
-import { CalendarViewType, TimeFormatType, ViewModeType } from '@/types/event';
-import { useEventCalendarStore } from '@/hooks/use-event';
-import { EventCalendarTabs } from './event-calendar-tabs';
-import { useShallow } from 'zustand/shallow';
-import { useCallback, useEffect } from 'react';
+import { useEventCalendarStore } from '@/hooks/use-event'
+import { getLocaleFromCode } from '@/lib/event'
+import { CalendarViewType, TimeFormatType, ViewModeType } from '@/types/event'
 import {
   addDays,
   addMonths,
@@ -22,12 +12,21 @@ import {
   subMonths,
   subWeeks,
   subYears,
-} from 'date-fns';
-import { useQueryState } from 'nuqs';
-import { parseAsIsoDate } from 'nuqs/server';
-import { EventCalendarFilters } from './event-calendar-filters';
-import CalendarSettingsDialog from './event-calendar-setting-dialog';
-import { getLocaleFromCode } from '@/lib/event';
+} from 'date-fns'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { useQueryState } from 'nuqs'
+import { parseAsIsoDate } from 'nuqs/server'
+import { useCallback, useEffect } from 'react'
+import { useShallow } from 'zustand/shallow'
+import { Button } from '../ui/button'
+import { EventCalendarFilters } from './event-calendar-filters'
+import CalendarSettingsDialog from './event-calendar-setting-dialog'
+import { EventCalendarTabs } from './event-calendar-tabs'
+import { SearchDayPicker } from './ui/search-day-picker'
+import { SearchMonthPicker } from './ui/search-month-picker'
+import { SearchYearPicker } from './ui/search-year-picker'
+import { TimeFormatToggle } from './ui/time-format-toggel'
+import { ViewModeToggle } from './ui/view-mode-toggle'
 
 export default function EventCalendarToolbar() {
   const [date, setDate] = useQueryState(
@@ -36,7 +35,7 @@ export default function EventCalendarToolbar() {
       shallow: false,
       throttleMs: 300,
     }),
-  );
+  )
   const {
     viewMode,
     locale,
@@ -57,81 +56,81 @@ export default function EventCalendarToolbar() {
       setMode: state.setMode,
       openQuickAddDialog: state.openQuickAddDialog,
     })),
-  );
-  const localeObj = getLocaleFromCode(locale);
+  )
+  const localeObj = getLocaleFromCode(locale)
 
   const handleNavigateNext = useCallback(() => {
-    let newDate = new Date(date);
+    let newDate = new Date(date)
 
     switch (currentView) {
       case 'day':
-        newDate = addDays(newDate, 1);
-        break;
+        newDate = addDays(newDate, 1)
+        break
       case 'week':
-        newDate = addWeeks(newDate, 1);
-        break;
+        newDate = addWeeks(newDate, 1)
+        break
       case 'month':
-        newDate = addMonths(newDate, 1);
-        break;
+        newDate = addMonths(newDate, 1)
+        break
       case 'year':
-        newDate = addYears(newDate, 1);
-        break;
+        newDate = addYears(newDate, 1)
+        break
     }
 
-    setDate(newDate);
-  }, [date, currentView, setDate]);
+    setDate(newDate)
+  }, [date, currentView, setDate])
 
   const handleNavigatePrevious = useCallback(() => {
-    let newDate = new Date(date);
+    let newDate = new Date(date)
 
     switch (currentView) {
       case 'day':
-        newDate = subDays(newDate, 1);
-        break;
+        newDate = subDays(newDate, 1)
+        break
       case 'week':
-        newDate = subWeeks(newDate, 1);
-        break;
+        newDate = subWeeks(newDate, 1)
+        break
       case 'month':
-        newDate = subMonths(newDate, 1);
-        break;
+        newDate = subMonths(newDate, 1)
+        break
       case 'year':
-        newDate = subYears(newDate, 1);
-        break;
+        newDate = subYears(newDate, 1)
+        break
     }
 
-    setDate(newDate);
-  }, [date, currentView, setDate]);
+    setDate(newDate)
+  }, [date, currentView, setDate])
 
   const handleTimeFormatChange = useCallback(
     (format: TimeFormatType) => {
-      setTimeFormat(format);
+      setTimeFormat(format)
     },
     [setTimeFormat],
-  );
+  )
 
   const handleViewModeChange = useCallback(
     (mode: ViewModeType) => {
-      setMode(mode);
+      setMode(mode)
     },
     [setMode],
-  );
+  )
 
   const handleViewTypeChange = useCallback(
     (viewType: CalendarViewType) => {
-      setView(viewType);
+      setView(viewType)
     },
     [setView],
-  );
+  )
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') handleNavigatePrevious();
-      if (e.key === 'ArrowRight') handleNavigateNext();
-    };
+      if (e.key === 'ArrowLeft') handleNavigatePrevious()
+      if (e.key === 'ArrowRight') handleNavigateNext()
+    }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNavigatePrevious, handleNavigateNext]);
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleNavigatePrevious, handleNavigateNext])
 
   return (
     <div className="flex flex-col">
@@ -145,7 +144,7 @@ export default function EventCalendarToolbar() {
                 onClick={handleNavigatePrevious}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                Anterior
               </Button>
               <Button
                 variant={'outline'}
@@ -153,7 +152,7 @@ export default function EventCalendarToolbar() {
                 onClick={handleNavigateNext}
               >
                 <ChevronRight className="h-4 w-4" />
-                Next
+                Próximo
               </Button>
             </div>
             <Button
@@ -173,9 +172,16 @@ export default function EventCalendarToolbar() {
                 />
               )}
               {currentView !== 'year' && (
-                <SearchMonthPicker locale={localeObj} monthFormat="LLLL" />
+                <SearchMonthPicker
+                  locale={localeObj}
+                  monthFormat="LLLL"
+                />
               )}
-              <SearchYearPicker yearRange={20} minYear={2000} maxYear={2030} />
+              <SearchYearPicker
+                yearRange={20}
+                minYear={2000}
+                maxYear={2030}
+              />
             </div>
             <Button
               variant="ghost"
@@ -188,13 +194,12 @@ export default function EventCalendarToolbar() {
           </div>
         </div>
         <div className="flex items-center justify-center space-x-3 sm:justify-start">
-          <TodayButton viewType={currentView} />
           <Button
             onClick={() => openQuickAddDialog({ date: new Date() })}
             className="h-9 gap-1.5 px-3"
           >
             <Plus className="h-3.5 w-3.5" />
-            Add Event
+            Novo Agendamento
           </Button>
         </div>
       </div>
@@ -209,10 +214,13 @@ export default function EventCalendarToolbar() {
             format={timeFormat}
             onChange={handleTimeFormatChange}
           />
-          <ViewModeToggle mode={viewMode} onChange={handleViewModeChange} />
+          <ViewModeToggle
+            mode={viewMode}
+            onChange={handleViewModeChange}
+          />
           <CalendarSettingsDialog />
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -71,37 +71,46 @@ export const EventCard = ({
   onClick: (event: Events) => void;
 }) => {
   const { bg, badge } = getColorClasses(event.color);
+
   return (
     <Button
       key={event.id}
       data-testid={`event-item-${event.id}`}
       className={cn(
-        'group/event relative z-0 flex h-auto w-full flex-col items-start justify-start gap-3 px-4 py-3 text-left text-white hover:cursor-pointer',
+        'group/event relative z-0 flex h-full w-full flex-col items-start justify-center gap-1 px-2 py-1.5 text-left text-white',
+        'text-[11px] leading-tight',
         'transition-all duration-200',
         'focus-visible:ring-ring last:border-b-0 focus-visible:ring-1 focus-visible:ring-offset-0',
         bg,
       )}
       onClick={() => onClick(event)}
     >
-      <div className="flex w-full items-start justify-between gap-2 group-hover/event:opacity-50">
-        <span className="line-clamp-1 text-base font-medium">
+      <div className="flex w-full items-start justify-between gap-1.5 group-hover/event:opacity-80">
+        <span className="line-clamp-1 text-[11px] font-medium leading-tight">
           {event.title}
         </span>
-        <Badge variant="default" className={`${badge.bg}`}>
+        <Badge
+          variant="default"
+          className={cn(
+            'ml-1 h-4 px-1 text-[9px] leading-none',
+            badge.bg,
+          )}
+        >
           {event.category}
         </Badge>
       </div>
-      <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white group-hover/event:opacity-50">
-        <div className="flex items-center gap-1.5">
+
+      <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] leading-tight text-white group-hover/event:opacity-80">
+        <div className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          <span>
+          <span className="line-clamp-1">
             {formatTimeDisplay(event.startTime, timeFormat)} -{' '}
             {formatTimeDisplay(event.endTime, timeFormat)}
           </span>
         </div>
 
         {event.location && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <MapPin className="h-3 w-3" />
             <span className="line-clamp-1">{event.location}</span>
           </div>
@@ -110,6 +119,7 @@ export const EventCard = ({
     </Button>
   );
 };
+
 
 export const EventGroup = memo(
   ({

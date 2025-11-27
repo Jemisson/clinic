@@ -1,74 +1,88 @@
-import { EventPosition, Events } from '@/types/event';
-import { cn } from '@/lib/utils';
-import { Button } from '../ui/button';
-import { calculateDuration, formatTimeDisplay } from '@/lib/date';
+'use client';
+
+import { Events, TimeFormatType } from '@/types/event';
+import { formatTimeDisplay } from '@/lib/date';
 import { getColorClasses } from '@/lib/event';
-import { AnimatePresence, motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { Clock } from 'lucide-react';
 
 type EventDialogTriggerProps = {
   event: Events;
-  position: EventPosition;
+  position: {
+    top: number;
+    height: number;
+  };
   leftOffset: number;
   rightOffset: number;
-  onClick: (
-    event: Events,
-    position: EventPosition,
-    leftOffset: number,
-    rightOffset: number,
-  ) => void;
+  onClick: (event: Events) => void;
+  timeFormat?: TimeFormatType;
 };
 
-export const EventDialogTrigger = ({
+export function EventDialogTrigger({
   event,
   position,
   leftOffset,
   rightOffset,
   onClick,
-}: EventDialogTriggerProps) => {
+  timeFormat = TimeFormatType.HOUR_24,
+}: EventDialogTriggerProps) {
   const { bg } = getColorClasses(event.color);
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onClick(event, position, leftOffset, rightOffset);
-  };
+  const { top, height } = position;
+
+  const isVeryShort = height < 32;
+
+  const start = formatTimeDisplay(event.startTime, timeFormat);
+  const end = formatTimeDisplay(event.endTime, timeFormat);
+
+  // calcula duração em minutos
+  const durationMinutes = (() => {
+    const startDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+    const diff = (endDate.getTime() - startDate.getTime()) / 60000;
+    return Math.max(0, Math.round(diff));
+  })();
+
+  const durationLabel =
+    durationMinutes >= 60
+      ? `${Math.floor(durationMinutes / 60)}h${
+          durationMinutes % 60 ? ` ${durationMinutes % 60}m` : ''
+        }`
+      : `${durationMinutes}m`;
+
+  // texto final: "1h 30m - 12:00 - 13:30"
+  const timeLine = `${start} - ${end} - ${durationLabel}`;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-        transition={{ duration: 0.2 }}
-        style={{
-          position: 'absolute',
-          top: `${position?.top}px`,
-          height: `${position?.height}px`,
-          left: `calc(${leftOffset}% + 4px)`,
-          right: `calc(${rightOffset}% + 4px)`,
-          zIndex: 5,
-        }}
+    <div
+      className="pointer-events-auto absolute"
+      style={{
+        top,
+        height,
+        left: `${leftOffset}%`,
+        right: `${rightOffset}%`,
+      }}
+    >
+      <button
+        type="button"
+        className={cn(
+          'flex h-full w-full flex-col justify-center rounded-md px-2 py-1',
+          'text-[11px] leading-tight text-white',
+          'overflow-hidden text-left',
+          'transition-colors hover:opacity-90',
+          bg,
+        )}
+        onClick={() => onClick(event)}
       >
-        <Button
-          className={cn(
-            'group absolute flex h-full w-full cursor-pointer flex-col items-start justify-start gap-0 overflow-hidden rounded bg-transparent p-2 text-white hover:bg-transparent',
-            'border-none shadow-none ring-0 focus:ring-0 focus:outline-none',
-            'transition-colors',
-            bg,
-          )}
-          onClick={handleClick}
-        >
-          <div className="text-xs font-medium sm:truncate">{event.title}</div>
-          <div className="text-xs sm:truncate">
-            {formatTimeDisplay(event.startTime, '12')} -{' '}
-            {formatTimeDisplay(event.endTime, '12')}
-          </div>
-          {position?.height && position.height > 40 && (
-            <div className="mt-1 text-xs sm:truncate">
-              {calculateDuration?.(event.startTime, event.endTime, 'auto')} Hour
-            </div>
-          )}
-        </Button>
-      </motion.div>
-    </AnimatePresence>
+        {/* título só se tiver espaço mínimo */}
+        {!isVeryShort && (
+          <span className="line-clamp-1 font-medium">{event.title}</span>
+        )}
+
+        <div className="mt-0.5 flex items-center gap-1 text-[10px] leading-tight">
+          <Clock className="h-3 w-3 shrink-0" />
+          <span className="line-clamp-1">{timeLine}</span>
+        </div>
+      </button>
+    </div>
   );
-};
+}

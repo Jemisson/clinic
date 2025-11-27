@@ -91,6 +91,9 @@ const MonthDaysGrid = memo(
       end: endOfMonth(month),
     });
 
+    const firstDayOfMonth = startOfMonth(month);
+    const firstWeekday = firstDayOfMonth.getDay();
+
     return (
       <div className="grid grid-cols-7 gap-1 text-center text-xs">
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
@@ -101,6 +104,11 @@ const MonthDaysGrid = memo(
             {day}
           </div>
         ))}
+
+        {Array.from({ length: firstWeekday }).map((_, index) => (
+          <div key={`empty-${index}`} />
+        ))}
+
         {daysInMonth.map((day) => {
           const dateKey = format(day, 'yyyy-MM-dd');
           return (

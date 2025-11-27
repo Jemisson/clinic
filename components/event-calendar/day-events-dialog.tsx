@@ -82,10 +82,10 @@ export function MonthDayEventsDialog() {
       <DialogContent>
         <DialogHeader className="mb-4">
           <DialogTitle>
-            Events {formattedDate && <span>{formattedDate}</span>}
+            Agendamentos de {formattedDate && <span>{formattedDate}</span>}
           </DialogTitle>
           <DialogDescription>
-            List of all events scheduled for this date
+            Lista de todos os eventos agendados para este dia.
           </DialogDescription>
         </DialogHeader>
         <EventListContent
@@ -95,7 +95,7 @@ export function MonthDayEventsDialog() {
         />
         <DialogFooter className="">
           <Button variant="outline" onClick={closeDayEventsDialog}>
-            Close
+            Fechar
           </Button>
         </DialogFooter>
       </DialogContent>

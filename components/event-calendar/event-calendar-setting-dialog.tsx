@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { useState, useTransition } from 'react';
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -8,30 +8,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import {
-  Settings,
-  Calendar,
-  Clock,
-  Eye,
-  Globe,
-  Zap,
-  CalendarDays,
-  Sun,
-} from 'lucide-react';
-import { useEventCalendarStore } from '@/hooks/use-event';
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import { LOCALES } from '@/constants/calendar-constant'
+import { useEventCalendarStore } from '@/hooks/use-event'
+import { getLocalizedDaysOfWeek } from '@/lib/date'
+import { getLocaleFromCode } from '@/lib/event'
 import {
   CalendarViewConfigs,
   CalendarViewType,
@@ -42,41 +33,46 @@ import {
   ViewModeType,
   WeekViewConfig,
   YearViewConfig,
-} from '@/types/event';
-import { useShallow } from 'zustand/shallow';
-import { ScrollArea } from '../ui/scroll-area';
-import { parseAsString, useQueryState } from 'nuqs';
-import { LOCALES } from '@/constants/calendar-constant';
-import { getLocaleFromCode } from '@/lib/event';
-import { getLocalizedDaysOfWeek } from '@/lib/date';
+} from '@/types/event'
+import {
+  Calendar,
+  CalendarDays,
+  Clock,
+  Eye,
+  Globe,
+  Settings,
+  Sun,
+} from 'lucide-react'
+import { parseAsString, useQueryState } from 'nuqs'
+import { useState, useTransition } from 'react'
+import { useShallow } from 'zustand/shallow'
+import { ScrollArea } from '../ui/scroll-area'
 
 const VIEW_TYPES = [
-  { value: 'day', label: 'Day View' },
-  { value: 'days', label: 'Days View' },
-  { value: 'week', label: 'Week View' },
-  { value: 'month', label: 'Month View' },
-  { value: 'year', label: 'Year View' },
-] as const;
+  { value: 'day', label: 'Dia' },
+  { value: 'week', label: 'Semana' },
+  { value: 'month', label: 'Mês' },
+  { value: 'year', label: 'Ano' },
+] as const
 
 const VIEW_MODES = [
-  { value: 'calendar', label: 'Calendar Mode' },
-  { value: 'list', label: 'List Mode' },
-] as const;
+  { value: 'calendar', label: 'Modo calendário' },
+  { value: 'list', label: 'Modo Lista' },
+] as const
 
 const TABS = [
-  { id: 'general', label: 'General', icon: Settings },
-  { id: 'calendar', label: 'Calendar Views', icon: Calendar },
-  { id: 'integration', label: 'Integration', icon: Zap },
-] as const;
+  { id: 'general', label: 'Geral', icon: Settings },
+  { id: 'calendar', label: 'Calendário', icon: Calendar },
+] as const
 
 const ConfigRow = ({
   label,
   description,
   children,
 }: {
-  label: string;
-  description?: string;
-  children: React.ReactNode;
+  label: string
+  description?: string
+  children: React.ReactNode
 }) => (
   <div className="flex items-center justify-between py-3">
     <div className="min-w-0 flex-1 pr-4">
@@ -87,16 +83,16 @@ const ConfigRow = ({
     </div>
     <div className="flex-shrink-0">{children}</div>
   </div>
-);
+)
 
 const ConfigSection = ({
   title,
   icon: Icon,
   children,
 }: {
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  children: React.ReactNode;
+  title: string
+  icon: React.ComponentType<{ className?: string }>
+  children: React.ReactNode
 }) => (
   <div className="space-y-4">
     <div className="text-foreground flex items-center gap-2 text-sm font-semibold">
@@ -105,19 +101,19 @@ const ConfigSection = ({
     </div>
     <div className="space-y-1">{children}</div>
   </div>
-);
+)
 
 interface GeneralSettingsProps {
-  currentView: CalendarViewType;
-  viewMode: ViewModeType;
-  timeFormat: TimeFormatType;
-  locale: string;
-  firstDayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  handleViewChange: (value: CalendarViewType) => void;
-  setMode: (value: ViewModeType) => void;
-  setTimeFormat: (value: TimeFormatType) => void;
-  setLocale: (value: string) => void;
-  setFirstDayOfWeek: (value: 0 | 1 | 2 | 3 | 4 | 5 | 6) => void;
+  currentView: CalendarViewType
+  viewMode: ViewModeType
+  timeFormat: TimeFormatType
+  locale: string
+  firstDayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6
+  handleViewChange: (value: CalendarViewType) => void
+  setMode: (value: ViewModeType) => void
+  setTimeFormat: (value: TimeFormatType) => void
+  setLocale: (value: string) => void
+  setFirstDayOfWeek: (value: 0 | 1 | 2 | 3 | 4 | 5 | 6) => void
 }
 
 export default function EventCalendarSettingsDialog() {
@@ -159,11 +155,11 @@ export default function EventCalendarSettingsDialog() {
       updateMonthViewConfig: state.updateMonthViewConfig,
       updateYearViewConfig: state.updateYearViewConfig,
     })),
-  );
+  )
 
-  const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('general');
-  const [, startTransition] = useTransition();
+  const [open, setOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>('general')
+  const [, startTransition] = useTransition()
   const [, setQueryView] = useQueryState(
     'view',
     parseAsString.withOptions({
@@ -171,19 +167,25 @@ export default function EventCalendarSettingsDialog() {
       throttleMs: 3,
       startTransition,
     }),
-  );
+  )
 
   const handleViewChange = (value: CalendarViewType) => {
-    setQueryView(value);
-    setView(value);
-  };
+    setQueryView(value)
+    setView(value)
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+        >
           <Settings className="h-4 w-4" />
-          Calendar Settings
+          Configurações de calendário
         </Button>
       </DialogTrigger>
 
@@ -192,7 +194,7 @@ export default function EventCalendarSettingsDialog() {
           <div className="bg-muted/20 w-56 border-r p-4">
             <div className="space-y-1">
               {TABS.map((tab) => {
-                const Icon = tab.icon;
+                const Icon = tab.icon
                 return (
                   <button
                     key={tab.id}
@@ -206,7 +208,7 @@ export default function EventCalendarSettingsDialog() {
                     <Icon className="h-4 w-4" />
                     <span className={`text-sm`}>{tab.label}</span>
                   </button>
-                );
+                )
               })}
             </div>
           </div>
@@ -214,10 +216,10 @@ export default function EventCalendarSettingsDialog() {
             <DialogHeader className="p-6 pb-4">
               <DialogTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                Calendar Settings
+                Configurações do Calendário
               </DialogTitle>
               <DialogDescription>
-                Customize your calendar experience and behavior
+                Customize a aparência e informações do seu calendário
               </DialogDescription>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto px-6 pb-6">
@@ -246,14 +248,13 @@ export default function EventCalendarSettingsDialog() {
                     updateYearViewConfig={updateYearViewConfig}
                   />
                 )}
-                {activeTab === 'integration' && <IntegrationSettings />}
               </ScrollArea>
             </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 const GeneralSettings = ({
@@ -268,22 +269,31 @@ const GeneralSettings = ({
   setLocale,
   setFirstDayOfWeek,
 }: GeneralSettingsProps) => {
-  const localeObj = getLocaleFromCode(locale);
-  const localizedDays = getLocalizedDaysOfWeek(localeObj);
+  const localeObj = getLocaleFromCode(locale)
+  const localizedDays = getLocalizedDaysOfWeek(localeObj)
   return (
     <div className="space-y-8">
-      <ConfigSection title="Display & Format" icon={Eye}>
+      <ConfigSection
+        title="Tela & Formato"
+        icon={Eye}
+      >
         <ConfigRow
-          label="Default view"
-          description="Choose which view opens by default"
+          label="Padrão de visualização"
+          description="Escolha a visualização inicial do calendário"
         >
-          <Select value={currentView} onValueChange={handleViewChange}>
+          <Select
+            value={currentView}
+            onValueChange={handleViewChange}
+          >
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {VIEW_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
+                <SelectItem
+                  key={type.value}
+                  value={type.value}
+                >
                   {type.label}
                 </SelectItem>
               ))}
@@ -291,8 +301,8 @@ const GeneralSettings = ({
           </Select>
         </ConfigRow>
         <ConfigRow
-          label="View mode"
-          description="Default display mode for calendar"
+          label="Modo de exibição"
+          description="Escolha entre modo calendário ou lista"
         >
           <Select
             value={viewMode}
@@ -303,7 +313,10 @@ const GeneralSettings = ({
             </SelectTrigger>
             <SelectContent>
               {VIEW_MODES.map((mode) => (
-                <SelectItem key={mode.value} value={mode.value}>
+                <SelectItem
+                  key={mode.value}
+                  value={mode.value}
+                >
                   {mode.label}
                 </SelectItem>
               ))}
@@ -311,8 +324,8 @@ const GeneralSettings = ({
           </Select>
         </ConfigRow>
         <ConfigRow
-          label="Time format"
-          description="Choose between 12-hour or 24-hour format"
+          label="Formato de hora"
+          description="Escolha entre formato de 12 ou 24 horas"
         >
           <Select
             value={timeFormat}
@@ -322,25 +335,34 @@ const GeneralSettings = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="12">12-hour (AM/PM)</SelectItem>
-              <SelectItem value="24">24-hour</SelectItem>
+              <SelectItem value="12">12 horas (AM/PM)</SelectItem>
+              <SelectItem value="24">24 horas</SelectItem>
             </SelectContent>
           </Select>
         </ConfigRow>
       </ConfigSection>
       <Separator />
-      <ConfigSection title="Regional Settings" icon={Globe}>
+      <ConfigSection
+        title="Idioma & Região"
+        icon={Globe}
+      >
         <ConfigRow
-          label="Language & Region"
-          description="Set your preferred language and locale"
+          label="Idioma"
+          description="Selecione o idioma do calendário"
         >
-          <Select value={locale} onValueChange={setLocale}>
+          <Select
+            value={locale}
+            onValueChange={setLocale}
+          >
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Select language" />
+              <SelectValue placeholder="Selecione um idioma" />
             </SelectTrigger>
             <SelectContent>
               {LOCALES.map((loc) => (
-                <SelectItem key={loc.value} value={loc.value}>
+                <SelectItem
+                  key={loc.value}
+                  value={loc.value}
+                >
                   {loc.label}
                 </SelectItem>
               ))}
@@ -348,8 +370,8 @@ const GeneralSettings = ({
           </Select>
         </ConfigRow>
         <ConfigRow
-          label="Start week on"
-          description="Choose the first day of the week"
+          label="Primeiro dia da semana"
+          description="Defina qual dia inicia a semana no calendário"
         >
           <Select
             value={firstDayOfWeek.toString()}
@@ -362,7 +384,10 @@ const GeneralSettings = ({
             </SelectTrigger>
             <SelectContent>
               {localizedDays.map((day) => (
-                <SelectItem key={day.value} value={day.value.toString()}>
+                <SelectItem
+                  key={day.value}
+                  value={day.value.toString()}
+                >
                   {day.label}
                 </SelectItem>
               ))}
@@ -371,29 +396,32 @@ const GeneralSettings = ({
         </ConfigRow>
       </ConfigSection>
     </div>
-  );
-};
+  )
+}
 
 const CalendarSettings = ({
   viewSettings,
   updateDayViewConfig,
-  updateDaysViewConfig, // Tambah handler untuk days view
+  updateDaysViewConfig,
   updateWeekViewConfig,
   updateMonthViewConfig,
   updateYearViewConfig,
 }: {
-  viewSettings: CalendarViewConfigs;
-  updateDayViewConfig: (config: Partial<DayViewConfig>) => void;
-  updateDaysViewConfig: (config: Partial<daysViewConfig>) => void;
-  updateWeekViewConfig: (config: Partial<WeekViewConfig>) => void;
-  updateMonthViewConfig: (config: Partial<MonthViewConfig>) => void;
-  updateYearViewConfig: (config: Partial<YearViewConfig>) => void;
+  viewSettings: CalendarViewConfigs
+  updateDayViewConfig: (config: Partial<DayViewConfig>) => void
+  updateDaysViewConfig: (config: Partial<daysViewConfig>) => void
+  updateWeekViewConfig: (config: Partial<WeekViewConfig>) => void
+  updateMonthViewConfig: (config: Partial<MonthViewConfig>) => void
+  updateYearViewConfig: (config: Partial<YearViewConfig>) => void
 }) => (
   <div className="space-y-8">
-    <ConfigSection title="Day View" icon={Clock}>
+    <ConfigSection
+      title="Visualiação por Dia"
+      icon={Clock}
+    >
       <ConfigRow
-        label="Current time indicator"
-        description="Show red line at current time"
+        label="Mostrar indicador de hora atual"
+        description="Mostrar linha vermelha na hora atual"
       >
         <Switch
           checked={viewSettings.day.showCurrentTimeIndicator}
@@ -403,8 +431,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Hover time indicator"
-        description="Show time when hovering over time slots"
+        label="Mostrar indicador de hora ao passar o mouse"
+        description="Mostrar hora ao passar o mouse sobre os intervalos de tempo"
       >
         <Switch
           checked={viewSettings.day.showHoverTimeIndicator}
@@ -414,8 +442,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Click to create events"
-        description="Allow clicking time slots to create new events"
+        label="Clicar em intervalos de tempo para criar eventos"
+        description="Permitir clicar em intervalos de tempo para criar novos eventos"
       >
         <Switch
           checked={viewSettings.day.enableTimeSlotClick}
@@ -425,80 +453,16 @@ const CalendarSettings = ({
         />
       </ConfigRow>
     </ConfigSection>
+
     <Separator />
-    <ConfigSection title="Days View" icon={CalendarDays}>
+
+    <ConfigSection
+      title="Visualização por Semana"
+      icon={CalendarDays}
+    >
       <ConfigRow
-        label="Highlight today"
-        description="Highlight the current day column"
-      >
-        <Switch
-          checked={viewSettings.days.highlightToday}
-          onCheckedChange={(checked) =>
-            updateDaysViewConfig({ highlightToday: checked })
-          }
-        />
-      </ConfigRow>
-      <ConfigRow
-        label="Current time indicator"
-        description="Show red line at current time"
-      >
-        <Switch
-          checked={viewSettings.days.showCurrentTimeIndicator}
-          onCheckedChange={(checked) =>
-            updateDaysViewConfig({ showCurrentTimeIndicator: checked })
-          }
-        />
-      </ConfigRow>
-      <ConfigRow
-        label="Hover time indicator"
-        description="Show time when hovering over time slots"
-      >
-        <Switch
-          checked={viewSettings.days.showHoverTimeIndicator}
-          onCheckedChange={(checked) =>
-            updateDaysViewConfig({ showHoverTimeIndicator: checked })
-          }
-        />
-      </ConfigRow>
-      <ConfigRow
-        label="Click time slots to create events"
-        description="Allow clicking time slots to create new events"
-      >
-        <Switch
-          checked={viewSettings.days.enableTimeSlotClick}
-          onCheckedChange={(checked) =>
-            updateDaysViewConfig({ enableTimeSlotClick: checked })
-          }
-        />
-      </ConfigRow>
-      <ConfigRow
-        label="Click time blocks to create events"
-        description="Allow clicking time blocks to create new events"
-      >
-        <Switch
-          checked={viewSettings.days.enableTimeBlockClick}
-          onCheckedChange={(checked) =>
-            updateDaysViewConfig({ enableTimeBlockClick: checked })
-          }
-        />
-      </ConfigRow>
-      <ConfigRow
-        label="Expand multi-day events"
-        description="Show multi-day events across multiple columns"
-      >
-        <Switch
-          checked={viewSettings.days.expandMultiDayEvents}
-          onCheckedChange={(checked) =>
-            updateDaysViewConfig({ expandMultiDayEvents: checked })
-          }
-        />
-      </ConfigRow>
-    </ConfigSection>
-    <Separator />
-    <ConfigSection title="Week View" icon={CalendarDays}>
-      <ConfigRow
-        label="Highlight today"
-        description="Highlight the current day column"
+        label="Destacar o dia atual"
+        description="Destacar o dia atual na visualização semanal"
       >
         <Switch
           checked={viewSettings.week.highlightToday}
@@ -508,8 +472,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Current time indicator"
-        description="Show red line at current time"
+        label="Indicador de hora atual"
+        description="Mostrar linha vermelha na hora atual"
       >
         <Switch
           checked={viewSettings.week.showCurrentTimeIndicator}
@@ -519,8 +483,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Hover time indicator"
-        description="Show time when hovering over time slots"
+        label="Indicador de hora ao passar o mouse"
+        description="Mostrar hora ao passar o mouse sobre os intervalos de tempo"
       >
         <Switch
           checked={viewSettings.week.showHoverTimeIndicator}
@@ -530,8 +494,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Click time slots to create events"
-        description="Allow clicking time slots to create new events"
+        label="Clique em intervalos de tempo para criar eventos"
+        description="Permitir clicar em intervalos de tempo para criar novos eventos"
       >
         <Switch
           checked={viewSettings.week.enableTimeSlotClick}
@@ -541,8 +505,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Click time blocks to create events"
-        description="Allow clicking time blocks to create new events"
+        label="Clique em blocos de tempo para criar eventos"
+        description="Permitir clicar em blocos de tempo para criar novos eventos"
       >
         <Switch
           checked={viewSettings.week.enableTimeBlockClick}
@@ -552,8 +516,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Expand multi-day events"
-        description="Show multi-day events across multiple columns"
+        label="Expandir eventos de vários dias"
+        description="Mostrar eventos que se estendem por vários dias em toda a sua duração"
       >
         <Switch
           checked={viewSettings.week.expandMultiDayEvents}
@@ -564,10 +528,13 @@ const CalendarSettings = ({
       </ConfigRow>
     </ConfigSection>
     <Separator />
-    <ConfigSection title="Month View" icon={CalendarDays}>
+    <ConfigSection
+      title="Visualização por Mês"
+      icon={CalendarDays}
+    >
       <ConfigRow
-        label="Events per day limit"
-        description="Maximum events shown before +more indicator"
+        label="Limite de eventos"
+        description="Número máximo de eventos exibidos por dia"
       >
         <Input
           type="number"
@@ -581,8 +548,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Show more events indicator"
-        description="Display +X more when events exceed limit"
+        label="Mostrar indicador de mais eventos"
+        description="Mostrar +X mais quando os eventos excedem o limite"
       >
         <Switch
           checked={viewSettings.month.showMoreEventsIndicator}
@@ -592,8 +559,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Hide outside days"
-        description="Hide days from previous/next month"
+        label="Ocultar dias fora do mês"
+        description="Não exibir dias que não pertencem ao mês atual"
       >
         <Switch
           checked={viewSettings.month.hideOutsideDays}
@@ -604,10 +571,13 @@ const CalendarSettings = ({
       </ConfigRow>
     </ConfigSection>
     <Separator />
-    <ConfigSection title="Year View" icon={Sun}>
+    <ConfigSection
+      title="Visualização por Ano"
+      icon={Sun}
+    >
       <ConfigRow
-        label="Show month labels"
-        description="Display month names in year view"
+        label="Mostrar nomes dos meses"
+        description="Exibir nomes dos meses na visualização anual"
       >
         <Switch
           checked={viewSettings.year.showMonthLabels}
@@ -617,8 +587,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Quarter view mode"
-        description="Group months by quarters instead of 12-month grid"
+        label="Visualização por trimestre"
+        description="Exibir o ano dividido em quatro trimestres"
       >
         <Switch
           checked={viewSettings.year.quarterView}
@@ -628,8 +598,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Highlight current month"
-        description="Emphasize the current month in year view"
+        label="Destacar o mês atual"
+        description="Destacar o mês atual na visualização anual"
       >
         <Switch
           checked={viewSettings.year.highlightCurrentMonth}
@@ -639,8 +609,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Enable event preview"
-        description="Show event indicators in year view"
+        label="Mostrar pré-visualização de eventos"
+        description="Exibir uma pré-visualização dos eventos em cada mês"
       >
         <Switch
           checked={viewSettings.year.enableEventPreview}
@@ -652,8 +622,8 @@ const CalendarSettings = ({
       {viewSettings.year.enableEventPreview && (
         <>
           <ConfigRow
-            label="Preview events per month"
-            description="Max events shown per month in year view"
+            label="Eventos de pré-visualização por mês"
+            description="Número de eventos exibidos na pré-visualização de cada mês"
           >
             <Input
               type="number"
@@ -669,8 +639,8 @@ const CalendarSettings = ({
             />
           </ConfigRow>
           <ConfigRow
-            label="Show more events indicator"
-            description="Display +X more when events exceed limit"
+            label="Mostrar indicador de mais eventos"
+            description="Mostrar +X mais quando os eventos excedem o limite de pré-visualização"
           >
             <Switch
               checked={viewSettings.year.showMoreEventsIndicator}
@@ -683,42 +653,4 @@ const CalendarSettings = ({
       )}
     </ConfigSection>
   </div>
-);
-
-const IntegrationSettings = () => (
-  <div className="space-y-8">
-    <ConfigSection title="External Integrations" icon={Zap}>
-      <div className="text-muted-foreground bg-muted/30 rounded-lg p-4 text-sm">
-        <div className="mb-2 flex items-center gap-2">
-          <Zap className="h-4 w-4" />
-          <span className="font-medium">Coming Soon</span>
-        </div>
-        <p>
-          Integration settings for Google Calendar, Outlook, and other calendar
-          services will be available here.
-        </p>
-      </div>
-
-      <ConfigRow
-        label="Google Calendar Sync"
-        description="Sync events with your Google Calendar"
-      >
-        <Badge variant="secondary">Coming Soon</Badge>
-      </ConfigRow>
-
-      <ConfigRow
-        label="Outlook Integration"
-        description="Connect with Microsoft Outlook calendar"
-      >
-        <Badge variant="secondary">Coming Soon</Badge>
-      </ConfigRow>
-
-      <ConfigRow
-        label="CalDAV Support"
-        description="Connect to CalDAV compatible calendar servers"
-      >
-        <Badge variant="secondary">Coming Soon</Badge>
-      </ConfigRow>
-    </ConfigSection>
-  </div>
-);
+)

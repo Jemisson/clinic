@@ -61,7 +61,7 @@ export function ViewModeToggle({
                       transition={{ duration: 0.3 }}
                       className="z-10 ml-2 overflow-hidden text-sm whitespace-nowrap text-white"
                     >
-                      Calendar
+                      Calendario
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -80,7 +80,7 @@ export function ViewModeToggle({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" align="center">
-            <p>Calendar View</p>
+            <p>Ver calendario</p>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -111,7 +111,7 @@ export function ViewModeToggle({
                       transition={{ duration: 0.3 }}
                       className="z-10 ml-2 overflow-hidden text-sm whitespace-nowrap text-white"
                     >
-                      List
+                      Lista
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -130,7 +130,7 @@ export function ViewModeToggle({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" align="center">
-            <p>List View</p>
+            <p>Ver lista</p>
           </TooltipContent>
         </Tooltip>
       </motion.div>

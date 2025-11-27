@@ -60,25 +60,6 @@ export function SearchDayPicker({
 
   const day = getDate(date);
 
-  /**
-   * Gets the day suffix (st, nd, rd, th) for a given day number
-   */
-  const getDaySuffix = useMemo(() => {
-    return (day: number): string => {
-      if (day >= 11 && day <= 13) return 'th';
-      switch (day % 10) {
-        case 1:
-          return 'st';
-        case 2:
-          return 'nd';
-        case 3:
-          return 'rd';
-        default:
-          return 'th';
-      }
-    };
-  }, []);
-
   const daysInMonth = useMemo(() => {
     const year = getYear(date);
     const month = getMonth(date);
@@ -89,21 +70,19 @@ export function SearchDayPicker({
       const dayDate = new Date(year, month, dayNum);
       const dayName = format(dayDate, 'EEE', { locale, weekStartsOn });
       const fullDayName = format(dayDate, 'EEEE', { locale, weekStartsOn });
-      const daySuffix = getDaySuffix(dayNum);
 
       return {
         value: dayNum.toString(),
         day: dayNum,
         dayName,
         fullDayName,
-        daySuffix,
         formattedDate: format(dayDate, 'd MMMM', { locale }),
-        label: `${dayName} ${dayNum}${daySuffix}`,
+        label: `${dayName} ${dayNum}`,
         searchableText:
           `${fullDayName} ${dayNum} ${format(dayDate, 'd MMMM', { locale })}`.toLowerCase(),
       };
     });
-  }, [date, locale, weekStartsOn, getDaySuffix]);
+  }, [date, locale, weekStartsOn]);
 
   const filteredDays = useMemo(() => {
     if (!searchValue) return daysInMonth;
@@ -140,7 +119,7 @@ export function SearchDayPicker({
   }, [open]);
 
   if (isPending) {
-    <Skeleton />;
+    return <Skeleton className="h-9 w-[130px]" />;
   }
 
   return (
@@ -179,10 +158,7 @@ export function SearchDayPicker({
                     <span className="text-muted-foreground italic">
                       {selectedDay.dayName}
                     </span>
-                    <span>
-                      {selectedDay.day}
-                      <sup>{selectedDay.daySuffix}</sup>
-                    </span>
+                    <span>{selectedDay.day}</span>
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -218,10 +194,7 @@ export function SearchDayPicker({
                       <span className="text-muted-foreground italic">
                         {day.dayName}
                       </span>
-                      <span>
-                        {day.day}
-                        <sup>{day.daySuffix}</sup>
-                      </span>
+                      <span>{day.day}</span>
                     </div>
                     <Check
                       className={cn(

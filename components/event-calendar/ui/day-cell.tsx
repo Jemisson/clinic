@@ -20,6 +20,8 @@ interface DayCellProps {
   onFocusDate: (date: Date) => void;
   onShowDayEvents: (date: Date) => void;
   onOpenEvent: (event: Events) => void;
+  // opcional, usado no Month view (e reaproveitável em outras views se quiser)
+  isOutsideMonth?: boolean;
 }
 
 export function DayCell({
@@ -34,32 +36,71 @@ export function DayCell({
   onFocusDate,
   onShowDayEvents,
   onOpenEvent,
+  isOutsideMonth,
 }: DayCellProps) {
   const dateKey = format(date, 'yyyy-MM-dd');
   const dayEvents = eventsByDate[dateKey] || [];
+
   const isToday = isSameDay(date, new Date());
-  const isWithinMonth = isSameMonth(date, baseDate);
+
+  // decide se é fora do mês:
+  // - se a prop vier, respeita ela
+  // - senão calcula com isSameMonth
+  const outside =
+    typeof isOutsideMonth === 'boolean'
+      ? isOutsideMonth
+      : !isSameMonth(date, baseDate);
+
+  const isWithinMonth = !outside;
+
   const isEmpty = dayEvents.length === 0;
-  const firstEvent = dayEvents[0];
   const _isFocused = focusedDate && isSameDay(date, focusedDate);
-  const shouldRenderEvents = isWithinMonth && dayEvents.length > 0;
+
+  // 👉 limite configurável de eventos por dia
+  // ajuste o nome da propriedade aqui caso no MonthViewConfig esteja diferente
+  const maxEventsPerDay =
+    (monthViewConfig as any).eventLimit ?? 1; // fallback pra 1 se não vier
+  console.log('valroes = ', monthViewConfig);
+
+  const eventsToShow =
+    isWithinMonth && dayEvents.length > 0
+      ? dayEvents.slice(0, maxEventsPerDay)
+      : [];
+
+  const remainingCount =
+    isWithinMonth && dayEvents.length > maxEventsPerDay
+      ? dayEvents.length - eventsToShow.length
+      : 0;
+
+  const firstEvent = eventsToShow[0];
   const colorClasses = firstEvent ? getColorClasses(firstEvent.color) : null;
+
+  // 🔴 IMPORTANTE:
+  // Se o usuário escolheu "Ocultar dias fora do mês", a gente NÃO remove a célula,
+  // apenas coloca um placeholder vazio para manter o grid alinhado.
+  if (monthViewConfig.hideOutsideDays && outside) {
+    return (
+      <div
+        data-date={dateKey}
+        role="presentation"
+        aria-hidden="true"
+        className="h-[80px] sm:h-[140px]"
+      />
+    );
+  }
+
   return (
     <div
       data-date={dateKey}
       role="gridcell"
       tabIndex={0}
-      aria-label={`${format(date, 'EEEE, MMMM do')}. Press Enter to ${
+      aria-label={`${format(date, 'EEEE, MMMM d')}. Press Enter to ${
         dayEvents.length === 0 ? 'add new event' : 'view events'
       }`}
       className={cn(
         'group relative z-20 flex h-[80px] cursor-pointer flex-col rounded border transition-all sm:h-[140px] sm:p-2',
         'hover:border-primary focus:ring-primary hover:shadow-sm focus:ring-2 focus:outline-none',
-        !isWithinMonth && monthViewConfig.hideOutsideDays
-          ? 'hidden'
-          : !isWithinMonth
-            ? 'bg-muted/20 opacity-50'
-            : '',
+        !isWithinMonth && 'bg-muted/20 opacity-50',
         // _isFocused && 'ring-2 ring-blue-500',
       )}
       onClick={() => {
@@ -75,6 +116,7 @@ export function DayCell({
       }}
       onFocus={() => onFocusDate(date)}
     >
+      {/* Cabeçalho do dia (número + dia da semana quando aplicável) */}
       <div className="mb-0 flex items-center justify-between sm:mb-1">
         <span
           className={cn(
@@ -91,34 +133,43 @@ export function DayCell({
           </span>
         )}
       </div>
+
+      {/* Conteúdo do dia */}
       {isWithinMonth && (
         <div className="item flex flex-1 flex-col justify-center gap-1 overflow-hidden">
-          {shouldRenderEvents && firstEvent && (
-            <button
-              className={cn(
-                'relative z-0 flex cursor-pointer flex-col justify-start text-left',
-                'rounded p-1 text-xs',
-                'transition-colors hover:opacity-90',
-                colorClasses?.bg ?? 'bg-primary',
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenEvent(firstEvent);
-              }}
-            >
-              <span className="truncate font-medium text-white">
-                {firstEvent.title}
-              </span>
-              <div className="hidden items-center truncate text-white sm:flex">
-                <Clock className="mr-1 h-3 w-3" />
-                <span className="truncate">
-                  {formatTimeDisplay(firstEvent.startTime, timeFormat)} -{' '}
-                  {formatTimeDisplay(firstEvent.endTime, timeFormat)}
+          {/* Lista de eventos (até o limite configurado) */}
+          {eventsToShow.map((event, idx) => {
+            const cardColors = getColorClasses(event.color);
+            return (
+              <button
+                key={event.id ?? `${dateKey}-${idx}`}
+                className={cn(
+                  'relative z-0 flex cursor-pointer flex-col justify-start text-left',
+                  'rounded p-1 text-xs',
+                  'transition-colors hover:opacity-90',
+                  cardColors?.bg ?? 'bg-primary',
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenEvent(event);
+                }}
+              >
+                <span className="truncate font-medium text-white">
+                  {event.title}
                 </span>
-              </div>
-            </button>
-          )}
-          {dayEvents.length > 1 ? (
+                <div className="hidden items-center truncate text-white sm:flex">
+                  <Clock className="mr-1 h-3 w-3" />
+                  <span className="truncate">
+                    {formatTimeDisplay(event.startTime, timeFormat)} -{' '}
+                    {formatTimeDisplay(event.endTime, timeFormat)}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+
+          {/* Botão "+ X more" quando há mais eventos além do limite */}
+          {remainingCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -127,18 +178,19 @@ export function DayCell({
             >
               <Plus className="h-1.5 w-1.5" />
               <span className="hidden sm:block">
-                {dayEvents.length - 1} more
+                {remainingCount}
               </span>
             </Button>
-          ) : (
+          )}
+
+          {/* Quando não há eventos, mostra apenas o botão de adicionar (que aparece no hover) */}
+          {dayEvents.length === 0 && (
             <Button
               variant="ghost"
               size="sm"
               className={cn(
                 'w-full cursor-pointer gap-1 truncate p-5 px-1 text-xs opacity-0 group-hover:opacity-100',
-                isEmpty
-                  ? 'mb-2 bg-transparent !ring-0 hover:!bg-transparent'
-                  : 'h-5',
+                'mb-2 bg-transparent !ring-0 hover:!bg-transparent',
               )}
               onClick={(e) => {
                 e.stopPropagation();
@@ -146,7 +198,7 @@ export function DayCell({
               }}
             >
               <Plus className="h-3 w-3" />
-              <span className="hidden sm:block">Add</span>
+              <span className="hidden sm:block">Novo Agendamento</span>
             </Button>
           )}
         </div>

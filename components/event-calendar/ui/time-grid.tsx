@@ -1,25 +1,25 @@
-import { cn } from '@/lib/utils';
-import { memo } from 'react';
-import { format } from 'date-fns';
+import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import { memo } from 'react'
 
 interface BaseTimeGridProps {
-  highlightToday: boolean;
-  timeSlots: Date[];
-  daysInWeek: Date[];
-  todayIndex: number;
+  highlightToday: boolean
+  timeSlots: Date[]
+  daysInWeek: Date[]
+  todayIndex: number
   onTimeBlockClick: (data: {
-    date: Date;
-    startTime: string;
-    endTime: string;
-  }) => void;
+    date: Date
+    startTime: string
+    endTime: string
+  }) => void
 }
 
 interface DynamicWidthTimeGridProps extends BaseTimeGridProps {
-  dayWidthPercent: number;
-  dynamicWidth: true;
+  dayWidthPercent: number
+  dynamicWidth: true
 }
 
-type TimeGridProps = BaseTimeGridProps | DynamicWidthTimeGridProps;
+type TimeGridProps = BaseTimeGridProps | DynamicWidthTimeGridProps
 
 export const TimeGrid = memo((props: TimeGridProps) => {
   const {
@@ -28,13 +28,16 @@ export const TimeGrid = memo((props: TimeGridProps) => {
     daysInWeek,
     todayIndex,
     onTimeBlockClick,
-  } = props;
-  const isDynamic = 'dynamicWidth' in props && props.dynamicWidth;
+  } = props
+  const isDynamic = 'dynamicWidth' in props && props.dynamicWidth
 
   return (
     <div className="relative">
       {timeSlots.map((time, timeIndex) => (
-        <div key={timeIndex} className="border-border flex h-16 border-t">
+        <div
+          key={timeIndex}
+          className="border-border flex h-16 border-t"
+        >
           {daysInWeek.map((day, dayIndex) => (
             <button
               key={`${timeIndex}-${dayIndex}`}
@@ -47,23 +50,23 @@ export const TimeGrid = memo((props: TimeGridProps) => {
                 isDynamic ? { width: `${props.dayWidthPercent}%` } : undefined
               }
               onClick={() => {
-                const startTime = format(time, 'HH:mm');
+                const startTime = format(time, 'HH:mm')
                 const endTime = format(
                   new Date(time.getTime() + 60 * 60 * 1000),
                   'HH:mm',
-                );
+                )
                 onTimeBlockClick({
                   date: day,
                   startTime,
                   endTime,
-                });
+                })
               }}
             />
           ))}
         </div>
       ))}
     </div>
-  );
-});
+  )
+})
 
-TimeGrid.displayName = 'TimeGrid';
+TimeGrid.displayName = 'TimeGrid'
