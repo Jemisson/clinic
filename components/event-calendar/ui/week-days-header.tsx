@@ -49,7 +49,7 @@ export function WeekDayHeaders({
           transition={{ duration: 0.3 }}
           className="flex w-14 flex-shrink-0 flex-col items-center justify-center gap-2 p-2 text-center font-medium sm:w-32"
         >
-          <div className="text-muted-foreground text-xs sm:text-sm">Week</div>
+          <div className="text-muted-foreground text-xs sm:text-sm">Semana</div>
           <div className="text-muted-foreground text-xs sm:text-sm">
             {weekNumber}
           </div>

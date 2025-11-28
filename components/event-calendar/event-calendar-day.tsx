@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useMemo, useRef, useCallback } from 'react';
+import {
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+  useEffect,          // 👈 adicionamos useEffect
+} from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { isSameDay } from 'date-fns';
 import { generateTimeSlots } from '@/lib/date';
@@ -23,6 +29,7 @@ interface CalendarDayProps {
   events: Events[];
   currentDate: Date;
 }
+
 export function EventCalendarDay({ events, currentDate }: CalendarDayProps) {
   const { timeFormat, viewSettings, openQuickAddDialog, openEventDialog } =
     useEventCalendarStore(
@@ -33,10 +40,13 @@ export function EventCalendarDay({ events, currentDate }: CalendarDayProps) {
         openEventDialog: state.openEventDialog,
       })),
     );
+
   const [hoverPosition, setHoverPosition] = useState<
     HoverPositionType | undefined
   >(undefined);
+
   const timeColumnRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null); // 👈 ref para o ScrollArea
 
   const now = new Date();
   const currentHour = now.getHours();
@@ -97,9 +107,28 @@ export function EventCalendarDay({ events, currentDate }: CalendarDayProps) {
     viewSettings.day.enableTimeSlotClick,
   ]);
 
+  useEffect(() => {
+    const container = scrollAreaRef.current;
+    if (!container) return;
+
+    const today = new Date();
+    if (!isSameDay(today, currentDate)) return;
+
+    const hourOffset = currentHour * HOUR_HEIGHT;
+    const target = hourOffset - container.clientHeight / 2;
+
+    container.scrollTo({
+      top: Math.max(target, 0),
+      behavior: 'smooth',
+    });
+  }, [currentDate, currentHour]);
+
   return (
     <div className="flex h-[760px] flex-col py-3">
-      <ScrollArea className="h-full w-full rounded-md px-4">
+      <ScrollArea
+        ref={scrollAreaRef}
+        className="h-full w-full rounded-md px-4"
+      >
         <div className="relative mt-2 mb-2">
           <div className="absolute left-0 z-10 w-13">
             <TimeColumn

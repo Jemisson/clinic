@@ -1,9 +1,9 @@
 import { EVENT_VIEW_CONFIG } from '@/components/event-calendar/event-list'
 import { CATEGORY_OPTIONS, LOCALES } from '@/constants/calendar-constant'
-import { Events } from '@/types/event'
 import {
   CalendarViewType,
   EventPosition,
+  Events,
   MultiDayEventRowType,
   TimeFormatType,
 } from '@/types/event'

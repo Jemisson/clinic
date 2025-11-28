@@ -1,6 +1,8 @@
-'use client';
-import { useCallback } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+'use client'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { useEventCalendarStore } from '@/hooks/use-event'
+import { getLocaleFromCode, useEventFilter, useEventGrouper } from '@/lib/event'
+import { CalendarViewType, Events, TimeFormatType } from '@/types/event'
 import {
   addDays,
   endOfDay,
@@ -10,20 +12,14 @@ import {
   isSameYear,
   isWithinInterval,
   startOfDay,
-} from 'date-fns';
-import { CalendarViewType, Events, TimeFormatType } from '@/types/event';
-import { EventGroup, NoEvents } from './ui/events';
-import { useEventCalendarStore } from '@/hooks/use-event';
-import {
-  getLocaleFromCode,
-  useEventFilter,
-  useEventGrouper,
-} from '@/lib/event';
-import { useShallow } from 'zustand/shallow';
+} from 'date-fns'
+import { useCallback } from 'react'
+import { useShallow } from 'zustand/shallow'
+import { EventGroup, NoEvents } from './ui/events'
 
 interface EventsListProps {
-  events: Events[];
-  currentDate: Date;
+  events: Events[]
+  currentDate: Date
 }
 
 export const EVENT_VIEW_CONFIG = {
@@ -37,9 +33,9 @@ export const EVENT_VIEW_CONFIG = {
     groupFormat: 'EEEE, d MMMM',
     titleFormat: 'd MMMM yyyy',
     filterFn: (eventDate: Date, currentDate: Date, daysCount: number = 7) => {
-      const start = startOfDay(currentDate);
-      const end = endOfDay(addDays(currentDate, daysCount - 1));
-      return isWithinInterval(eventDate, { start, end });
+      const start = startOfDay(currentDate)
+      const end = endOfDay(addDays(currentDate, daysCount - 1))
+      return isWithinInterval(eventDate, { start, end })
     },
   },
   [CalendarViewType.WEEK]: {
@@ -60,7 +56,7 @@ export const EVENT_VIEW_CONFIG = {
     filterFn: (eventDate: Date, currentDate: Date) =>
       isSameYear(eventDate, currentDate),
   },
-};
+}
 
 const EventSection = ({
   title,
@@ -69,11 +65,11 @@ const EventSection = ({
   timeFormat,
   onEventClick,
 }: {
-  title: string;
-  timeKey: string;
-  events: Events[];
-  timeFormat: TimeFormatType;
-  onEventClick: (event: Events) => void;
+  title: string
+  timeKey: string
+  events: Events[]
+  timeFormat: TimeFormatType
+  onEventClick: (event: Events) => void
 }) => (
   <div className="space-y-2">
     <h3 className="text-muted-foreground text-sm font-medium">{title}</h3>
@@ -84,7 +80,7 @@ const EventSection = ({
       onClick={onEventClick}
     />
   </div>
-);
+)
 
 export function EventsList({ events, currentDate }: EventsListProps) {
   const { timeFormat, currentView, locale, openEventDialog } =
@@ -95,31 +91,34 @@ export function EventsList({ events, currentDate }: EventsListProps) {
         locale: state.locale,
         openEventDialog: state.openEventDialog,
       })),
-    );
-  const localeObj = getLocaleFromCode(locale);
+    )
+  const localeObj = getLocaleFromCode(locale)
 
-  const filteredEvents = useEventFilter(events, currentDate, currentView);
+  const filteredEvents = useEventFilter(events, currentDate, currentView)
 
   const groupedEvents = useEventGrouper(
     filteredEvents,
     currentView,
     timeFormat,
     localeObj,
-  );
+  )
 
   const handleEventClick = useCallback(
     (event: Events) => {
-      openEventDialog(event);
+      openEventDialog(event)
     },
     [openEventDialog],
-  );
+  )
 
   if (groupedEvents.length === 0) {
-    return <NoEvents {...{ currentDate, currentView, locale: localeObj }} />;
+    return <NoEvents {...{ currentDate, currentView, locale: localeObj }} />
   }
 
   return (
-    <div className="h-full w-full space-y-4" data-testid="events-list">
+    <div
+      className="h-full w-full space-y-4"
+      data-testid="events-list"
+    >
       <ScrollArea className="h-[calc(100vh-12rem)] pr-3">
         <div className="space-y-3 px-5 py-4">
           {groupedEvents.map(({ key, title, events }) => (
@@ -135,5 +134,5 @@ export function EventsList({ events, currentDate }: EventsListProps) {
         </div>
       </ScrollArea>
     </div>
-  );
+  )
 }

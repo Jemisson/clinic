@@ -1,19 +1,19 @@
-'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Loader2, Search } from 'lucide-react';
-import { Input } from '../ui/input';
-import { EventCard } from './ui/events';
-import { Events, TimeFormatType } from '@/types/event';
-import { ScrollArea } from '../ui/scroll-area';
-import { SearchEventFilter } from '@/lib/validations';
+'use client'
+import { SearchEventFilter } from '@/lib/validations'
+import { Events, TimeFormatType } from '@/types/event'
+import { Loader2, Search } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
+import { Input } from '../ui/input'
+import { ScrollArea } from '../ui/scroll-area'
+import { EventCard } from './ui/events'
 interface EventSearchDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  searchQuery: string;
-  onSearchQueryChange: (query: string) => void;
-  onEventSelect: (event: Events) => void;
-  timeFormat: TimeFormatType;
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  searchQuery: string
+  onSearchQueryChange: (query: string) => void
+  onEventSelect: (event: Events) => void
+  timeFormat: TimeFormatType
 }
 
 export const EventSearchDialog = ({
@@ -24,39 +24,39 @@ export const EventSearchDialog = ({
   onEventSelect,
   timeFormat,
 }: EventSearchDialogProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<Events[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false)
+  const [searchResults, setSearchResults] = useState<Events[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
 
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const debouncedSearch = useCallback(
     async (query: string, options?: Partial<SearchEventFilter>) => {
       if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+        clearTimeout(debounceTimeoutRef.current)
       }
 
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+        abortControllerRef.current.abort()
       }
 
       if (query.trim().length < 2) {
-        setSearchResults([]);
-        setError(null);
-        setTotalCount(0);
-        setHasMore(false);
-        return;
+        setSearchResults([])
+        setError(null)
+        setTotalCount(0)
+        setHasMore(false)
+        return
       }
 
       debounceTimeoutRef.current = setTimeout(async () => {
         try {
-          setIsLoading(true);
-          setError(null);
+          setIsLoading(true)
+          setError(null)
 
-          abortControllerRef.current = new AbortController();
+          abortControllerRef.current = new AbortController()
 
           const _searchParams: SearchEventFilter = {
             search: query.trim(),
@@ -67,59 +67,59 @@ export const EventSearchDialog = ({
             limit: 20,
             offset: 0,
             isRepeating: options?.isRepeating,
-          };
+          }
 
           // TODO: Implement your actual search API/service connection here
         } catch (err) {
           if (err instanceof Error && err.name !== 'AbortError') {
-            setError('An error occurred while searching events');
-            setSearchResults([]);
+            setError('An error occurred while searching events')
+            setSearchResults([])
           }
         } finally {
-          setIsLoading(false);
+          setIsLoading(false)
         }
-      }, 300); // 300ms debounce delay
+      }, 300) // 300ms debounce delay
     },
     [],
-  );
+  )
 
   useEffect(() => {
     if (open) {
-      debouncedSearch(searchQuery);
+      debouncedSearch(searchQuery)
     }
-  }, [searchQuery, open, debouncedSearch]);
+  }, [searchQuery, open, debouncedSearch])
 
   useEffect(() => {
     if (!open) {
       if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+        clearTimeout(debounceTimeoutRef.current)
       }
 
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+        abortControllerRef.current.abort()
       }
-      setSearchResults([]);
-      setError(null);
-      setIsLoading(false);
-      setTotalCount(0);
-      setHasMore(false);
+      setSearchResults([])
+      setError(null)
+      setIsLoading(false)
+      setTotalCount(0)
+      setHasMore(false)
     }
 
     return () => {
       if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+        clearTimeout(debounceTimeoutRef.current)
       }
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+        abortControllerRef.current.abort()
       }
-    };
-  }, [open]);
+    }
+  }, [open])
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || isLoading || searchQuery.trim().length < 2) return;
+    if (!hasMore || isLoading || searchQuery.trim().length < 2) return
 
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
       const _searchParams: SearchEventFilter = {
         search: searchQuery.trim(),
@@ -129,28 +129,31 @@ export const EventSearchDialog = ({
         repeatingTypes: [],
         limit: 20,
         offset: searchResults.length,
-      };
+      }
 
       // TODO: Implement your actual search API/service connection here
     } catch (err) {
-      console.error(err);
-      setError('Failed to load more events');
+      console.error(err)
+      setError('Failed to load more events')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [hasMore, isLoading, searchQuery, searchResults.length]);
+  }, [hasMore, isLoading, searchQuery, searchResults.length])
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="flex max-h-[80vh] max-w-2xl flex-col">
         <DialogHeader>
-          <DialogTitle>Search Events</DialogTitle>
+          <DialogTitle>Buscar Agendamentos</DialogTitle>
         </DialogHeader>
         <div className="flex-1 space-y-4 overflow-hidden">
           <div className="relative">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
             <Input
-              placeholder="Search events by title, description, location, or category..."
+              placeholder="Busque por nome do paciente"
               value={searchQuery}
               onChange={(e) => onSearchQueryChange(e.target.value)}
               className="pl-10"
@@ -165,7 +168,7 @@ export const EventSearchDialog = ({
                   {hasMore && ` • Showing first ${searchResults.length}`}
                 </>
               ) : (
-                `No events found matching "${searchQuery}"`
+                `Nenhum resultado encontrado para "${searchQuery}"`
               )}
             </div>
           )}
@@ -215,15 +218,15 @@ export const EventSearchDialog = ({
               ) : searchQuery.trim().length >= 2 && !isLoading ? (
                 <div className="text-muted-foreground py-8 text-center">
                   <Search className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                  <p>No events found matching &quot;{searchQuery}&quot;</p>
+                  <p>Nenhum agendamento encontrado para &quot;{searchQuery}&quot;</p>
                   <p className="mt-1 text-xs">
-                    Try different keywords or check your spelling
+                    Tente ajustar seus termos de pesquisa.
                   </p>
                 </div>
               ) : (
                 <div className="text-muted-foreground py-8 text-center">
                   <Search className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                  <p>Start typing to search events...</p>
+                  <p>Digite para pesquisar ...</p>
                   <p className="mt-1 text-xs">Enter at least 2 characters</p>
                 </div>
               )}
@@ -232,5 +235,5 @@ export const EventSearchDialog = ({
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

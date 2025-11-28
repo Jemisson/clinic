@@ -21,9 +21,10 @@ export const EVENT_COLORS = [
 ] as const
 
 export const CATEGORY_OPTIONS = [
-  { value: 'consulta', label: 'Consulta' },
-  { value: 'procedimento', label: 'Procedimento' },
-  { value: 'orçamento', label: 'Orçamento' },
+  { label: 'Consulta', value: 'consultation' },
+  { label: 'Procedimento', value: 'procedure' },
+  { label: 'Bloqueio', value: 'block' },
+  { label: 'Orçamento', value: 'budget' },
 ] as const
 
 export const LOCALES = [

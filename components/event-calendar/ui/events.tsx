@@ -1,12 +1,12 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { formatTimeDisplay } from '@/lib/date';
-import { getColorClasses } from '@/lib/event';
-import { cn } from '@/lib/utils';
-import { CalendarViewType, Events, TimeFormatType } from '@/types/event';
-import { endOfWeek, format, Locale, startOfWeek } from 'date-fns';
-import { Calendar, Clock, MapPin } from 'lucide-react';
-import { memo } from 'react';
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { formatTimeDisplay } from '@/lib/date'
+import { getColorClasses } from '@/lib/event'
+import { cn } from '@/lib/utils'
+import { CalendarViewType, Events, TimeFormatType } from '@/types/event'
+import { endOfWeek, format, Locale, startOfWeek } from 'date-fns'
+import { Calendar, Clock, MapPin } from 'lucide-react'
+import { memo } from 'react'
 
 export const NoEvents = memo(
   ({
@@ -14,38 +14,44 @@ export const NoEvents = memo(
     currentView,
     locale,
   }: {
-    currentDate: Date;
-    currentView: CalendarViewType;
-    locale?: Locale;
+    currentDate: Date
+    currentView: CalendarViewType
+    locale?: Locale
   }) => {
     const getNoEventsMessage = () => {
       switch (currentView) {
         case CalendarViewType.DAY:
-          return `Tidak ada acara pada ${format(currentDate, 'EEEE, d MMMM yyyy', {
-            locale,
-          })}`;
+          return `Não há eventos em ${format(
+            currentDate,
+            'EEEE, d MMMM yyyy',
+            {
+              locale,
+            },
+          )}`
         case CalendarViewType.WEEK:
           const weekStart = format(
             startOfWeek(currentDate, { locale }),
             'd MMM',
             { locale },
-          );
+          )
           const weekEnd = format(
             endOfWeek(currentDate, { locale }),
             'd MMM yyyy',
             { locale },
-          );
-          return `Tidak ada acara pada minggu ${weekStart} - ${weekEnd}`;
+          )
+          return `Não há eventos no período de ${weekStart} - ${weekEnd}`
         case CalendarViewType.MONTH:
-          return `Tidak ada acara pada ${format(currentDate, 'MMMM yyyy', {
+          return `Não há eventos em ${format(currentDate, 'MMMM yyyy', {
             locale,
-          })}`;
+          })}`
         case CalendarViewType.YEAR:
-          return `Tidak ada acara pada tahun ${format(currentDate, 'yyyy', { locale })}`;
+          return `Não há eventos programados para o ano de ${format(currentDate, 'yyyy', {
+            locale,
+          })}`
         default:
-          return 'Tidak ada acara';
+          return 'Nenhum evento encontrado.'
       }
-    };
+    }
 
     return (
       <div
@@ -55,22 +61,22 @@ export const NoEvents = memo(
         <Calendar className="mb-2 h-12 w-12 opacity-20" />
         <p>{getNoEventsMessage()}</p>
       </div>
-    );
+    )
   },
-);
+)
 
-NoEvents.displayName = 'NoEvents';
+NoEvents.displayName = 'NoEvents'
 
 export const EventCard = ({
   event,
   timeFormat,
   onClick,
 }: {
-  event: Events;
-  timeFormat: TimeFormatType;
-  onClick: (event: Events) => void;
+  event: Events
+  timeFormat: TimeFormatType
+  onClick: (event: Events) => void
 }) => {
-  const { bg, badge } = getColorClasses(event.color);
+  const { bg, badge } = getColorClasses(event.color)
 
   return (
     <Button
@@ -91,10 +97,7 @@ export const EventCard = ({
         </span>
         <Badge
           variant="default"
-          className={cn(
-            'ml-1 h-4 px-1 text-[9px] leading-none',
-            badge.bg,
-          )}
+          className={cn('ml-1 h-4 px-1 text-[9px] leading-none', badge.bg)}
         >
           {event.category}
         </Badge>
@@ -117,9 +120,8 @@ export const EventCard = ({
         )}
       </div>
     </Button>
-  );
-};
-
+  )
+}
 
 export const EventGroup = memo(
   ({
@@ -128,10 +130,10 @@ export const EventGroup = memo(
     timeFormat,
     onClick,
   }: {
-    timeKey: string;
-    events: Events[];
-    timeFormat: TimeFormatType;
-    onClick: (event: Events) => void;
+    timeKey: string
+    events: Events[]
+    timeFormat: TimeFormatType
+    onClick: (event: Events) => void
   }) => (
     <div
       key={timeKey}
@@ -150,6 +152,6 @@ export const EventGroup = memo(
       </div>
     </div>
   ),
-);
+)
 
-EventGroup.displayName = 'EventGroup';
+EventGroup.displayName = 'EventGroup'

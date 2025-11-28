@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/tooltip';
 import { isSameDay } from '@/lib/date';
 import { getColorClasses } from '@/lib/event';
-import { cn } from '@/lib/utils';
+import { capitalize, cn } from '@/lib/utils';
 import {
   eachDayOfInterval,
   endOfMonth,
@@ -16,6 +16,7 @@ import {
   isSameMonth,
   isSameYear,
   startOfMonth,
+  Locale,
 } from 'date-fns';
 import { ChevronRight, Plus } from 'lucide-react';
 import { memo, useMemo } from 'react';
@@ -30,6 +31,7 @@ interface MonthCardProps {
   onEventClick: (event: Events) => void;
   onDateClick: (date: Date) => void;
   onQuickAdd: (date: Date) => void;
+  locale?: Locale; // <- novo
 }
 
 interface DayCellProps {
@@ -37,42 +39,49 @@ interface DayCellProps {
   events: Events[];
   isToday: boolean;
   onClick: () => void;
+  locale?: Locale;
 }
 
-const DayCell = memo(({ day, events, isToday, onClick }: DayCellProps) => {
-  const hasDayEvents = events.length > 0;
+const DayCell = memo(
+  ({ day, events, isToday, onClick, locale }: DayCellProps) => {
+    const hasDayEvents = events.length > 0;
 
-  const tooltipContent = useMemo(
-    () =>
-      hasDayEvents
-        ? `${events.length} Event on ${format(day, 'd MMMM yyyy')}`
-        : format(day, 'd MMMM yyyy'),
-    [hasDayEvents, events.length, day],
-  );
+    const tooltipContent = useMemo(() => {
+      const dateLabel = format(day, 'd MMMM yyyy', { locale });
+      if (!hasDayEvents) return dateLabel;
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          className={cn(
-            'relative flex h-10 w-full items-center justify-center rounded-full p-0 text-[11px] transition-colors',
-            isToday ? 'bg-blue-500 font-bold text-white' : '',
-            hasDayEvents && !isToday ? 'bg-primary/10 font-medium' : '',
-          )}
-          onClick={onClick}
-        >
-          {getDate(day)}
-          {hasDayEvents && !isToday && (
-            <span className="bg-primary absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 transform rounded-full" />
-          )}
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="top" align="center">
-        {tooltipContent}
-      </TooltipContent>
-    </Tooltip>
-  );
-});
+      const label =
+        events.length === 1
+          ? `1 evento em ${dateLabel}`
+          : `${events.length} eventos em ${dateLabel}`;
+
+      return label;
+    }, [hasDayEvents, events.length, day, locale]);
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            className={cn(
+              'relative flex h-10 w-full items-center justify-center rounded-full p-0 text-[11px] transition-colors',
+              isToday ? 'bg-blue-500 font-bold text-white' : '',
+              hasDayEvents && !isToday ? 'bg-primary/10 font-medium' : '',
+            )}
+            onClick={onClick}
+          >
+            {getDate(day)}
+            {hasDayEvents && !isToday && (
+              <span className="bg-primary absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 transform rounded-full" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" align="center">
+          {tooltipContent}
+        </TooltipContent>
+      </Tooltip>
+    );
+  },
+);
 
 DayCell.displayName = 'DayCell';
 
@@ -81,10 +90,12 @@ const MonthDaysGrid = memo(
     month,
     eventsByDate,
     onDateClick,
+    locale,
   }: {
     month: Date;
     eventsByDate: Record<string, Events[]>;
     onDateClick: (date: Date) => void;
+    locale?: Locale;
   }) => {
     const daysInMonth = eachDayOfInterval({
       start: startOfMonth(month),
@@ -94,9 +105,12 @@ const MonthDaysGrid = memo(
     const firstDayOfMonth = startOfMonth(month);
     const firstWeekday = firstDayOfMonth.getDay();
 
+    // Cabeçalhos simplificados (poderíamos gerar via date-fns, mas aqui já resolve)
+    const weekHeaders = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
     return (
       <div className="grid grid-cols-7 gap-1 text-center text-xs">
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+        {weekHeaders.map((day, i) => (
           <div
             key={i}
             className="text-muted-foreground mb-1 text-[10px] font-medium"
@@ -118,6 +132,7 @@ const MonthDaysGrid = memo(
               events={eventsByDate[dateKey] || []}
               isToday={isSameDay(day, new Date())}
               onClick={() => onDateClick(day)}
+              locale={locale}
             />
           );
         })}
@@ -138,12 +153,16 @@ const MonthCard = memo(
     onEventClick,
     onDateClick,
     onQuickAdd,
+    locale,
   }: MonthCardProps) => {
     const _monthIndex = getMonth(month);
     const today = new Date();
     const isCurrentMonth =
       isSameMonth(month, today) && isSameYear(month, today);
     const hasEvents = eventCount > 0;
+
+    const monthLabel = capitalize(format(month, 'MMMM', { locale }));
+    const monthYearLabel = format(month, 'MMMM yyyy', { locale });
 
     return (
       <div
@@ -170,12 +189,12 @@ const MonthCard = memo(
                 }}
               >
                 {yearViewConfig.showMonthLabels && (
-                  <span>{format(month, 'MMMM')}</span>
+                  <span>{monthLabel}</span>
                 )}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top">
-              View {format(month, 'MMMM yyyy')}
+              Ver {monthYearLabel}
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -190,7 +209,7 @@ const MonthCard = memo(
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top">
-              Add event in {format(month, 'MMMM')}
+              Adicionar agendamento em {capitalize(monthLabel)}
             </TooltipContent>
           </Tooltip>
         </div>
@@ -199,6 +218,7 @@ const MonthCard = memo(
           month={month}
           eventsByDate={eventsByDate}
           onDateClick={onDateClick}
+          locale={locale}
         />
 
         {hasEvents && yearViewConfig.enableEventPreview ? (
@@ -220,7 +240,7 @@ const MonthCard = memo(
                     >
                       <span className="flex items-center text-white">
                         <span className="mr-1 font-medium">
-                          {format(new Date(dateKey), 'd')}
+                          {format(new Date(dateKey), 'd', { locale })}
                         </span>
                         {event.title}
                       </span>
@@ -239,7 +259,7 @@ const MonthCard = memo(
                   )
                 }
               >
-                <span>View all {eventCount} events</span>
+                <span>Ver todos os {eventCount} eventos</span>
                 <ChevronRight className="h-3 w-3" />
               </Button>
             )}

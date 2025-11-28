@@ -1,6 +1,6 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+'use client'
+import { DeleteAlert } from '@/components/event-calendar/ui/delete-alert'
+import { FormFooter } from '@/components/event-calendar/ui/form-footer'
 import {
   Dialog,
   DialogContent,
@@ -8,26 +8,26 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { ScrollArea } from '../ui/scroll-area';
-import { DeleteAlert } from '@/components/event-calendar/ui/delete-alert';
-import { FormFooter } from '@/components/event-calendar/ui/form-footer';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { ensureDate } from '@/lib/date';
-import { useEventCalendarStore } from '@/hooks/use-event';
-import { eventFormSchema } from '@/lib/validations';
-import { EventDetailsForm } from './event-detail-form';
-import { toast } from 'sonner';
-import { useShallow } from 'zustand/shallow';
-import { getLocaleFromCode } from '@/lib/event';
+} from '@/components/ui/dialog'
+import { useEventCalendarStore } from '@/hooks/use-event'
+import { ensureDate } from '@/lib/date'
+import { getLocaleFromCode } from '@/lib/event'
+import { eventFormSchema } from '@/lib/validations'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
+import { useShallow } from 'zustand/shallow'
+import { ScrollArea } from '../ui/scroll-area'
+import { EventDetailsForm } from './event-detail-form'
 
-const DEFAULT_START_TIME = '09:00';
-const DEFAULT_END_TIME = '10:00';
-const DEFAULT_COLOR = 'bg-red-600';
-const DEFAULT_CATEGORY = 'workshop';
+const DEFAULT_START_TIME = '09:00'
+const DEFAULT_END_TIME = '10:00'
+const DEFAULT_COLOR = 'bg-red-600'
+const DEFAULT_CATEGORY = 'workshop'
 
-type EventFormValues = z.infer<typeof eventFormSchema>;
+type EventFormValues = z.infer<typeof eventFormSchema>
 
 const DEFAULT_FORM_VALUES: EventFormValues = {
   title: '',
@@ -39,17 +39,17 @@ const DEFAULT_FORM_VALUES: EventFormValues = {
   endTime: DEFAULT_END_TIME,
   location: '',
   color: DEFAULT_COLOR,
-};
+}
 
 function useIsMounted() {
-  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState<boolean>(false)
 
   useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
+    setIsMounted(true)
+    return () => setIsMounted(false)
+  }, [])
 
-  return isMounted;
+  return isMounted
 }
 
 export default function EventDialog() {
@@ -67,23 +67,23 @@ export default function EventDialog() {
       closeEventDialog: state.closeEventDialog,
       isSubmitting: state.isSubmitting,
     })),
-  );
-  const localeObj = getLocaleFromCode(locale);
+  )
+  const localeObj = getLocaleFromCode(locale)
 
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const isMounted = useIsMounted();
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false)
+  const isMounted = useIsMounted()
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: DEFAULT_FORM_VALUES,
     mode: 'onChange',
-  });
+  })
 
   useEffect(() => {
     if (selectedEvent) {
       try {
-        const startDate = ensureDate(selectedEvent.startDate);
-        const endDate = ensureDate(selectedEvent.endDate);
+        const startDate = ensureDate(selectedEvent.startDate)
+        const endDate = ensureDate(selectedEvent.endDate)
 
         form.reset({
           title: selectedEvent.title || '',
@@ -95,33 +95,37 @@ export default function EventDialog() {
           endTime: selectedEvent.endTime || DEFAULT_END_TIME,
           location: selectedEvent.location || '',
           color: selectedEvent.color,
-        });
+        })
       } catch (error) {
-        console.error('Error resetting form with event data:', error);
+        console.error('Error resetting form with event data:', error)
       }
     }
-  }, [selectedEvent, form]);
+  }, [selectedEvent, form])
 
   const handleUpdate = async (values: EventFormValues) => {
-    if (!selectedEvent?.id) return;
+    if (!selectedEvent?.id) return
 
     toast.success('DEMO: Update event UI triggered', {
       description:
         'Override this handler with your actual update logic. Requires connection to your data source.',
-    });
-  };
+    })
+  }
 
   const handleDeleteEvent = async () => {
     toast.success('DEMO: Delete event UI triggered', {
       description:
         'Replace this placeholder with real deletion logic. Ensure proper data persistence.',
-    });
-  };
+    })
+  }
 
-  if (!isMounted) return null;
+  if (!isMounted) return null
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={closeEventDialog} modal={false}>
+    <Dialog
+      open={isDialogOpen}
+      onOpenChange={closeEventDialog}
+      modal={false}
+    >
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Event Details</DialogTitle>
@@ -150,5 +154,5 @@ export default function EventDialog() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

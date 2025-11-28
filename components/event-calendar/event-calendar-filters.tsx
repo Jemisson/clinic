@@ -1,29 +1,22 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useQueryStates, parseAsArrayOf, parseAsString } from 'nuqs';
-import { Search, X, Tag, Repeat, Clock, CalendarPlus2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { CATEGORY_OPTIONS, EVENT_COLORS } from '@/constants/calendar-constant';
-import { getColorClasses } from '@/lib/event';
-import { EventSearchDialog } from './event-search-dialog';
-import { useShallow } from 'zustand/shallow';
-import { useEventCalendarStore } from '@/hooks/use-event';
+} from '@/components/ui/popover'
+import { CATEGORY_OPTIONS, EVENT_COLORS } from '@/constants/calendar-constant'
+import { useEventCalendarStore } from '@/hooks/use-event'
+import { getColorClasses } from '@/lib/event'
+import { CalendarPlus2, Clock, Repeat, Search, Tag, X } from 'lucide-react'
+import { parseAsArrayOf, parseAsString, useQueryStates } from 'nuqs'
+import { useState } from 'react'
+import { useShallow } from 'zustand/shallow'
+import { EventSearchDialog } from './event-search-dialog'
 
 export const EventCalendarFilters = () => {
   const { timeFormat, openEventDialog } = useEventCalendarStore(
@@ -31,8 +24,8 @@ export const EventCalendarFilters = () => {
       timeFormat: state.timeFormat,
       openEventDialog: state.openEventDialog,
     })),
-  );
-  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+  )
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false)
   const [filters, setFilters] = useQueryStates({
     categories: parseAsArrayOf(parseAsString).withDefault([]),
     locations: parseAsArrayOf(parseAsString).withDefault([]),
@@ -44,19 +37,19 @@ export const EventCalendarFilters = () => {
     dateStart: parseAsString.withDefault(''),
     dateEnd: parseAsString.withDefault(''),
     search: parseAsString.withDefault(''),
-  });
+  })
 
   const getActiveFiltersCount = () => {
-    let count = 0;
-    count += filters.categories.length;
-    count += filters.locations.length;
-    count += filters.colors.length;
-    count += filters.repeatingTypes.length;
-    if (filters.isRepeating) count += 1;
-    if (filters.dateStart || filters.dateEnd) count += 1;
-    if (filters.search) count += 1;
-    return count;
-  };
+    let count = 0
+    count += filters.categories.length
+    count += filters.locations.length
+    count += filters.colors.length
+    count += filters.repeatingTypes.length
+    if (filters.isRepeating) count += 1
+    if (filters.dateStart || filters.dateEnd) count += 1
+    if (filters.search) count += 1
+    return count
+  }
 
   const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
     if (
@@ -65,19 +58,19 @@ export const EventCalendarFilters = () => {
       key === 'search' ||
       key === 'isRepeating'
     )
-      return;
+      return
 
-    const currentArray = filters[key] as string[];
+    const currentArray = filters[key] as string[]
     const newArray = currentArray.includes(value)
       ? currentArray.filter((item) => item !== value)
-      : [...currentArray, value];
+      : [...currentArray, value]
 
-    setFilters({ [key]: newArray });
-  };
+    setFilters({ [key]: newArray })
+  }
 
   const updateSingleFilter = (key: keyof typeof filters, value: string) => {
-    setFilters({ [key]: value });
-  };
+    setFilters({ [key]: value })
+  }
 
   const clearAllFilters = () => {
     setFilters({
@@ -89,8 +82,8 @@ export const EventCalendarFilters = () => {
       dateStart: '',
       dateEnd: '',
       search: '',
-    });
-  };
+    })
+  }
 
   const clearSingleArrayFilter = (key: keyof typeof filters, value: string) => {
     if (
@@ -99,14 +92,14 @@ export const EventCalendarFilters = () => {
       key === 'search' ||
       key === 'isRepeating'
     )
-      return;
+      return
 
-    const currentArray = filters[key] as string[];
-    const newArray = currentArray.filter((item) => item !== value);
-    setFilters({ [key]: newArray });
-  };
+    const currentArray = filters[key] as string[]
+    const newArray = currentArray.filter((item) => item !== value)
+    setFilters({ [key]: newArray })
+  }
 
-  const activeFiltersCount = getActiveFiltersCount();
+  const activeFiltersCount = getActiveFiltersCount()
 
   return (
     <div className="flex flex-col space-y-2 border-b px-4 pt-2 pb-2">
@@ -119,7 +112,10 @@ export const EventCalendarFilters = () => {
           <Search className="h-4 w-4" />
           Pesquisar
           {filters.search && (
-            <Badge variant="secondary" className="ml-1">
+            <Badge
+              variant="secondary"
+              className="ml-1"
+            >
               1
             </Badge>
           )}
@@ -133,7 +129,10 @@ export const EventCalendarFilters = () => {
               <CalendarPlus2 className="h-4 w-4" />
               Tipo de agendamento
               {filters.categories.length > 0 && (
-                <Badge variant="secondary" className="ml-1">
+                <Badge
+                  variant="secondary"
+                  className="ml-1"
+                >
                   {filters.categories.length}
                 </Badge>
               )}
@@ -146,7 +145,10 @@ export const EventCalendarFilters = () => {
               </h4>
               <div className="max-h-48 space-y-3 overflow-y-auto">
                 {CATEGORY_OPTIONS.map((category, index) => (
-                  <div key={index} className="flex items-center space-x-3">
+                  <div
+                    key={index}
+                    className="flex items-center space-x-3"
+                  >
                     <Checkbox
                       id={`category-${category.value}`}
                       checked={filters.categories.includes(category.value)}
@@ -180,7 +182,10 @@ export const EventCalendarFilters = () => {
                 <Clock className="h-4 w-4" />
                 Repeat Types
                 {filters.repeatingTypes.length > 0 && (
-                  <Badge variant="secondary" className="ml-1">
+                  <Badge
+                    variant="secondary"
+                    className="ml-1"
+                  >
                     {filters.repeatingTypes.length}
                   </Badge>
                 )}
@@ -193,7 +198,10 @@ export const EventCalendarFilters = () => {
                 </h4>
                 <div className="space-y-3">
                   {['daily', 'weekly', 'monthly'].map((type) => (
-                    <div key={type} className="flex items-center space-x-3">
+                    <div
+                      key={type}
+                      className="flex items-center space-x-3"
+                    >
                       <Checkbox
                         id={`repeat-${type}`}
                         checked={filters.repeatingTypes.includes(type)}
@@ -221,7 +229,10 @@ export const EventCalendarFilters = () => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-muted-foreground text-sm font-medium">
                 {activeFiltersCount}
-                {activeFiltersCount > 1 ? ' filtros aplicados' : ' filtro aplicado'}:
+                {activeFiltersCount > 1
+                  ? ' filtros aplicados'
+                  : ' filtro aplicado'}
+                :
               </span>
               {filters.search && (
                 <Badge
@@ -262,7 +273,7 @@ export const EventCalendarFilters = () => {
                 </Badge>
               ))}
               {filters.colors.map((colorValue) => {
-                const color = EVENT_COLORS.find((c) => c.value === colorValue);
+                const color = EVENT_COLORS.find((c) => c.value === colorValue)
                 return (
                   <Badge
                     key={`color-${colorValue}`}
@@ -270,7 +281,9 @@ export const EventCalendarFilters = () => {
                     className="h-7 gap-1.5 border-purple-200 bg-purple-50 px-2 py-1 text-purple-700 transition-colors hover:bg-purple-100"
                   >
                     <div
-                      className={`h-3 w-3 rounded-full border ${getColorClasses(colorValue).bg}`}
+                      className={`h-3 w-3 rounded-full border ${
+                        getColorClasses(colorValue).bg
+                      }`}
                     />
                     <span className="text-xs font-medium">
                       {color?.label || colorValue}
@@ -284,7 +297,7 @@ export const EventCalendarFilters = () => {
                       <X className="h-2.5 w-2.5" />
                     </button>
                   </Badge>
-                );
+                )
               })}
               {filters.isRepeating && (
                 <Badge
@@ -345,5 +358,5 @@ export const EventCalendarFilters = () => {
         timeFormat={timeFormat}
       />
     </div>
-  );
-};
+  )
+}

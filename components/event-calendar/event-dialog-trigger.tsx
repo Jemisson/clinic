@@ -1,22 +1,22 @@
-'use client';
+'use client'
 
-import { Events, TimeFormatType } from '@/types/event';
-import { formatTimeDisplay } from '@/lib/date';
-import { getColorClasses } from '@/lib/event';
-import { cn } from '@/lib/utils';
-import { Clock } from 'lucide-react';
+import { formatTimeDisplay } from '@/lib/date'
+import { getColorClasses } from '@/lib/event'
+import { cn } from '@/lib/utils'
+import { Events, TimeFormatType } from '@/types/event'
+import { Clock } from 'lucide-react'
 
 type EventDialogTriggerProps = {
-  event: Events;
+  event: Events
   position: {
-    top: number;
-    height: number;
-  };
-  leftOffset: number;
-  rightOffset: number;
-  onClick: (event: Events) => void;
-  timeFormat?: TimeFormatType;
-};
+    top: number
+    height: number
+  }
+  leftOffset: number
+  rightOffset: number
+  onClick: (event: Events) => void
+  timeFormat?: TimeFormatType
+}
 
 export function EventDialogTrigger({
   event,
@@ -26,31 +26,31 @@ export function EventDialogTrigger({
   onClick,
   timeFormat = TimeFormatType.HOUR_24,
 }: EventDialogTriggerProps) {
-  const { bg } = getColorClasses(event.color);
-  const { top, height } = position;
+  const { bg } = getColorClasses(event.color)
+  const { top, height } = position
 
-  const isVeryShort = height < 32;
+  const isVeryShort = height < 32
 
-  const start = formatTimeDisplay(event.startTime, timeFormat);
-  const end = formatTimeDisplay(event.endTime, timeFormat);
+  const start = formatTimeDisplay(event.startTime, timeFormat)
+  const end = formatTimeDisplay(event.endTime, timeFormat)
 
   // calcula duração em minutos
   const durationMinutes = (() => {
-    const startDate = new Date(event.startDate);
-    const endDate = new Date(event.endDate);
-    const diff = (endDate.getTime() - startDate.getTime()) / 60000;
-    return Math.max(0, Math.round(diff));
-  })();
+    const startDate = new Date(event.startDate)
+    const endDate = new Date(event.endDate)
+    const diff = (endDate.getTime() - startDate.getTime()) / 60000
+    return Math.max(0, Math.round(diff))
+  })()
 
   const durationLabel =
     durationMinutes >= 60
       ? `${Math.floor(durationMinutes / 60)}h${
           durationMinutes % 60 ? ` ${durationMinutes % 60}m` : ''
         }`
-      : `${durationMinutes}m`;
+      : `${durationMinutes}m`
 
   // texto final: "1h 30m - 12:00 - 13:30"
-  const timeLine = `${start} - ${end} - ${durationLabel}`;
+  const timeLine = `${start} - ${end} - ${durationLabel}`
 
   return (
     <div
@@ -84,5 +84,5 @@ export function EventDialogTrigger({
         </div>
       </button>
     </div>
-  );
+  )
 }

@@ -1,6 +1,8 @@
-'use client';
+'use client'
 
-import { useMemo, useCallback } from 'react';
+import { useEventCalendarStore } from '@/hooks/use-event'
+import { getLocaleFromCode } from '@/lib/event'
+import { CalendarViewType, Events } from '@/types/event'
 import {
   eachMonthOfInterval,
   endOfYear,
@@ -8,16 +10,15 @@ import {
   getMonth,
   isSameYear,
   startOfYear,
-} from 'date-fns';
-import { useEventCalendarStore } from '@/hooks/use-event';
-import { useShallow } from 'zustand/shallow';
-import { CalendarViewType, Events } from '@/types/event';
-import { MonthCard } from './ui/month-card';
-import { parseAsIsoDate, useQueryState } from 'nuqs';
+} from 'date-fns'
+import { parseAsIsoDate, useQueryState } from 'nuqs'
+import { useCallback, useMemo } from 'react'
+import { useShallow } from 'zustand/shallow'
+import { MonthCard } from './ui/month-card'
 
 interface CalendarYearProps {
-  events: Events[];
-  currentDate: Date;
+  events: Events[]
+  currentDate: Date
 }
 
 export function EventCalendarYear({ events, currentDate }: CalendarYearProps) {
@@ -27,6 +28,7 @@ export function EventCalendarYear({ events, currentDate }: CalendarYearProps) {
     openDayEventsDialog,
     setView,
     viewSettings,
+    locale,
   } = useEventCalendarStore(
     useShallow((state) => ({
       openQuickAddDialog: state.openQuickAddDialog,
@@ -34,70 +36,73 @@ export function EventCalendarYear({ events, currentDate }: CalendarYearProps) {
       openDayEventsDialog: state.openDayEventsDialog,
       setView: state.setView,
       viewSettings: state.viewSettings.year,
+      locale: state.locale,
     })),
-  );
+  )
+
+  const localeObj = getLocaleFromCode(locale)
 
   const [, setDate] = useQueryState(
     'date',
     parseAsIsoDate.withDefault(new Date()).withOptions({
       shallow: false,
     }),
-  );
+  )
 
   const monthsInYear = useMemo(() => {
-    const yearStart = startOfYear(currentDate);
-    const yearEnd = endOfYear(currentDate);
-    return eachMonthOfInterval({ start: yearStart, end: yearEnd });
-  }, [currentDate]);
+    const yearStart = startOfYear(currentDate)
+    const yearEnd = endOfYear(currentDate)
+    return eachMonthOfInterval({ start: yearStart, end: yearEnd })
+  }, [currentDate])
 
   const { eventsByDate, eventCountByMonth } = useMemo(() => {
-    const groupedEvents: Record<string, Events[]> = {};
-    const counts = new Array(12).fill(0);
+    const groupedEvents: Record<string, Events[]> = {}
+    const counts = new Array(12).fill(0)
 
     events.forEach((event) => {
-      const eventDate = new Date(event.startDate);
+      const eventDate = new Date(event.startDate)
       if (isSameYear(eventDate, currentDate)) {
-        const dateKey = format(eventDate, 'yyyy-MM-dd');
-        const monthIndex = getMonth(eventDate);
+        const dateKey = format(eventDate, 'yyyy-MM-dd')
+        const monthIndex = getMonth(eventDate)
 
-        (groupedEvents[dateKey] ||= []).push(event);
-        counts[monthIndex]++;
+        ;(groupedEvents[dateKey] ||= []).push(event)
+        counts[monthIndex]++
       }
-    });
+    })
 
-    return { eventsByDate: groupedEvents, eventCountByMonth: counts };
-  }, [events, currentDate]);
+    return { eventsByDate: groupedEvents, eventCountByMonth: counts }
+  }, [events, currentDate])
 
   const handleMonthClick = useCallback(
     (month: Date) => {
-      setView(CalendarViewType.MONTH);
+      setView(CalendarViewType.MONTH)
       const newDate = new Date(
         month.getFullYear(),
         month.getMonth(),
         currentDate.getDate(),
-      );
-      setDate(newDate);
+      )
+      setDate(newDate)
     },
     [setDate, setView, currentDate],
-  );
+  )
 
   const handleDateClick = useCallback(
     (date: Date) => {
-      const dateKey = format(date, 'yyyy-MM-dd');
-      const eventsOnDate = eventsByDate[dateKey] || [];
+      const dateKey = format(date, 'yyyy-MM-dd')
+      const eventsOnDate = eventsByDate[dateKey] || []
       if (eventsOnDate.length > 0) {
-        openDayEventsDialog(date, eventsOnDate);
+        openDayEventsDialog(date, eventsOnDate)
       } else {
-        openQuickAddDialog({ date });
+        openQuickAddDialog({ date })
       }
     },
     [eventsByDate, openDayEventsDialog, openQuickAddDialog],
-  );
+  )
 
   const handleQuickAdd = useCallback(
     (date: Date) => openQuickAddDialog({ date }),
     [openQuickAddDialog],
-  );
+  )
 
   return (
     <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -112,8 +117,9 @@ export function EventCalendarYear({ events, currentDate }: CalendarYearProps) {
           onEventClick={openEventDialog}
           onDateClick={handleDateClick}
           onQuickAdd={handleQuickAdd}
+          locale={localeObj}
         />
       ))}
     </div>
-  );
+  )
 }

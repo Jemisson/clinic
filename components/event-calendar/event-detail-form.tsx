@@ -1,7 +1,10 @@
-import { eventFormSchema } from '@/lib/validations';
-import { Locale } from 'date-fns';
-import { memo } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { CATEGORY_OPTIONS, EVENT_COLORS } from '@/constants/calendar-constant'
+import { getColorClasses } from '@/lib/event'
+import { eventFormSchema } from '@/lib/validations'
+import { Locale } from 'date-fns'
+import { memo } from 'react'
+import { UseFormReturn } from 'react-hook-form'
+import { z } from 'zod'
 import {
   Form,
   FormControl,
@@ -9,30 +12,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { DateSelector } from './ui/date-selector';
-import { TimeSelector } from './ui/time-selector';
+} from '../ui/form'
+import { Input } from '../ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
-import { CATEGORY_OPTIONS, EVENT_COLORS } from '@/constants/calendar-constant';
-import { ColorOptionItem } from './ui/color-option-item';
-import { z } from 'zod';
-import { getColorClasses } from '@/lib/event';
+} from '../ui/select'
+import { Textarea } from '../ui/textarea'
+import { ColorOptionItem } from './ui/color-option-item'
+import { DateSelector } from './ui/date-selector'
+import { TimeSelector } from './ui/time-selector'
 
-type EventFormValues = z.infer<typeof eventFormSchema>;
+type EventFormValues = z.infer<typeof eventFormSchema>
 
 type EventDetailsFormProps = {
-  form: UseFormReturn<EventFormValues>;
-  onSubmit: (values: EventFormValues) => void;
-  locale: Locale;
-};
+  form: UseFormReturn<EventFormValues>
+  onSubmit: (values: EventFormValues) => void
+  locale: Locale
+}
 
 export const EventDetailsForm = memo(
   ({ form, onSubmit, locale }: EventDetailsFormProps) => {
@@ -52,7 +52,10 @@ export const EventDetailsForm = memo(
                   Event Title <span className="text-destructive">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter event title" {...field} />
+                  <Input
+                    placeholder="Enter event title"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -140,7 +143,10 @@ export const EventDetailsForm = memo(
                     Location <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Location event" {...field} />
+                    <Input
+                      placeholder="Location event"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -165,7 +171,10 @@ export const EventDetailsForm = memo(
                     </FormControl>
                     <SelectContent>
                       {CATEGORY_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                        >
                           {option.label}
                         </SelectItem>
                       ))}
@@ -194,7 +203,7 @@ export const EventDetailsForm = memo(
                     </FormControl>
                     <SelectContent>
                       {EVENT_COLORS.map((option) => {
-                        const validColor = getColorClasses(option.value);
+                        const validColor = getColorClasses(option.value)
                         return (
                           <ColorOptionItem
                             key={option.value}
@@ -202,7 +211,7 @@ export const EventDetailsForm = memo(
                             label={option.label}
                             className={validColor.bg}
                           />
-                        );
+                        )
                       })}
                     </SelectContent>
                   </Select>
@@ -213,8 +222,8 @@ export const EventDetailsForm = memo(
           </div>
         </form>
       </Form>
-    );
+    )
   },
-);
+)
 
-EventDetailsForm.displayName = 'EventDetailsForm';
+EventDetailsForm.displayName = 'EventDetailsForm'

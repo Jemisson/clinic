@@ -4,25 +4,25 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { calculateDuration, formatTimeDisplay } from '@/lib/date';
-import { cn } from '@/lib/utils';
-import { eventFormSchema } from '@/lib/validations';
-import { TimeFormatType } from '@/types/event';
-import { format, Locale } from 'date-fns';
-import { CalendarIcon, Clock, MapPin, Tag } from 'lucide-react';
-import { z } from 'zod';
-import { Separator } from '../ui/separator';
-import { Badge } from '../ui/badge';
-import { getCategoryLabel, getContrastColor } from '@/lib/event';
+} from '@/components/ui/card'
+import { calculateDuration, formatTimeDisplay } from '@/lib/date'
+import { getCategoryLabel, getContrastColor } from '@/lib/event'
+import { cn } from '@/lib/utils'
+import { eventFormSchema } from '@/lib/validations'
+import { TimeFormatType } from '@/types/event'
+import { format, Locale } from 'date-fns'
+import { CalendarIcon, Clock, MapPin, Tag } from 'lucide-react'
+import { z } from 'zod'
+import { Badge } from '../ui/badge'
+import { Separator } from '../ui/separator'
 
-type EventFormValues = z.infer<typeof eventFormSchema>;
+type EventFormValues = z.infer<typeof eventFormSchema>
 
 type EventPreviewCalendarProps = {
-  watchedValues: EventFormValues;
-  locale: Locale;
-  timeFormat: TimeFormatType;
-};
+  watchedValues: EventFormValues
+  locale: Locale
+  timeFormat: TimeFormatType
+}
 
 export const EventPreviewCalendar = ({
   watchedValues,
@@ -32,12 +32,12 @@ export const EventPreviewCalendar = ({
   // Simulate a week with an event on the 15th
   const weekDays = Array.from({ length: 7 }).map((_, i) =>
     format(new Date(2023, 0, i + 2), 'EEE', { locale }),
-  );
+  )
 
   const calendarDays = Array.from({ length: 35 }).map((_, i) => ({
     day: (i % 31) + 1,
     hasEvent: i === 15, // Event on the 15th
-  }));
+  }))
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
@@ -197,7 +197,10 @@ export const EventPreviewCalendar = ({
                 <div className="flex items-start gap-3">
                   <Tag className="text-muted-foreground mt-0.5 h-4 w-4 flex-shrink-0" />
                   <div>
-                    <Badge variant="outline" className="capitalize">
+                    <Badge
+                      variant="outline"
+                      className="capitalize"
+                    >
                       {getCategoryLabel(watchedValues.category)}
                     </Badge>
                     <p className="text-muted-foreground mt-1 text-sm">
@@ -211,7 +214,7 @@ export const EventPreviewCalendar = ({
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-EventPreviewCalendar.displayName = 'EventPreviewCalendar';
+EventPreviewCalendar.displayName = 'EventPreviewCalendar'

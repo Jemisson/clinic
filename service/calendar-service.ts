@@ -17,7 +17,7 @@ const RESOURCE = '/appointments/calendar'
 
 type AppointmentAttributes = {
   id: number
-  kind: 'consultation' | 'procedure' | 'block' | string
+  kind: 'consultation' | 'procedure' | 'block' | 'budget' | string
   status: 'scheduled' | 'confirmed' | 'canceled' | 'no_show' | string
   title: string
   start: string
@@ -43,6 +43,7 @@ export type CalendarListParams = {
   search?: string
   limit: number
   offset: number
+  kinds?: string[]
 }
 
 function buildRange(view: CalendarView, date: Date, daysCount: number) {
@@ -122,13 +123,12 @@ function mapAppointmentToEvent(item: AppointmentEventResponse): Events {
   }
 }
 
-
 export const CalendarService = {
   list: async (params: CalendarListParams): Promise<Events[]> => {
-    const { date, view, daysCount, search, limit, offset } = params
+    const { date, view, daysCount, search, limit, offset, kinds } = params
     const { start, end } = buildRange(view, date, daysCount)
 
-    const query: Record<string, string | number> = {
+    const query: Record<string, string | number | string[]> = {
       start: start.toISOString(),
       end: end.toISOString(),
       limit,
@@ -139,6 +139,10 @@ export const CalendarService = {
       query.search = search
     }
 
+    if (kinds && kinds.length > 0) {
+      query.kind = kinds
+    }
+
     const { data } = await api.get<AppointmentEventsApiResponse>(RESOURCE, {
       params: query,
     })
@@ -146,5 +150,6 @@ export const CalendarService = {
     return data.data.map(mapAppointmentToEvent)
   },
 }
+
 
 export default CalendarService
