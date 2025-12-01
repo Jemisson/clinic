@@ -5,7 +5,7 @@ import {
   useMemo,
   useRef,
   useCallback,
-  useEffect,          // 👈 adicionamos useEffect
+  useEffect,
 } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { isSameDay } from 'date-fns';
@@ -20,10 +20,10 @@ import { TimeColumn } from './ui/time-column';
 import { useEventCalendarStore } from '@/hooks/use-event';
 import { useShallow } from 'zustand/shallow';
 
-const HOUR_HEIGHT = 64; // Height in pixels for 1 hour
-const START_HOUR = 0; // 00:00
-const END_HOUR = 23; // 23:00
-const COLUMN_WIDTH_TOTAL = 99.5; // Total width percentage for columns
+const HOUR_HEIGHT = 64;
+const START_HOUR = 0;
+const END_HOUR = 23;
+const COLUMN_WIDTH_TOTAL = 99.5;
 
 interface CalendarDayProps {
   events: Events[];
@@ -46,7 +46,7 @@ export function EventCalendarDay({ events, currentDate }: CalendarDayProps) {
   >(undefined);
 
   const timeColumnRef = useRef<HTMLDivElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement | null>(null); // 👈 ref para o ScrollArea
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
 
   const now = new Date();
   const currentHour = now.getHours();
@@ -108,19 +108,27 @@ export function EventCalendarDay({ events, currentDate }: CalendarDayProps) {
   ]);
 
   useEffect(() => {
-    const container = scrollAreaRef.current;
-    if (!container) return;
+    const root = scrollAreaRef.current;
+    if (!root) return;
+
+    const viewport = root.querySelector(
+      '[data-radix-scroll-area-viewport]',
+    ) as HTMLElement | null;
+
+    if (!viewport) return;
 
     const today = new Date();
     if (!isSameDay(today, currentDate)) return;
 
     const hourOffset = currentHour * HOUR_HEIGHT;
-    const target = hourOffset - container.clientHeight / 2;
+    const target = hourOffset - viewport.clientHeight / 7;
 
-    container.scrollTo({
-      top: Math.max(target, 0),
-      behavior: 'smooth',
-    });
+    window.setTimeout(() => {
+      viewport.scrollTo({
+        top: Math.max(target, 0),
+        behavior: 'smooth',
+      });
+    }, 50);
   }, [currentDate, currentHour]);
 
   return (

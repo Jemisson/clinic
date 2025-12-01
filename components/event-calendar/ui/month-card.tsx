@@ -31,7 +31,7 @@ interface MonthCardProps {
   onEventClick: (event: Events) => void;
   onDateClick: (date: Date) => void;
   onQuickAdd: (date: Date) => void;
-  locale?: Locale; // <- novo
+  locale?: Locale;
 }
 
 interface DayCellProps {
@@ -52,8 +52,8 @@ const DayCell = memo(
 
       const label =
         events.length === 1
-          ? `1 evento em ${dateLabel}`
-          : `${events.length} eventos em ${dateLabel}`;
+          ? `1 agendamento em ${dateLabel}`
+          : `${events.length} agendamentos em ${dateLabel}`;
 
       return label;
     }, [hasDayEvents, events.length, day, locale]);
@@ -105,7 +105,6 @@ const MonthDaysGrid = memo(
     const firstDayOfMonth = startOfMonth(month);
     const firstWeekday = firstDayOfMonth.getDay();
 
-    // Cabeçalhos simplificados (poderíamos gerar via date-fns, mas aqui já resolve)
     const weekHeaders = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
     return (
@@ -259,7 +258,7 @@ const MonthCard = memo(
                   )
                 }
               >
-                <span>Ver todos os {eventCount} eventos</span>
+                <span>Ver todos os {eventCount} agendamentos</span>
                 <ChevronRight className="h-3 w-3" />
               </Button>
             )}

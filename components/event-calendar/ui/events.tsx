@@ -21,7 +21,7 @@ export const NoEvents = memo(
     const getNoEventsMessage = () => {
       switch (currentView) {
         case CalendarViewType.DAY:
-          return `Não há eventos em ${format(
+          return `Não há agendamentos em ${format(
             currentDate,
             'EEEE, d MMMM yyyy',
             {
@@ -39,13 +39,13 @@ export const NoEvents = memo(
             'd MMM yyyy',
             { locale },
           )
-          return `Não há eventos no período de ${weekStart} - ${weekEnd}`
+          return `Não há agendamentos no período de ${weekStart} - ${weekEnd}`
         case CalendarViewType.MONTH:
-          return `Não há eventos em ${format(currentDate, 'MMMM yyyy', {
+          return `Não há agendamentos em ${format(currentDate, 'MMMM yyyy', {
             locale,
           })}`
         case CalendarViewType.YEAR:
-          return `Não há eventos programados para o ano de ${format(currentDate, 'yyyy', {
+          return `Não há agendamentos programados para o ano de ${format(currentDate, 'yyyy', {
             locale,
           })}`
         default:

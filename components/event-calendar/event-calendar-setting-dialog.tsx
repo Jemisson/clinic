@@ -442,8 +442,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Clicar em intervalos de tempo para criar eventos"
-        description="Permitir clicar em intervalos de tempo para criar novos eventos"
+        label="Clicar em intervalos de tempo para criar agendamentos"
+        description="Permitir clicar em intervalos de tempo para criar novos agendamentos"
       >
         <Switch
           checked={viewSettings.day.enableTimeSlotClick}
@@ -494,8 +494,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Clique em intervalos de tempo para criar eventos"
-        description="Permitir clicar em intervalos de tempo para criar novos eventos"
+        label="Clique em intervalos de tempo para criar agendamentos"
+        description="Permitir clicar em intervalos de tempo para criar novos agendamentos"
       >
         <Switch
           checked={viewSettings.week.enableTimeSlotClick}
@@ -505,8 +505,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Clique em blocos de tempo para criar eventos"
-        description="Permitir clicar em blocos de tempo para criar novos eventos"
+        label="Clique em blocos de tempo para criar agendamentos"
+        description="Permitir clicar em blocos de tempo para criar novos agendamentos"
       >
         <Switch
           checked={viewSettings.week.enableTimeBlockClick}
@@ -516,8 +516,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Expandir eventos de vários dias"
-        description="Mostrar eventos que se estendem por vários dias em toda a sua duração"
+        label="Expandir agendamentos de vários dias"
+        description="Mostrar agendamentos que se estendem por vários dias em toda a sua duração"
       >
         <Switch
           checked={viewSettings.week.expandMultiDayEvents}
@@ -533,8 +533,8 @@ const CalendarSettings = ({
       icon={CalendarDays}
     >
       <ConfigRow
-        label="Limite de eventos"
-        description="Número máximo de eventos exibidos por dia"
+        label="Limite de agendamentos"
+        description="Número máximo de agendamentos exibidos por dia"
       >
         <Input
           type="number"
@@ -548,8 +548,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Mostrar indicador de mais eventos"
-        description="Mostrar +X mais quando os eventos excedem o limite"
+        label="Mostrar indicador de mais agendamentos"
+        description="Mostrar +X mais quando os agendamentos excedem o limite"
       >
         <Switch
           checked={viewSettings.month.showMoreEventsIndicator}
@@ -609,8 +609,8 @@ const CalendarSettings = ({
         />
       </ConfigRow>
       <ConfigRow
-        label="Mostrar pré-visualização de eventos"
-        description="Exibir uma pré-visualização dos eventos em cada mês"
+        label="Mostrar pré-visualização de Agendamentos"
+        description="Exibir uma pré-visualização dos Agendamentos em cada mês"
       >
         <Switch
           checked={viewSettings.year.enableEventPreview}
@@ -622,8 +622,8 @@ const CalendarSettings = ({
       {viewSettings.year.enableEventPreview && (
         <>
           <ConfigRow
-            label="Eventos de pré-visualização por mês"
-            description="Número de eventos exibidos na pré-visualização de cada mês"
+            label="Agendamentos de pré-visualização por mês"
+            description="Número de Agendamentos exibidos na pré-visualização de cada mês"
           >
             <Input
               type="number"
@@ -639,8 +639,8 @@ const CalendarSettings = ({
             />
           </ConfigRow>
           <ConfigRow
-            label="Mostrar indicador de mais eventos"
-            description="Mostrar +X mais quando os eventos excedem o limite de pré-visualização"
+            label="Mostrar indicador de mais agendamentos"
+            description="Mostrar +X mais quando os agendamentos excedem o limite de pré-visualização"
           >
             <Switch
               checked={viewSettings.year.showMoreEventsIndicator}

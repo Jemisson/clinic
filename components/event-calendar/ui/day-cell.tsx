@@ -20,7 +20,6 @@ interface DayCellProps {
   onFocusDate: (date: Date) => void;
   onShowDayEvents: (date: Date) => void;
   onOpenEvent: (event: Events) => void;
-  // opcional, usado no Month view (e reaproveitável em outras views se quiser)
   isOutsideMonth?: boolean;
 }
 
@@ -43,9 +42,6 @@ export function DayCell({
 
   const isToday = isSameDay(date, new Date());
 
-  // decide se é fora do mês:
-  // - se a prop vier, respeita ela
-  // - senão calcula com isSameMonth
   const outside =
     typeof isOutsideMonth === 'boolean'
       ? isOutsideMonth
@@ -56,10 +52,8 @@ export function DayCell({
   const isEmpty = dayEvents.length === 0;
   const _isFocused = focusedDate && isSameDay(date, focusedDate);
 
-  // 👉 limite configurável de eventos por dia
-  // ajuste o nome da propriedade aqui caso no MonthViewConfig esteja diferente
   const maxEventsPerDay =
-    (monthViewConfig as any).eventLimit ?? 1; // fallback pra 1 se não vier
+    (monthViewConfig as any).eventLimit ?? 1;
   console.log('valroes = ', monthViewConfig);
 
   const eventsToShow =
@@ -75,9 +69,6 @@ export function DayCell({
   const firstEvent = eventsToShow[0];
   const colorClasses = firstEvent ? getColorClasses(firstEvent.color) : null;
 
-  // 🔴 IMPORTANTE:
-  // Se o usuário escolheu "Ocultar dias fora do mês", a gente NÃO remove a célula,
-  // apenas coloca um placeholder vazio para manter o grid alinhado.
   if (monthViewConfig.hideOutsideDays && outside) {
     return (
       <div
@@ -134,10 +125,8 @@ export function DayCell({
         )}
       </div>
 
-      {/* Conteúdo do dia */}
       {isWithinMonth && (
         <div className="item flex flex-1 flex-col justify-center gap-1 overflow-hidden">
-          {/* Lista de eventos (até o limite configurado) */}
           {eventsToShow.map((event, idx) => {
             const cardColors = getColorClasses(event.color);
             return (
@@ -168,7 +157,6 @@ export function DayCell({
             );
           })}
 
-          {/* Botão "+ X more" quando há mais eventos além do limite */}
           {remainingCount > 0 && (
             <Button
               variant="ghost"
@@ -183,7 +171,6 @@ export function DayCell({
             </Button>
           )}
 
-          {/* Quando não há eventos, mostra apenas o botão de adicionar (que aparece no hover) */}
           {dayEvents.length === 0 && (
             <Button
               variant="ghost"

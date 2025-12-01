@@ -85,7 +85,7 @@ export function MonthDayEventsDialog() {
             Agendamentos de {formattedDate && <span>{formattedDate}</span>}
           </DialogTitle>
           <DialogDescription>
-            Lista de todos os eventos agendados para este dia.
+            Lista de todos os agendamentos agendados para este dia.
           </DialogDescription>
         </DialogHeader>
         <EventListContent

@@ -12,7 +12,13 @@ import {
 import { cn } from '@/lib/utils'
 import { Events, HoverPositionType } from '@/types/event'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+} from 'react'
 import { useShallow } from 'zustand/shallow'
 import { Button } from '../ui/button'
 import { ScrollArea } from '../ui/scroll-area'
@@ -56,11 +62,14 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
       openEventDialog: state.openEventDialog,
     })),
   )
+
   const [hoverPosition, setHoverPosition] = useState<
     HoverPositionType | undefined
   >(undefined)
   const [isMultiDayExpanded, setIsMultiDayExpanded] = useState(false)
+
   const timeColumnRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null)
 
   const now = new Date()
   const currentHour = now.getHours()
@@ -72,10 +81,12 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
     DAYS_IN_WEEK,
     localeObj,
   )
+
   const { singleDayEvents, multiDayEvents } = useFilteredEvents(
     events,
     weekDays,
   )
+
   const eventsPositions = useEventPositions(
     singleDayEvents,
     weekDays,
@@ -153,6 +164,33 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
     setIsMultiDayExpanded((prev) => !prev)
   }, [])
 
+  // Auto-scroll para o horário atual quando a semana contém o "hoje"
+  useEffect(() => {
+    const root = scrollAreaRef.current
+    if (!root) return
+
+    const viewport = root.querySelector(
+      '[data-radix-scroll-area-viewport]',
+    ) as HTMLElement | null
+
+    if (!viewport) return
+
+    const today = new Date()
+    const isTodayInWeek = weekDays.some((day) => isSameDay(day, today))
+    if (!isTodayInWeek) return
+
+    const hourOffset = currentHour * HOUR_HEIGHT
+    const target = hourOffset - viewport.clientHeight / 6
+
+    // Dá um pequeno delay para garantir que o layout foi aplicado
+    window.setTimeout(() => {
+      viewport.scrollTo({
+        top: Math.max(target, 0),
+        behavior: 'smooth',
+      })
+    }, 50)
+  }, [weekDays, currentHour])
+
   return (
     <div className="flex h-full flex-col border">
       <div className="bg-background border-border sticky top-0 z-30 flex flex-col items-center justify-center pr-4">
@@ -167,6 +205,7 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
           highlightToday={true}
         />
       </div>
+
       {multiDayEventRows.length > 0 &&
         viewSettings.week.expandMultiDayEvents && (
           <div className="bg-background border-border sticky top-18 z-50 mb-2 flex border-b pr-4">
@@ -233,8 +272,12 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
             </div>
           </div>
         )}
+
       <div className="h-[835px]">
-        <ScrollArea className="h-full w-full">
+        <ScrollArea
+          className="h-full w-full"
+          ref={scrollAreaRef}
+        >
           <div className="relative flex flex-1 overflow-hidden pr-4">
             <TimeColumn
               ref={timeColumnRef}
@@ -247,6 +290,7 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
               variant="week"
               className="p w-14 sm:w-32"
             />
+
             {viewSettings.week.showCurrentTimeIndicator && (
               <CurrentTimeIndicator
                 currentHour={currentHour}
@@ -255,6 +299,7 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
                 hourHeight={HOUR_HEIGHT}
               />
             )}
+
             {hoverPosition && viewSettings.week.showHoverTimeIndicator && (
               <HoverTimeIndicator
                 hour={hoverPosition.hour}
@@ -263,7 +308,8 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
                 hourHeight={HOUR_HEIGHT}
               />
             )}
-            <div className="relative flex-1 overflow-y-auto">
+
+            <div className="relative flex-1">
               <TimeGrid
                 highlightToday={viewSettings.week.highlightToday}
                 timeSlots={timeSlots}
@@ -271,6 +317,7 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
                 todayIndex={todayIndex}
                 onTimeBlockClick={handleTimeBlockClick}
               />
+
               <div className="pointer-events-none absolute inset-0">
                 {singleDayEvents.map((event) => {
                   const eventDate = new Date(event.startDate)
@@ -283,7 +330,6 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
                   const position = eventsPositions[`${dayIndex}-${event.id}`]
                   if (!position) return null
 
-                  // Calculate width and horizontal position
                   const OVERLAP_FACTOR = 0.5
                   const columnWidth =
                     (DAY_WIDTH_PERCENT +
