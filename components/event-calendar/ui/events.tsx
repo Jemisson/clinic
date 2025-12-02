@@ -1,0 +1,157 @@
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { formatTimeDisplay } from '@/lib/date'
+import { getColorClasses } from '@/lib/event'
+import { cn } from '@/lib/utils'
+import { CalendarViewType, Events, TimeFormatType } from '@/types/event'
+import { endOfWeek, format, Locale, startOfWeek } from 'date-fns'
+import { Calendar, Clock, MapPin } from 'lucide-react'
+import { memo } from 'react'
+
+export const NoEvents = memo(
+  ({
+    currentDate,
+    currentView,
+    locale,
+  }: {
+    currentDate: Date
+    currentView: CalendarViewType
+    locale?: Locale
+  }) => {
+    const getNoEventsMessage = () => {
+      switch (currentView) {
+        case CalendarViewType.DAY:
+          return `Não há agendamentos em ${format(
+            currentDate,
+            'EEEE, d MMMM yyyy',
+            {
+              locale,
+            },
+          )}`
+        case CalendarViewType.WEEK:
+          const weekStart = format(
+            startOfWeek(currentDate, { locale }),
+            'd MMM',
+            { locale },
+          )
+          const weekEnd = format(
+            endOfWeek(currentDate, { locale }),
+            'd MMM yyyy',
+            { locale },
+          )
+          return `Não há agendamentos no período de ${weekStart} - ${weekEnd}`
+        case CalendarViewType.MONTH:
+          return `Não há agendamentos em ${format(currentDate, 'MMMM yyyy', {
+            locale,
+          })}`
+        case CalendarViewType.YEAR:
+          return `Não há agendamentos programados para o ano de ${format(currentDate, 'yyyy', {
+            locale,
+          })}`
+        default:
+          return 'Nenhum evento encontrado.'
+      }
+    }
+
+    return (
+      <div
+        className="text-muted-foreground flex h-[calc(100vh-12rem)] flex-col items-center justify-center"
+        data-testid="no-events-message"
+      >
+        <Calendar className="mb-2 h-12 w-12 opacity-20" />
+        <p>{getNoEventsMessage()}</p>
+      </div>
+    )
+  },
+)
+
+NoEvents.displayName = 'NoEvents'
+
+export const EventCard = ({
+  event,
+  timeFormat,
+  onClick,
+}: {
+  event: Events
+  timeFormat: TimeFormatType
+  onClick: (event: Events) => void
+}) => {
+  const { bg, badge } = getColorClasses(event.color)
+
+  return (
+    <Button
+      key={event.id}
+      data-testid={`event-item-${event.id}`}
+      className={cn(
+        'group/event relative z-0 flex h-full w-full flex-col items-start justify-center gap-1 px-2 py-1.5 text-left text-white',
+        'text-[11px] leading-tight',
+        'transition-all duration-200',
+        'focus-visible:ring-ring last:border-b-0 focus-visible:ring-1 focus-visible:ring-offset-0',
+        bg,
+      )}
+      onClick={() => onClick(event)}
+    >
+      <div className="flex w-full items-start justify-between gap-1.5 group-hover/event:opacity-80">
+        <span className="line-clamp-1 text-[11px] font-medium leading-tight">
+          {event.title}
+        </span>
+        <Badge
+          variant="default"
+          className={cn('ml-1 h-4 px-1 text-[9px] leading-none', badge.bg)}
+        >
+          {event.category}
+        </Badge>
+      </div>
+
+      <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] leading-tight text-white group-hover/event:opacity-80">
+        <div className="flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          <span className="line-clamp-1">
+            {formatTimeDisplay(event.startTime, timeFormat)} -{' '}
+            {formatTimeDisplay(event.endTime, timeFormat)}
+          </span>
+        </div>
+
+        {event.location && (
+          <div className="flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            <span className="line-clamp-1">{event.location}</span>
+          </div>
+        )}
+      </div>
+    </Button>
+  )
+}
+
+export const EventGroup = memo(
+  ({
+    timeKey,
+    events,
+    timeFormat,
+    onClick,
+  }: {
+    timeKey: string
+    events: Events[]
+    timeFormat: TimeFormatType
+    onClick: (event: Events) => void
+  }) => (
+    <div
+      key={timeKey}
+      className="gap-0 overflow-hidden rounded-md py-0"
+      data-testid={`event-group-${timeKey}`}
+    >
+      <div className="gap-1.3 flex flex-col gap-2">
+        {events.map((event) => (
+          <EventCard
+            key={event.id}
+            event={event}
+            timeFormat={timeFormat}
+            onClick={onClick}
+          />
+        ))}
+      </div>
+    </div>
+  ),
+)
+
+EventGroup.displayName = 'EventGroup'

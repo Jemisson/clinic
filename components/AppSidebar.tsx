@@ -73,6 +73,14 @@ export function AppSidebar() {
 
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
+              <Link href="/agenda">
+                <Bookmark /> Agenda
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
               <Link href="/tags">
                 <Bookmark /> Tags
               </Link>
