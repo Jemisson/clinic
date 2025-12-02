@@ -1,5 +1,4 @@
 'use client'
-import { SearchEventFilter } from '@/lib/validations'
 import { Events, TimeFormatType } from '@/types/event'
 import { Loader2, Search } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -34,7 +33,7 @@ export const EventSearchDialog = ({
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const debouncedSearch = useCallback(
-    async (query: string, options?: Partial<SearchEventFilter>) => {
+    async (query: string) => {
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current)
       }
@@ -58,18 +57,6 @@ export const EventSearchDialog = ({
 
           abortControllerRef.current = new AbortController()
 
-          const _searchParams: SearchEventFilter = {
-            search: query.trim(),
-            categories: options?.categories ?? [],
-            colors: options?.colors ?? [],
-            locations: options?.locations ?? [],
-            repeatingTypes: options?.repeatingTypes ?? [],
-            limit: 20,
-            offset: 0,
-            isRepeating: options?.isRepeating,
-          }
-
-          // TODO: Implement your actual search API/service connection here
         } catch (err) {
           if (err instanceof Error && err.name !== 'AbortError') {
             setError('An error occurred while searching events')
@@ -121,24 +108,13 @@ export const EventSearchDialog = ({
     try {
       setIsLoading(true)
 
-      const _searchParams: SearchEventFilter = {
-        search: searchQuery.trim(),
-        categories: [],
-        colors: [],
-        locations: [],
-        repeatingTypes: [],
-        limit: 20,
-        offset: searchResults.length,
-      }
-
-      // TODO: Implement your actual search API/service connection here
     } catch (err) {
       console.error(err)
       setError('Failed to load more events')
     } finally {
       setIsLoading(false)
     }
-  }, [hasMore, isLoading, searchQuery, searchResults.length])
+  }, [hasMore, isLoading, searchQuery])
 
   return (
     <Dialog

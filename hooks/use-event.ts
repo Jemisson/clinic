@@ -41,6 +41,7 @@ const DEFAULT_VIEW_CONFIGS: CalendarViewConfigs = {
     eventLimit: 3,
     showMoreEventsIndicator: true,
     hideOutsideDays: true,
+    maxEventsPerDay: 0
   },
   year: {
     showMonthLabels: true,

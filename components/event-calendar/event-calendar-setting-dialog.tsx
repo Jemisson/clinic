@@ -26,7 +26,6 @@ import { getLocaleFromCode } from '@/lib/event'
 import {
   CalendarViewConfigs,
   CalendarViewType,
-  daysViewConfig,
   DayViewConfig,
   MonthViewConfig,
   TimeFormatType,
@@ -130,7 +129,6 @@ export default function EventCalendarSettingsDialog() {
     setLocale,
     setFirstDayOfWeek,
     updateDayViewConfig,
-    updateDaysViewConfig,
     updateWeekViewConfig,
     updateMonthViewConfig,
     updateYearViewConfig,
@@ -242,7 +240,6 @@ export default function EventCalendarSettingsDialog() {
                   <CalendarSettings
                     viewSettings={viewSettings}
                     updateDayViewConfig={updateDayViewConfig}
-                    updateDaysViewConfig={updateDaysViewConfig}
                     updateWeekViewConfig={updateWeekViewConfig}
                     updateMonthViewConfig={updateMonthViewConfig}
                     updateYearViewConfig={updateYearViewConfig}
@@ -402,14 +399,12 @@ const GeneralSettings = ({
 const CalendarSettings = ({
   viewSettings,
   updateDayViewConfig,
-  updateDaysViewConfig,
   updateWeekViewConfig,
   updateMonthViewConfig,
   updateYearViewConfig,
 }: {
   viewSettings: CalendarViewConfigs
   updateDayViewConfig: (config: Partial<DayViewConfig>) => void
-  updateDaysViewConfig: (config: Partial<daysViewConfig>) => void
   updateWeekViewConfig: (config: Partial<WeekViewConfig>) => void
   updateMonthViewConfig: (config: Partial<MonthViewConfig>) => void
   updateYearViewConfig: (config: Partial<YearViewConfig>) => void

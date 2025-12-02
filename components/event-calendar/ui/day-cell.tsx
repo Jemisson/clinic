@@ -30,7 +30,6 @@ export function DayCell({
   locale,
   timeFormat,
   monthViewConfig,
-  focusedDate,
   onQuickAdd,
   onFocusDate,
   onShowDayEvents,
@@ -49,11 +48,8 @@ export function DayCell({
 
   const isWithinMonth = !outside;
 
-  const isEmpty = dayEvents.length === 0;
-  const _isFocused = focusedDate && isSameDay(date, focusedDate);
-
   const maxEventsPerDay =
-    (monthViewConfig as any).eventLimit ?? 1;
+    monthViewConfig?.eventLimit ?? 1;
   console.log('valroes = ', monthViewConfig);
 
   const eventsToShow =
@@ -65,9 +61,6 @@ export function DayCell({
     isWithinMonth && dayEvents.length > maxEventsPerDay
       ? dayEvents.length - eventsToShow.length
       : 0;
-
-  const firstEvent = eventsToShow[0];
-  const colorClasses = firstEvent ? getColorClasses(firstEvent.color) : null;
 
   if (monthViewConfig.hideOutsideDays && outside) {
     return (
@@ -92,7 +85,6 @@ export function DayCell({
         'group relative z-20 flex h-[80px] cursor-pointer flex-col rounded border transition-all sm:h-[140px] sm:p-2',
         'hover:border-primary focus:ring-primary hover:shadow-sm focus:ring-2 focus:outline-none',
         !isWithinMonth && 'bg-muted/20 opacity-50',
-        // _isFocused && 'ring-2 ring-blue-500',
       )}
       onClick={() => {
         onQuickAdd(date);

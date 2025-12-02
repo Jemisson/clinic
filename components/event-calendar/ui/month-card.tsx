@@ -12,7 +12,6 @@ import {
   endOfMonth,
   format,
   getDate,
-  getMonth,
   isSameMonth,
   isSameYear,
   startOfMonth,
@@ -154,7 +153,6 @@ const MonthCard = memo(
     onQuickAdd,
     locale,
   }: MonthCardProps) => {
-    const _monthIndex = getMonth(month);
     const today = new Date();
     const isCurrentMonth =
       isSameMonth(month, today) && isSameYear(month, today);

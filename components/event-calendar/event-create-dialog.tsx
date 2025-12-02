@@ -66,7 +66,7 @@ export default function EventCreateDialog() {
 
   const watchedValues = form.watch()
 
-  const handleSubmit = async (formValues: EventFormValues) => {
+  const handleSubmit = async () => {
     setIsSubmitting(true)
 
     toast.success('DEMO: Create event UI triggered', {

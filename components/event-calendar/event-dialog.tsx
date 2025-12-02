@@ -102,7 +102,7 @@ export default function EventDialog() {
     }
   }, [selectedEvent, form])
 
-  const handleUpdate = async (values: EventFormValues) => {
+  const handleUpdate = async () => {
     if (!selectedEvent?.id) return
 
     toast.success('DEMO: Update event UI triggered', {
