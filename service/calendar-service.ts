@@ -1,3 +1,4 @@
+// service/calendar-service.ts
 import { Events } from '@/types/event'
 import {
   addDays,
@@ -12,27 +13,14 @@ import {
   startOfYear,
 } from 'date-fns'
 import api from './api'
+import {
+  AppointmentEventResponse,
+  AppointmentEventsApiResponse,
+  AppointmentKind,
+  AppointmentStatus,
+} from '@/types/appointment'
 
 const RESOURCE = '/appointments/calendar'
-
-type AppointmentAttributes = {
-  id: number
-  kind: 'consultation' | 'procedure' | 'block' | 'budget' | string
-  status: 'scheduled' | 'confirmed' | 'canceled' | 'no_show' | string
-  title: string
-  start: string
-  end: string
-}
-
-type AppointmentEventResponse = {
-  id: string
-  type: 'event'
-  attributes: AppointmentAttributes
-}
-
-type AppointmentEventsApiResponse = {
-  data: AppointmentEventResponse[]
-}
 
 export type CalendarView = 'day' | 'days' | 'week' | 'month' | 'year'
 
@@ -43,7 +31,7 @@ export type CalendarListParams = {
   search?: string
   limit: number
   offset: number
-  kinds?: string[]
+  kinds?: AppointmentKind[] | string[]
 }
 
 function buildRange(view: CalendarView, date: Date, daysCount: number) {
@@ -150,6 +138,5 @@ export const CalendarService = {
     return data.data.map(mapAppointmentToEvent)
   },
 }
-
 
 export default CalendarService

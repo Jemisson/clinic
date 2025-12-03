@@ -1,13 +1,14 @@
 import { z } from "zod";
 
 // ---- Roles ----
-export const USER_ROLES = ['user', 'manager', 'admin'] as const;
+export const USER_ROLES = ['user', 'manager', 'admin', 'doctor'] as const;
 export type UserRole = typeof USER_ROLES[number];
 export const ZUserRole = z.enum(USER_ROLES);
 
 // Labels (pt-BR)
 export const ROLE_LABEL: Record<UserRole, string> = {
   user: 'Usuário',
+  doctor: 'Médico(a)',
   manager: 'Gerente',
   admin: 'Administrador',
 };

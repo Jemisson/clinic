@@ -77,6 +77,7 @@ export interface ContactUpsert {
 }
 
 export interface Person {
+  profile_user: any;
   id?: number;
   name: string;
   addresses: Addresses[];
@@ -97,6 +98,7 @@ export interface PersonUpsert {
 }
 
 export interface PatientAttributes {
+  profile_user: any;
   id?: number;
   naturalness: string;
   birthdate: string;

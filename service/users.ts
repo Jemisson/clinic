@@ -55,7 +55,7 @@ function buildFormDataForUpdate(values: ProfileUserFormInput) {
 
 export const UsersService = {
   list: async (
-    params: { page?: number; per_page?: number; q?: string; t?: string } = {}
+    params: { page?: number; per_page?: number; q?: string; t?: string, role?: string } = {}
   ) => {
     const { data } = await api.get<UserResponse>(RESOURCE, { params });
     return { data: data.data, meta: data.meta };
