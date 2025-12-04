@@ -1,8 +1,9 @@
 'use client'
 
-import { format } from 'date-fns'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
 import { useShallow } from 'zustand/shallow'
 
 import { Button } from '@/components/ui/button'
@@ -19,25 +20,19 @@ import { useEventCalendarStore } from '@/hooks/use-event'
 import AppointmentService from '@/service/appointment-service'
 import {
   AppointmentCreateRequest,
+  AppointmentForEdit,
   AppointmentKind,
-  AppointmentStatus,
 } from '@/types/appointment'
-import {
-  AppointmentNotesSection,
-  AppointmentValidationSummary,
-} from '../appointments/AppointmentNotesAndErrors'
-import { BlockAppointmentSection } from '../appointments/BlockAppointmentSection'
+import { AppointmentNotesSection, AppointmentValidationSummary } from '../appointments/AppointmentNotesAndErrors'
 import { ConsultationAppointmentSection } from '../appointments/ConsultationAppointmentSection'
 import { EventTypeDoctorSection } from '../appointments/EventTypeDoctorSection'
+import {
+  appointmentFormSchema,
+  AppointmentFormValues,
+} from '../appointments/form/appointment-form-schema'
 
-type SelectOption = { id: number; name: string }
-
-const MOCK_USERS: SelectOption[] = [{ id: 1, name: 'Dra. Geisa Garcia' }]
-
-const MOCK_FACILITIES: SelectOption[] = [
-  { id: 1, name: 'Sala 01' },
-  { id: 2, name: 'Sala 02' },
-]
+import { buildDefaultValues } from '../appointments/form/appointment-form-defaults'
+import { BlockAppointmentSection } from '../appointments/BlockAppointmentSection'
 
 export function buildDateTime(dateStr: string, timeStr: string): Date {
   const [year, month, day] = dateStr.split('-').map(Number)
@@ -45,12 +40,22 @@ export function buildDateTime(dateStr: string, timeStr: string): Date {
   return new Date(year, month - 1, day, hour, minute)
 }
 
-function formatDateForInput(date: Date | null): string {
-  if (!date) return ''
-  return format(date, 'yyyy-MM-dd')
+type SelectOption = { id: number; name: string }
+
+const MOCK_FACILITIES: SelectOption[] = [
+  { id: 1, name: 'Sala 01' },
+  { id: 2, name: 'Sala 02' },
+]
+
+type EventCreateDialogProps = {
+  mode?: 'create' | 'edit'
+  appointmentToEdit?: AppointmentForEdit | null
 }
 
-export function EventCreateDialog() {
+export function EventCreateDialog({
+  mode = 'create',
+  appointmentToEdit = null,
+}: EventCreateDialogProps) {
   const { isQuickAddDialogOpen, closeQuickAddDialog, quickAddData } =
     useEventCalendarStore(
       useShallow((state) => ({
@@ -60,196 +65,115 @@ export function EventCreateDialog() {
       })),
     )
 
-  const [kind, setKind] = useState<AppointmentKind>('consultation')
-  const [status] = useState<AppointmentStatus>('scheduled')
-
-  // Campos comuns
-  const [date, setDate] = useState<string>('')
-  const [startTime, setStartTime] = useState<string>('12:00')
-  const [durationMinutes, setDurationMinutes] = useState<number>(30)
-  const [notes, setNotes] = useState<string>('')
-
-  // Consulta / procedimento
-  const [patientId, setPatientId] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string>('')
-  const [informFacility, setInformFacility] = useState<boolean>(false)
-  const [facilityItemId, setFacilityItemId] = useState<string>('')
-
-  const [firstVisit, setFirstVisit] = useState<boolean>(false)
-  const [isReturn, setIsReturn] = useState<boolean>(false)
-  const [aestheticEvaluation, setAestheticEvaluation] = useState<boolean>(false)
-  const [onlineBooking, setOnlineBooking] = useState<boolean>(false)
-  const [onlineBookingLink, setOnlineBookingLink] = useState<string>('')
-
-  // Bloqueio / repetição
-  const [repeatEnabled, setRepeatEnabled] = useState<boolean>(false)
-  const [repeatEndDate, setRepeatEndDate] = useState<string>('')
-  const [repeatDays, setRepeatDays] = useState<string[]>(['seg', 'qua', 'sex'])
-
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const form = useForm<AppointmentFormValues>({
+    resolver: zodResolver(appointmentFormSchema),
+    mode: 'onChange',
+    defaultValues: buildDefaultValues(quickAddData, mode, appointmentToEdit),
+  })
+
+  const {
+    handleSubmit,
+    reset,
+    watch,
+    formState: { isSubmitting, isValid, errors },
+  } = form
+
+  const kind = watch('kind')
+  const isConsultationLike = kind === 'consultation' || kind === 'procedure'
 
   useEffect(() => {
     if (!isQuickAddDialogOpen) return
 
-    setKind('consultation')
     setSubmitError(null)
 
-    const baseDate = quickAddData.date ?? new Date()
-    setDate(formatDateForInput(baseDate))
+    reset(buildDefaultValues(quickAddData, mode, appointmentToEdit), {
+      keepDefaultValues: false,
+    })
+  }, [isQuickAddDialogOpen, quickAddData, mode, appointmentToEdit, reset])
 
-    if (quickAddData.startTime) {
-      setStartTime(quickAddData.startTime)
-    } else {
-      const now = new Date()
-      const minutes = now.getMinutes()
-      const roundedMinutes = minutes < 30 ? 0 : 30
-      const hh = String(now.getHours()).padStart(2, '0')
-      const mm = String(roundedMinutes).padStart(2, '0')
-      setStartTime(`${hh}:${mm}`)
-    }
+  const isSubmitDisabled = !isValid || isSubmitting
 
-    if (quickAddData.endTime && quickAddData.startTime) {
-      const [sh, sm] = quickAddData.startTime.split(':').map(Number)
-      const [eh, em] = quickAddData.endTime.split(':').map(Number)
-      const diff = eh * 60 + em - (sh * 60 + sm)
-      setDurationMinutes(diff > 0 ? diff : 30)
-    } else {
-      setDurationMinutes(30)
-    }
-
-    setPatientId(null)
-    setUserId(MOCK_USERS[0]?.id.toString() ?? '')
-    setInformFacility(false)
-    setFacilityItemId(MOCK_FACILITIES[0]?.id.toString() ?? '')
-
-    setFirstVisit(false)
-    setIsReturn(false)
-    setAestheticEvaluation(false)
-    setOnlineBooking(false)
-    setOnlineBookingLink('')
-
-    setRepeatEnabled(false)
-    setRepeatEndDate('')
-    setRepeatDays(['seg', 'qua', 'sex'])
-
-    setNotes('')
-  }, [isQuickAddDialogOpen, quickAddData])
-
-  const validationErrors = useMemo(() => {
-    const errors: string[] = []
-
-    if (!date) errors.push('Data é obrigatória.')
-    if (!startTime) errors.push('Horário de início é obrigatório.')
-    if (!userId) errors.push('Médico(a) é obrigatório.')
-
-    if (kind === 'consultation' || kind === 'procedure') {
-      if (!patientId) errors.push('Paciente é obrigatório.')
-    }
-
-    if (informFacility && !facilityItemId) {
-      errors.push(
-        'Sala de atendimento é obrigatória quando o campo está habilitado.',
-      )
-    }
-
-    if (!durationMinutes || durationMinutes <= 0) {
-      errors.push('Duração deve ser maior que zero.')
-    }
-
-    if (kind === 'block' && repeatEnabled) {
-      if (!repeatEndDate) {
-        errors.push('Data final é obrigatória para bloqueio com repetição.')
-      }
-      if (repeatDays.length === 0) {
-        errors.push('Selecione ao menos um dia para repetição.')
-      }
-    }
-
-    return errors
-  }, [
-    date,
-    startTime,
-    userId,
-    patientId,
-    informFacility,
-    facilityItemId,
-    durationMinutes,
-    kind,
-    repeatEnabled,
-    repeatEndDate,
-    repeatDays,
-  ])
-
-  const isSubmitDisabled = validationErrors.length > 0 || isSubmitting
-  const isConsultationLike = kind === 'consultation' || kind === 'procedure'
-
-  const handleToggleRepeatDay = (day: string) => {
-    setRepeatDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
-    )
-  }
-
-  const handleSubmit = async () => {
-    if (isSubmitDisabled) return
-
+  const onSubmit = async (values: AppointmentFormValues) => {
     try {
-      setIsSubmitting(true)
       setSubmitError(null)
 
-      const start = buildDateTime(date, startTime)
-      const end = new Date(start.getTime() + durationMinutes * 60 * 1000)
+      const start = buildDateTime(values.date, values.startTime)
+      const end = new Date(start.getTime() + values.durationMinutes * 60 * 1000)
 
-      const patientIdValue =
-        kind === 'consultation' || kind === 'procedure' ? patientId : null
+      const isConsultationLikeLocal =
+        values.kind === 'consultation' || values.kind === 'procedure'
 
       const payload: AppointmentCreateRequest = {
         appointment: {
-          patient_id: patientIdValue ? Number(patientIdValue) : null,
-          user_id: Number(userId),
-          facility_item_id: informFacility ? Number(facilityItemId) : null,
-          kind,
-          status,
+          patient_id: isConsultationLikeLocal
+            ? values.patientId
+              ? Number(values.patientId)
+              : null
+            : null,
+          user_id: Number(values.userId),
+          facility_item_id: values.informFacility
+            ? values.facilityItemId
+              ? Number(values.facilityItemId)
+              : null
+            : null,
+          kind: values.kind,
+          status: values.status,
           starts_at: start.toISOString(),
           ends_at: end.toISOString(),
-          duration_minutes: durationMinutes,
-          first_visit: kind === 'consultation' ? firstVisit : false,
-          is_return: kind === 'consultation' ? isReturn : false,
-          aesthetic_evaluation:
-            kind === 'consultation' || kind === 'procedure'
-              ? aestheticEvaluation
-              : false,
-          online_booking:
-            kind === 'consultation' || kind === 'procedure'
-              ? onlineBooking
-              : false,
-          online_booking_link:
-            kind === 'consultation' || kind === 'procedure'
-              ? onlineBookingLink || null
-              : null,
-          notes: notes || null,
-          ...(kind === 'block' && repeatEnabled
+          duration_minutes: values.durationMinutes,
+          first_visit:
+            values.kind === 'consultation' ? (values.firstVisit ?? false) : false,
+          is_return: values.kind === 'consultation' ? (values.isReturn ?? false) : false,
+          aesthetic_evaluation: isConsultationLikeLocal
+            ? values.aestheticEvaluation ?? false
+            : false,
+          online_booking: isConsultationLikeLocal
+            ? values.onlineBooking ?? false
+            : false,
+          online_booking_link: isConsultationLikeLocal
+            ? values.onlineBookingLink || null
+            : null,
+          notes: values.notes || null,
+          ...(values.kind === 'block' && values.repeatEnabled
             ? {
                 repeat_options: {
-                  end_date: repeatEndDate || null,
-                  days: repeatDays,
+                  end_date: values.repeatEndDate || null,
+                  days: values.repeatDays || [],
                 },
               }
             : {}),
         },
       }
 
-      await AppointmentService.create(payload)
+      if (mode === 'edit' && appointmentToEdit) {
+        // await AppointmentService.update(appointmentToEdit.id, payload)
+      } else {
+        await AppointmentService.create(payload)
+      }
+
       closeQuickAddDialog()
-    } catch (error: unknown) {
+    } catch (error) {
       console.error(error)
       setSubmitError(
         'Não foi possível salvar o agendamento. Tente novamente mais tarde.',
       )
-    } finally {
-      setIsSubmitting(false)
     }
   }
+
+  const validationErrors = useMemo(() => {
+    const msgs: string[] = []
+
+    Object.values(errors).forEach((err) => {
+      if (!err) return
+      if (err.message) {
+        msgs.push(String(err.message))
+      }
+    })
+
+    return msgs
+  }, [errors])
 
   return (
     <Dialog
@@ -260,90 +184,60 @@ export function EventCreateDialog() {
     >
       <DialogContent className="max-w-4xl">
         <DialogHeader className="mb-4">
-          <DialogTitle>Novo Agendamento</DialogTitle>
+          <DialogTitle>
+            {mode === 'edit' ? 'Editar Agendamento' : 'Novo Agendamento'}
+          </DialogTitle>
           <DialogDescription>
-            Preencha as informações para criar um novo agendamento.
+            Preencha as informações abaixo para{' '}
+            {mode === 'edit' ? 'editar' : 'criar'} um agendamento.
           </DialogDescription>
         </DialogHeader>
 
-        <EventTypeDoctorSection
-          kind={kind}
-          onKindChange={setKind}
-          userId={userId}
-          onUserChange={setUserId}
-        />
-
-        {isConsultationLike ? (
-          <ConsultationAppointmentSection
-            kind={kind}
-            date={date}
-            onDateChange={setDate}
-            startTime={startTime}
-            onStartTimeChange={setStartTime}
-            durationMinutes={durationMinutes}
-            onDurationChange={setDurationMinutes}
-            patientId={patientId}
-            onPatientChange={setPatientId}
-            firstVisit={firstVisit}
-            onFirstVisitChange={setFirstVisit}
-            isReturn={isReturn}
-            onIsReturnChange={setIsReturn}
-            aestheticEvaluation={aestheticEvaluation}
-            onAestheticEvaluationChange={setAestheticEvaluation}
-            onlineBooking={onlineBooking}
-            onOnlineBookingChange={setOnlineBooking}
-            onlineBookingLink={onlineBookingLink}
-            onOnlineBookingLinkChange={setOnlineBookingLink}
-            informFacility={informFacility}
-            onInformFacilityChange={setInformFacility}
-            facilityItemId={facilityItemId}
-            onFacilityItemIdChange={setFacilityItemId}
-            facilities={MOCK_FACILITIES}
-          />
-        ) : (
-          <BlockAppointmentSection
-            date={date}
-            onDateChange={setDate}
-            startTime={startTime}
-            onStartTimeChange={setStartTime}
-            durationMinutes={durationMinutes}
-            onDurationChange={setDurationMinutes}
-            repeatEnabled={repeatEnabled}
-            onRepeatEnabledChange={setRepeatEnabled}
-            repeatEndDate={repeatEndDate}
-            onRepeatEndDateChange={setRepeatEndDate}
-            repeatDays={repeatDays}
-            onToggleRepeatDay={handleToggleRepeatDay}
-          />
-        )}
-
-        <AppointmentNotesSection
-          notes={notes}
-          onNotesChange={setNotes}
-        />
-
-        <AppointmentValidationSummary
-          validationErrors={validationErrors}
-          submitError={submitError}
-        />
-
-        <DialogFooter className="mt-4">
-          <Button
-            variant="outline"
-            type="button"
-            onClick={closeQuickAddDialog}
+        <FormProvider {...form}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
           >
-            Cancelar
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitDisabled}
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Agendar
-          </Button>
-        </DialogFooter>
+            <EventTypeDoctorSection
+              kind={kind as AppointmentKind}
+              onKindChange={(k) => form.setValue('kind', k)}
+              userId={watch('userId')}
+              onUserChange={(id) => form.setValue('userId', id)}
+            />
+
+            {isConsultationLike ? (
+              <ConsultationAppointmentSection facilities={MOCK_FACILITIES} />
+            ) : (
+              <BlockAppointmentSection />
+            )}
+
+            <AppointmentNotesSection />
+
+            <AppointmentValidationSummary
+              validationErrors={validationErrors}
+              submitError={submitError}
+            />
+
+            <DialogFooter className="mt-4">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={closeQuickAddDialog}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitDisabled}
+              >
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {mode === 'edit' ? 'Salvar alterações' : 'Agendar'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
   )

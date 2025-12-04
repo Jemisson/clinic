@@ -1,6 +1,7 @@
 'use client'
 
 import { format } from 'date-fns'
+import { useFormContext } from 'react-hook-form'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,37 +16,21 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { buildDateTime } from '../event-calendar/event-create-dialog'
+import { AppointmentFormValues } from './form/appointment-form-schema'
 
-interface Props {
-  date: string
-  onDateChange: (value: string) => void
-  startTime: string
-  onStartTimeChange: (value: string) => void
-  durationMinutes: number
-  onDurationChange: (value: number) => void
-  repeatEnabled: boolean
-  onRepeatEnabledChange: (value: boolean) => void
-  repeatEndDate: string
-  onRepeatEndDateChange: (value: string) => void
-  repeatDays: string[]
-  onToggleRepeatDay: (day: string) => void
-}
+export function BlockAppointmentSection() {
+  const { watch, setValue } = useFormContext<AppointmentFormValues>()
 
-export function BlockAppointmentSection({
-  date,
-  onDateChange,
-  startTime,
-  onStartTimeChange,
-  durationMinutes,
-  onDurationChange,
-  repeatEnabled,
-  onRepeatEnabledChange,
-  repeatEndDate,
-  onRepeatEndDateChange,
-  repeatDays,
-  onToggleRepeatDay,
-}: Props) {
+  const date = watch('date')
+  const startTime = watch('startTime')
+  const durationMinutes = watch('durationMinutes') ?? 30
+
+  const repeatEnabled = watch('repeatEnabled') ?? false
+  const repeatEndDate = watch('repeatEndDate')
+  const repeatDays = watch('repeatDays') ?? []
+
   const effectiveDate = date || format(new Date(), 'yyyy-MM-dd')
+
   const endTime = format(
     new Date(
       buildDateTime(effectiveDate, startTime).getTime() +
@@ -53,6 +38,37 @@ export function BlockAppointmentSection({
     ),
     'HH:mm',
   )
+
+  const handleDateChange = (value: string) => {
+    setValue('date', value)
+  }
+
+  const handleStartTimeChange = (value: string) => {
+    setValue('startTime', value)
+  }
+
+  const handleDurationChange = (value: number) => {
+    setValue('durationMinutes', value)
+  }
+
+  const handleRepeatEnabledChange = (value: boolean) => {
+    setValue('repeatEnabled', value)
+  }
+
+  const handleRepeatEndDateChange = (value: string) => {
+    setValue('repeatEndDate', value || null)
+  }
+
+  const handleToggleRepeatDay = (day: string) => {
+    const current = watch('repeatDays') ?? []
+    const exists = current.includes(day)
+
+    const next = exists
+      ? current.filter((d: string) => d !== day)
+      : [...current, day]
+
+    setValue('repeatDays', next)
+  }
 
   return (
     <>
@@ -65,7 +81,7 @@ export function BlockAppointmentSection({
             <Input
               type="date"
               value={date}
-              onChange={(e) => onDateChange(e.target.value)}
+              onChange={(e) => handleDateChange(e.target.value)}
             />
           </div>
 
@@ -74,7 +90,9 @@ export function BlockAppointmentSection({
               <Label>Duração</Label>
               <Select
                 value={durationMinutes.toString()}
-                onValueChange={(value) => onDurationChange(parseInt(value, 10))}
+                onValueChange={(value) =>
+                  handleDurationChange(parseInt(value, 10))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -91,7 +109,7 @@ export function BlockAppointmentSection({
               <Input
                 type="time"
                 value={startTime}
-                onChange={(e) => onStartTimeChange(e.target.value)}
+                onChange={(e) => handleStartTimeChange(e.target.value)}
               />
             </div>
           </div>
@@ -111,7 +129,7 @@ export function BlockAppointmentSection({
             <Label className="flex items-center gap-2">
               <Switch
                 checked={repeatEnabled}
-                onCheckedChange={onRepeatEnabledChange}
+                onCheckedChange={handleRepeatEnabledChange}
               />
               Adicionar repetição
             </Label>
@@ -123,8 +141,8 @@ export function BlockAppointmentSection({
                 <Label>Data final</Label>
                 <Input
                   type="date"
-                  value={repeatEndDate}
-                  onChange={(e) => onRepeatEndDateChange(e.target.value)}
+                  value={repeatEndDate ?? ''}
+                  onChange={(e) => handleRepeatEndDateChange(e.target.value)}
                 />
               </div>
 
@@ -136,7 +154,7 @@ export function BlockAppointmentSection({
                       <button
                         key={day}
                         type="button"
-                        onClick={() => onToggleRepeatDay(day)}
+                        onClick={() => handleToggleRepeatDay(day)}
                         className={cn(
                           'h-8 rounded-full border px-3 text-xs font-medium',
                           repeatDays.includes(day)

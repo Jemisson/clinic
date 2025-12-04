@@ -1,27 +1,26 @@
 'use client'
 
+import { useFormContext } from 'react-hook-form'
+
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { AppointmentFormValues } from './form/appointment-form-schema'
 
-interface NotesProps {
-  notes: string
-  onNotesChange: (value: string) => void
-}
-
-interface ValidationProps {
+type AppointmentValidationSummaryProps = {
   validationErrors: string[]
   submitError: string | null
 }
 
-export function AppointmentNotesSection({ notes, onNotesChange }: NotesProps) {
+export function AppointmentNotesSection() {
+  const { register } = useFormContext<AppointmentFormValues>()
+
   return (
-    <div className="mt-4 space-y-2">
-      <Label>Observações</Label>
+    <div className="space-y-2">
+      <Label htmlFor="notes">Observações</Label>
       <Textarea
-        value={notes}
-        onChange={(e) => onNotesChange(e.target.value)}
-        rows={4}
-        placeholder="Anotações gerais sobre o agendamento"
+        id="notes"
+        placeholder="Anotações importantes sobre o atendimento..."
+        {...register('notes')}
       />
     </div>
   )
@@ -30,21 +29,19 @@ export function AppointmentNotesSection({ notes, onNotesChange }: NotesProps) {
 export function AppointmentValidationSummary({
   validationErrors,
   submitError,
-}: ValidationProps) {
+}: AppointmentValidationSummaryProps) {
   if (validationErrors.length === 0 && !submitError) return null
 
   return (
-    <div className="mt-3 space-y-2">
-      {validationErrors.length > 0 && (
-        <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
-          {validationErrors.map((err) => (
-            <div key={err}>• {err}</div>
-          ))}
-        </div>
-      )}
+    <div className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+      {submitError && <div>{submitError}</div>}
 
-      {submitError && (
-        <div className="text-xs text-destructive">{submitError}</div>
+      {validationErrors.length > 0 && (
+        <ul className="list-inside list-disc">
+          {validationErrors.map((err) => (
+            <li key={err}>{err}</li>
+          ))}
+        </ul>
       )}
     </div>
   )
