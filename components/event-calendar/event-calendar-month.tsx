@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useCallback } from 'react'
 import {
   format,
   startOfMonth,
@@ -8,19 +8,21 @@ import {
   eachDayOfInterval,
   startOfWeek,
   endOfWeek,
-} from 'date-fns';
-import { useEventCalendarStore } from '@/hooks/use-event';
-import { useShallow } from 'zustand/shallow';
-import { DayCell } from './ui/day-cell';
-import { WeekDayHeaders } from './ui/week-days-header';
-import { getLocaleFromCode, useWeekDays } from '@/lib/event';
-import { formatDate } from '@/lib/date';
-import { Events } from '@/types/event';
+} from 'date-fns'
+import { useEventCalendarStore } from '@/hooks/use-event'
+import { useShallow } from 'zustand/shallow'
+import { DayCell } from './ui/day-cell'
+import { WeekDayHeaders } from './ui/week-days-header'
+import { getLocaleFromCode, useWeekDays } from '@/lib/event'
+import { formatDate } from '@/lib/date'
+import { Events } from '@/types/event'
+import AppointmentService from '@/service/appointment-service'
 
-const DAYS_IN_WEEK = 7;
+const DAYS_IN_WEEK = 7
+
 interface CalendarMonthProps {
-  events: Events[];
-  baseDate: Date;
+  events: Events[]
+  baseDate: Date
 }
 
 export function EventCalendarMonth({ events, baseDate }: CalendarMonthProps) {
@@ -31,8 +33,8 @@ export function EventCalendarMonth({ events, baseDate }: CalendarMonthProps) {
     weekStartDay,
     viewSettings,
     openDayEventsDialog,
-    openEventDialog,
     openQuickAddDialog,
+    openAppointmentEdit,
   } = useEventCalendarStore(
     useShallow((state) => ({
       timeFormat: state.timeFormat,
@@ -41,52 +43,63 @@ export function EventCalendarMonth({ events, baseDate }: CalendarMonthProps) {
       locale: state.locale,
       weekStartDay: state.firstDayOfWeek,
       openDayEventsDialog: state.openDayEventsDialog,
-      openEventDialog: state.openEventDialog,
       openQuickAddDialog: state.openQuickAddDialog,
+      openAppointmentEdit: state.openAppointmentEdit,
     })),
-  );
-  const daysContainerRef = useRef<HTMLDivElement>(null);
-  const [focusedDate, setFocusedDate] = useState<Date | null>(null);
-  const localeObj = getLocaleFromCode(locale);
+  )
+
+  const daysContainerRef = useRef<HTMLDivElement>(null)
+  const [focusedDate, setFocusedDate] = useState<Date | null>(null)
+  const localeObj = getLocaleFromCode(locale)
 
   const { weekNumber, weekDays } = useWeekDays(
     baseDate,
     DAYS_IN_WEEK,
     localeObj,
-  );
+  )
 
-  // Calculate visible days in month
   const visibleDays = useMemo(() => {
-    const monthStart = startOfMonth(baseDate);
-    const monthEnd = endOfMonth(baseDate);
-    const gridStart = startOfWeek(monthStart, { weekStartsOn: weekStartDay });
-    const gridEnd = endOfWeek(monthEnd, { weekStartsOn: weekStartDay });
+    const monthStart = startOfMonth(baseDate)
+    const monthEnd = endOfMonth(baseDate)
+    const gridStart = startOfWeek(monthStart, { weekStartsOn: weekStartDay })
+    const gridEnd = endOfWeek(monthEnd, { weekStartsOn: weekStartDay })
 
-    return eachDayOfInterval({ start: gridStart, end: gridEnd });
-  }, [baseDate, weekStartDay]);
+    return eachDayOfInterval({ start: gridStart, end: gridEnd })
+  }, [baseDate, weekStartDay])
 
-  // Groups events by their start date
   const eventsGroupedByDate = useMemo(() => {
-    const groupedEvents: Record<string, Events[]> = {};
+    const groupedEvents: Record<string, Events[]> = {}
 
     visibleDays.forEach((day) => {
-      groupedEvents[format(day, 'yyyy-MM-dd')] = [];
-    });
+      groupedEvents[format(day, 'yyyy-MM-dd')] = []
+    })
 
     events.forEach((event) => {
-      const dateKey = format(event.startDate, 'yyyy-MM-dd');
+      const dateKey = format(event.startDate, 'yyyy-MM-dd')
       if (groupedEvents[dateKey]) {
-        groupedEvents[dateKey].push(event);
+        groupedEvents[dateKey].push(event)
       }
-    });
+    })
 
-    return groupedEvents;
-  }, [events, visibleDays]);
+    return groupedEvents
+  }, [events, visibleDays])
 
   const handleShowDayEvents = (date: Date) => {
-    const dateKey = format(date, 'yyyy-MM-dd');
-    openDayEventsDialog(date, eventsGroupedByDate[dateKey] || []);
-  };
+    const dateKey = format(date, 'yyyy-MM-dd')
+    openDayEventsDialog(date, eventsGroupedByDate[dateKey] || [])
+  }
+
+  const handleOpenEvent = useCallback(
+    async (event: Events) => {
+      try {
+        const appointment = await AppointmentService.show(Number(event.id))
+        openAppointmentEdit(appointment)
+      } catch (error) {
+        console.error('Erro ao carregar agendamento para edição (mês):', error)
+      }
+    },
+    [openAppointmentEdit],
+  )
 
   return (
     <div className="flex flex-col border py-2">
@@ -97,6 +110,7 @@ export function EventCalendarMonth({ events, baseDate }: CalendarMonthProps) {
         locale={localeObj}
         firstDayOfWeek={firstDayOfWeek}
       />
+
       <div
         ref={daysContainerRef}
         className="grid grid-cols-7 gap-1 p-2 sm:gap-2"
@@ -114,14 +128,13 @@ export function EventCalendarMonth({ events, baseDate }: CalendarMonthProps) {
             timeFormat={timeFormat}
             monthViewConfig={viewSettings}
             focusedDate={focusedDate}
-            onQuickAdd={(date) => openQuickAddDialog({ date })}
+            onQuickAdd={(d) => openQuickAddDialog({ date: d })}
             onFocusDate={setFocusedDate}
             onShowDayEvents={handleShowDayEvents}
-            onOpenEvent={openEventDialog}
+            onOpenEvent={handleOpenEvent}
           />
         ))}
-
       </div>
     </div>
-  );
+  )
 }

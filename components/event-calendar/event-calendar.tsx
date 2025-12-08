@@ -12,7 +12,6 @@ import CalendarToolbar from './event-calendar-toolbar'
 import { EventCalendarWeek } from './event-calendar-week'
 import { EventCalendarYear } from './event-calendar-year'
 import { EventCreateDialog } from './event-create-dialog'
-import EventDialog from './event-dialog'
 import { EventsList } from './event-list'
 
 interface EventCalendarProps {
@@ -87,7 +86,6 @@ export function EventCalendar({ initialDate, events }: EventCalendarProps) {
 
   return (
     <>
-      <EventDialog />
       <MonthDayEventsDialog />
       <EventCreateDialog />
       <div className="bg-background overflow-hidden rounded-xl border shadow-sm">

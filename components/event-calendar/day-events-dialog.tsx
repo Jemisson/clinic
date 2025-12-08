@@ -1,4 +1,5 @@
 'use client';
+
 import {
   Dialog,
   DialogContent,
@@ -16,10 +17,12 @@ import { Events, TimeFormatType } from '@/types/event';
 import { EventCard } from './ui/events';
 import { getLocaleFromCode } from '@/lib/event';
 import { useShallow } from 'zustand/shallow';
+import AppointmentService from '@/service/appointment-service';
+import { toast } from 'sonner';
 
 const EmptyState = () => (
   <div className="text-muted-foreground py-12 text-center">
-    No events scheduled for this date
+    Nenhum agendamento para este dia.
   </div>
 );
 
@@ -30,7 +33,7 @@ const EventListContent = ({
 }: {
   events: Events[];
   timeFormat: TimeFormatType;
-  onEventClick: (event: Events) => void;
+  onEventClick: (event: Events) => void | Promise<void>;
 }) => (
   <ScrollArea className="h-[400px] w-full rounded-md">
     <div className="flex flex-col gap-2">
@@ -40,7 +43,7 @@ const EventListContent = ({
             key={event.id}
             event={event}
             timeFormat={timeFormat}
-            onClick={onEventClick}
+            onClick={() => onEventClick(event)}
           />
         ))
       ) : (
@@ -52,20 +55,21 @@ const EventListContent = ({
 
 export function MonthDayEventsDialog() {
   const {
-    openEventDialog,
+    openAppointmentEdit,
     closeDayEventsDialog,
     timeFormat,
     dayEventsDialog,
     locale,
   } = useEventCalendarStore(
     useShallow((state) => ({
-      openEventDialog: state.openEventDialog,
+      openAppointmentEdit: state.openAppointmentEdit,
       closeDayEventsDialog: state.closeDayEventsDialog,
       timeFormat: state.timeFormat,
       dayEventsDialog: state.dayEventsDialog,
       locale: state.locale,
     })),
   );
+
   const localeObj = getLocaleFromCode(locale);
 
   const formattedDate = useMemo(
@@ -77,6 +81,20 @@ export function MonthDayEventsDialog() {
     [dayEventsDialog.date, localeObj],
   );
 
+  const handleEventClick = async (event: Events) => {
+    try {
+      const appointmentId = Number(event.id);
+      const appointment = await AppointmentService.show(appointmentId);
+
+      closeDayEventsDialog();
+
+      openAppointmentEdit(appointment);
+    } catch (error) {
+      console.error('Erro ao carregar agendamento para edição:', error);
+      toast.error('Não foi possível carregar o agendamento para edição.');
+    }
+  };
+
   return (
     <Dialog open={dayEventsDialog.open} onOpenChange={closeDayEventsDialog}>
       <DialogContent>
@@ -85,15 +103,17 @@ export function MonthDayEventsDialog() {
             Agendamentos de {formattedDate && <span>{formattedDate}</span>}
           </DialogTitle>
           <DialogDescription>
-            Lista de todos os agendamentos agendados para este dia.
+            Lista de todos os agendamentos deste dia.
           </DialogDescription>
         </DialogHeader>
+
         <EventListContent
           events={dayEventsDialog.events}
           timeFormat={timeFormat}
-          onEventClick={openEventDialog}
+          onEventClick={handleEventClick}
         />
-        <DialogFooter className="">
+
+        <DialogFooter>
           <Button variant="outline" onClick={closeDayEventsDialog}>
             Fechar
           </Button>

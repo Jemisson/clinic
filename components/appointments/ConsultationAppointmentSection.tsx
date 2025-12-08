@@ -18,6 +18,8 @@ import { Switch } from '@/components/ui/switch'
 import { PatientSearchField } from '../appointments/patient-search-field'
 import { buildDateTime } from '../event-calendar/event-create-dialog'
 import { AppointmentFormValues } from './form/appointment-form-schema'
+import { DatePickerField } from './form/DatePickerField'
+import { Clock } from 'lucide-react'
 
 type SelectOption = { id: number; name: string }
 
@@ -61,16 +63,9 @@ export function ConsultationAppointmentSection({ facilities }: Props) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Data</Label>
-              <Controller
+              <DatePickerField
                 name="date"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    type="date"
-                    {...field}
-                  />
-                )}
+                label="Data"
               />
             </div>
             <div className="space-y-2">
@@ -80,18 +75,19 @@ export function ConsultationAppointmentSection({ facilities }: Props) {
                 control={control}
                 render={({ field }) => (
                   <Select
-                    value={String(field.value)}
-                    onValueChange={(value) =>
-                      field.onChange(parseInt(value, 10))
-                    }
+                    value={field.value ? String(field.value) : '30'}
+                    onValueChange={(value) => field.onChange(parseInt(value, 10))}
                   >
-                    <SelectTrigger>
-                      <SelectValue />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione a duração" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="15">15 min</SelectItem>
                       <SelectItem value="30">30 min</SelectItem>
+                      <SelectItem value="45">45 min</SelectItem>
                       <SelectItem value="60">1h</SelectItem>
                       <SelectItem value="90">1h30</SelectItem>
+                      <SelectItem value="120">2h</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -106,22 +102,37 @@ export function ConsultationAppointmentSection({ facilities }: Props) {
                 name="startTime"
                 control={control}
                 render={({ field }) => (
-                  <Input
-                    type="time"
-                    {...field}
-                  />
+                  <div className="relative">
+                    <Input
+                      type="time"
+                      className="pr-10 [appearance:textfield] [&::-webkit-calendar-picker-indicator]:opacity-0"
+                      {...field}
+                    />
+                    <Clock
+                      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                  </div>
                 )}
               />
             </div>
+
             <div className="space-y-2">
               <Label>Até</Label>
-              <Input
-                type="time"
-                value={endTime}
-                readOnly
-              />
+              <div className="relative">
+                <Clock
+                  className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  type="time"
+                  value={endTime}
+                  readOnly
+                  className="pr-10 [appearance:textfield] [&::-webkit-calendar-picker-indicator]:opacity-0"
+                />
+              </div>
             </div>
+
           </div>
+
         </div>
 
         <div className="space-y-4">

@@ -5,7 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
+  DialogFooter as UIDialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -21,6 +21,8 @@ import { z } from 'zod'
 import { useShallow } from 'zustand/shallow'
 import { ScrollArea } from '../ui/scroll-area'
 import { EventDetailsForm } from './event-detail-form'
+import AppointmentService from '@/service/appointment-service'
+import { AppointmentForEdit } from '@/types/appointment'
 
 const DEFAULT_START_TIME = '09:00'
 const DEFAULT_END_TIME = '10:00'
@@ -59,6 +61,7 @@ export default function EventDialog() {
     isDialogOpen,
     closeEventDialog,
     isSubmitting,
+    openAppointmentEdit,
   } = useEventCalendarStore(
     useShallow((state) => ({
       locale: state.locale,
@@ -66,6 +69,7 @@ export default function EventDialog() {
       isDialogOpen: state.isDialogOpen,
       closeEventDialog: state.closeEventDialog,
       isSubmitting: state.isSubmitting,
+      openAppointmentEdit: state.openAppointmentEdit,
     })),
   )
   const localeObj = getLocaleFromCode(locale)
@@ -118,6 +122,23 @@ export default function EventDialog() {
     })
   }
 
+  const handleOpenAppointmentEdit = async () => {
+    if (!selectedEvent?.id) return
+
+    try {
+      const appointmentId = Number(selectedEvent.id)
+
+      const appointment: AppointmentForEdit =
+        await AppointmentService.show(appointmentId)
+
+      openAppointmentEdit(appointment)
+      closeEventDialog()
+    } catch (error) {
+      console.error(error)
+      toast.error('Não foi possível carregar o agendamento para edição.')
+    }
+  }
+
   if (!isMounted) return null
 
   return (
@@ -128,11 +149,14 @@ export default function EventDialog() {
     >
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Event Details</DialogTitle>
+          <DialogTitle>Detalhes do Agendamento</DialogTitle>
           <DialogDescription>
-            Event details {selectedEvent?.title}
+            {selectedEvent?.title
+              ? `Agendamento: ${selectedEvent.title}`
+              : 'Detalhes do agendamento'}
           </DialogDescription>
         </DialogHeader>
+
         <ScrollArea className="h-[350px] w-full sm:h-[500px]">
           <EventDetailsForm
             form={form}
@@ -140,18 +164,20 @@ export default function EventDialog() {
             locale={localeObj}
           />
         </ScrollArea>
-        <DialogFooter className="mt-2 flex flex-row">
+
+        <UIDialogFooter className="mt-2 flex flex-row">
           <DeleteAlert
             isOpen={isDeleteAlertOpen}
             onOpenChange={setIsDeleteAlertOpen}
             onConfirm={handleDeleteEvent}
           />
+
           <FormFooter
             onCancel={closeEventDialog}
-            onSave={form.handleSubmit(handleUpdate)}
+            onSave={handleOpenAppointmentEdit}
             isSubmitting={isSubmitting}
           />
-        </DialogFooter>
+        </UIDialogFooter>
       </DialogContent>
     </Dialog>
   )

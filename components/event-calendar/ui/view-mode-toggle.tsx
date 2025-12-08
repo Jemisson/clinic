@@ -61,7 +61,7 @@ export function ViewModeToggle({
                       transition={{ duration: 0.3 }}
                       className="z-10 ml-2 overflow-hidden text-sm whitespace-nowrap text-white"
                     >
-                      Calendario
+                      Calendário
                     </motion.span>
                   )}
                 </AnimatePresence>

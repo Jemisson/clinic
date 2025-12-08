@@ -1,19 +1,21 @@
-import { create } from 'zustand';
+import { AppointmentForEdit } from '@/types/appointment'
 import {
   CalendarViewConfigs,
   CalendarViewType,
   daysViewConfig,
   DayViewConfig,
   EventPosition,
+  Events,
   MonthViewConfig,
   QuickAddDialogData,
   TimeFormatType,
   ViewModeType,
   WeekViewConfig,
   YearViewConfig,
-} from '@/types/event';
-import { Events } from '@/types/event';
-import { persist } from 'zustand/middleware';
+} from '@/types/event'
+import { format } from 'date-fns'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 const DEFAULT_VIEW_CONFIGS: CalendarViewConfigs = {
   day: {
@@ -41,7 +43,7 @@ const DEFAULT_VIEW_CONFIGS: CalendarViewConfigs = {
     eventLimit: 3,
     showMoreEventsIndicator: true,
     hideOutsideDays: true,
-    maxEventsPerDay: 0
+    maxEventsPerDay: 0,
   },
   year: {
     showMonthLabels: true,
@@ -51,57 +53,66 @@ const DEFAULT_VIEW_CONFIGS: CalendarViewConfigs = {
     enableEventPreview: true,
     previewEventsPerMonth: 1,
   },
-};
+}
 
 interface EventCalendarState {
-  selectedEvent: Events | null;
-  currentView: CalendarViewType;
-  viewMode: ViewModeType;
-  timeFormat: TimeFormatType;
-  locale: string;
-  firstDayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  daysCount: number;
-  loading: boolean;
-  error: Error | null;
-  viewSettings: CalendarViewConfigs;
-  isDialogOpen: boolean;
-  eventDialogPosition: EventPosition | null;
-  isSubmitting: boolean;
+  selectedEvent: Events | null
+  currentView: CalendarViewType
+  viewMode: ViewModeType
+  timeFormat: TimeFormatType
+  locale: string
+  firstDayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6
+  daysCount: number
+  loading: boolean
+  error: Error | null
+  viewSettings: CalendarViewConfigs
+
+  isDialogOpen: boolean
+  eventDialogPosition: EventPosition | null
+  isSubmitting: boolean
+
   dayEventsDialog: {
-    open: boolean;
-    date: Date | null;
-    events: Events[];
-  };
-  quickAddData: QuickAddDialogData;
-  isQuickAddDialogOpen: boolean;
-  setLoading: (loading: boolean) => void;
-  setView: (type: CalendarViewType) => void;
-  setMode: (type: ViewModeType) => void;
-  setTimeFormat: (format: TimeFormatType) => void;
-  setLocale: (locale: string) => void;
-  setFirstDayOfWeek: (day: 0 | 1 | 2 | 3 | 4 | 5 | 6) => void;
-  setDaysCount: (count: number) => void;
-  updateDayViewConfig: (config: Partial<DayViewConfig>) => void;
-  updateDaysViewConfig: (config: Partial<daysViewConfig>) => void;
-  updateWeekViewConfig: (config: Partial<WeekViewConfig>) => void;
-  updateMonthViewConfig: (config: Partial<MonthViewConfig>) => void;
-  updateYearViewConfig: (config: Partial<YearViewConfig>) => void;
+    open: boolean
+    date: Date | null
+    events: Events[]
+  }
+
+  quickAddData: QuickAddDialogData
+  isQuickAddDialogOpen: boolean
+
+  formMode: 'create' | 'edit'
+  appointmentToEdit: AppointmentForEdit | null
+
+  setLoading: (loading: boolean) => void
+  setView: (type: CalendarViewType) => void
+  setMode: (type: ViewModeType) => void
+  setTimeFormat: (format: TimeFormatType) => void
+  setLocale: (locale: string) => void
+  setFirstDayOfWeek: (day: 0 | 1 | 2 | 3 | 4 | 5 | 6) => void
+  setDaysCount: (count: number) => void
+
+  updateDayViewConfig: (config: Partial<DayViewConfig>) => void
+  updateDaysViewConfig: (config: Partial<daysViewConfig>) => void
+  updateWeekViewConfig: (config: Partial<WeekViewConfig>) => void
+  updateMonthViewConfig: (config: Partial<MonthViewConfig>) => void
+  updateYearViewConfig: (config: Partial<YearViewConfig>) => void
+
   selectCurrentViewConfig: () =>
     | DayViewConfig
     | WeekViewConfig
     | MonthViewConfig
-    | YearViewConfig;
-  openEventDialog: (
-    event: Events,
-    position?: EventPosition,
-    leftOffset?: number,
-    rightOffset?: number,
-  ) => void;
-  closeEventDialog: () => void;
-  openDayEventsDialog: (date: Date, events: Events[]) => void;
-  closeDayEventsDialog: () => void;
-  openQuickAddDialog: (data: QuickAddDialogData) => void;
-  closeQuickAddDialog: () => void;
+    | YearViewConfig
+
+  openEventDialog: (event: Events, position?: EventPosition) => void
+  closeEventDialog: () => void
+
+  openDayEventsDialog: (date: Date, events: Events[]) => void
+  closeDayEventsDialog: () => void
+
+  openQuickAddDialog: (data: QuickAddDialogData) => void
+  closeQuickAddDialog: () => void
+
+  openAppointmentEdit: (appointment: AppointmentForEdit) => void
 }
 
 export const useEventCalendarStore = create<EventCalendarState>()(
@@ -112,27 +123,35 @@ export const useEventCalendarStore = create<EventCalendarState>()(
       viewMode: ViewModeType.CALENDAR,
       timeFormat: TimeFormatType.HOUR_24,
       locale: 'pt-BR',
-      firstDayOfWeek: 0, // sunday
+      firstDayOfWeek: 0,
       daysCount: 7,
       loading: false,
       error: null,
       viewSettings: DEFAULT_VIEW_CONFIGS,
+
       isDialogOpen: false,
       eventDialogPosition: null,
       isSubmitting: false,
+
       dayEventsDialog: {
         open: false,
         date: null,
         events: [],
       },
+
       quickAddData: {
         date: null,
-        time: undefined,
-        hour: undefined,
-        minute: undefined,
+        startTime: undefined,
+        endTime: undefined,
+        position: undefined,
       },
       isQuickAddDialogOpen: false,
+
+      formMode: 'create',
+      appointmentToEdit: null,
+
       setLoading: (loading) => set({ loading }),
+
       updateDayViewConfig: (config) =>
         set((state) => ({
           viewSettings: {
@@ -143,6 +162,7 @@ export const useEventCalendarStore = create<EventCalendarState>()(
             },
           },
         })),
+
       updateDaysViewConfig: (config) =>
         set((state) => ({
           viewSettings: {
@@ -153,6 +173,7 @@ export const useEventCalendarStore = create<EventCalendarState>()(
             },
           },
         })),
+
       updateWeekViewConfig: (config) =>
         set((state) => ({
           viewSettings: {
@@ -187,35 +208,42 @@ export const useEventCalendarStore = create<EventCalendarState>()(
         })),
 
       selectCurrentViewConfig: () => {
-        const { currentView, viewSettings } = get();
-        return viewSettings[currentView];
+        const { currentView, viewSettings } = get()
+        return viewSettings[currentView]
       },
+
       openEventDialog: (event, position) => {
         set({
           selectedEvent: event,
           isDialogOpen: true,
-          eventDialogPosition: position,
-        });
+          eventDialogPosition: position ?? null,
+        })
       },
+
       closeEventDialog: () => {
         set({
-          isDialogOpen: false,
           selectedEvent: null,
+          isDialogOpen: false,
           eventDialogPosition: null,
-        });
+        })
       },
+
       openDayEventsDialog: (date, events) => {
         set({
           dayEventsDialog: { open: true, date, events },
-        });
+        })
       },
+
       closeDayEventsDialog: () => {
         set({
           dayEventsDialog: { open: false, date: null, events: [] },
-        });
+        })
       },
-      openQuickAddDialog: (data: QuickAddDialogData) => {
+
+      openQuickAddDialog: (data) => {
         set({
+          formMode: 'create',
+          appointmentToEdit: null,
           quickAddData: {
             date: data.date || new Date(),
             startTime: data.startTime || '12:00',
@@ -223,8 +251,9 @@ export const useEventCalendarStore = create<EventCalendarState>()(
             position: data.position,
           },
           isQuickAddDialogOpen: true,
-        });
+        })
       },
+
       closeQuickAddDialog: () => {
         set({
           quickAddData: {
@@ -234,12 +263,50 @@ export const useEventCalendarStore = create<EventCalendarState>()(
             position: undefined,
           },
           isQuickAddDialogOpen: false,
-        });
+          formMode: 'create',
+          appointmentToEdit: null,
+        })
       },
+
+      openAppointmentEdit: (appointment) => {
+        let start = appointment.starts_at
+          ? new Date(appointment.starts_at)
+          : new Date()
+
+        const fallbackDuration =
+          typeof appointment.duration_minutes === 'number'
+            ? appointment.duration_minutes
+            : 30
+
+        let end = appointment.ends_at
+          ? new Date(appointment.ends_at)
+          : new Date(start.getTime() + fallbackDuration * 60 * 1000)
+
+        if (Number.isNaN(start.getTime())) {
+          start = new Date()
+        }
+
+        if (Number.isNaN(end.getTime())) {
+          end = new Date(start.getTime() + fallbackDuration * 60 * 1000)
+        }
+
+        set({
+          formMode: 'edit',
+          appointmentToEdit: appointment,
+          quickAddData: {
+            date: start,
+            startTime: format(start, 'HH:mm'),
+            endTime: format(end, 'HH:mm'),
+            position: undefined,
+          },
+          isQuickAddDialogOpen: true,
+        })
+      },
+
       setView: (view) => set({ currentView: view }),
       setMode: (mode) => set({ viewMode: mode }),
       setTimeFormat: (format) => set({ timeFormat: format }),
-      setLocale: (localeCode: string) => set({ locale: localeCode }),
+      setLocale: (localeCode) => set({ locale: localeCode }),
       setFirstDayOfWeek: (day) => set({ firstDayOfWeek: day }),
       setDaysCount: (count) => set({ daysCount: count }),
     }),
@@ -256,4 +323,4 @@ export const useEventCalendarStore = create<EventCalendarState>()(
       }),
     },
   ),
-);
+)

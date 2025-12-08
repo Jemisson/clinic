@@ -48,9 +48,7 @@ export function DayCell({
 
   const isWithinMonth = !outside;
 
-  const maxEventsPerDay =
-    monthViewConfig?.eventLimit ?? 1;
-  console.log('valroes = ', monthViewConfig);
+  const maxEventsPerDay = monthViewConfig?.eventLimit ?? 1;
 
   const eventsToShow =
     isWithinMonth && dayEvents.length > 0
@@ -99,7 +97,6 @@ export function DayCell({
       }}
       onFocus={() => onFocusDate(date)}
     >
-      {/* Cabeçalho do dia (número + dia da semana quando aplicável) */}
       <div className="mb-0 flex items-center justify-between sm:mb-1">
         <span
           className={cn(
@@ -154,12 +151,13 @@ export function DayCell({
               variant="ghost"
               size="sm"
               className="bg-muted hover:bg-muted/90 h-1.5 w-full gap-1 truncate rounded p-2 text-xs sm:mt-auto sm:h-5 sm:p-5 sm:px-1"
-              onClick={() => onShowDayEvents(date)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowDayEvents(date);
+              }}
             >
               <Plus className="h-1.5 w-1.5" />
-              <span className="hidden sm:block">
-                {remainingCount}
-              </span>
+              <span className="hidden sm:block">{remainingCount}</span>
             </Button>
           )}
 

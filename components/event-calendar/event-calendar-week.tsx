@@ -12,13 +12,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Events, HoverPositionType } from '@/types/event'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-  useEffect,
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/shallow'
 import { Button } from '../ui/button'
 import { ScrollArea } from '../ui/scroll-area'
@@ -30,6 +24,8 @@ import { MultiDayEventSection } from './ui/multi-day-event'
 import { TimeColumn } from './ui/time-column'
 import { TimeGrid } from './ui/time-grid'
 import { WeekDayHeaders } from './ui/week-days-header'
+
+import AppointmentService from '@/service/appointment-service'
 
 const HOUR_HEIGHT = 64
 const START_HOUR = 0
@@ -50,7 +46,7 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
     firstDayOfWeek,
     viewSettings,
     openQuickAddDialog,
-    openEventDialog,
+    openAppointmentEdit,
   } = useEventCalendarStore(
     useShallow((state) => ({
       timeFormat: state.timeFormat,
@@ -59,7 +55,7 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
       firstDayOfWeek: state.firstDayOfWeek,
       openDayEventsDialog: state.openDayEventsDialog,
       openQuickAddDialog: state.openQuickAddDialog,
-      openEventDialog: state.openEventDialog,
+      openAppointmentEdit: state.openAppointmentEdit,
     })),
   )
 
@@ -140,11 +136,16 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
     viewSettings.week.enableTimeSlotClick,
   ])
 
-  const showEventDetail = useCallback(
-    (_event: Events) => {
-      openEventDialog(_event)
+  const handleEventClick = useCallback(
+    async (event: Events) => {
+      try {
+        const appointment = await AppointmentService.show(Number(event.id))
+        openAppointmentEdit(appointment)
+      } catch (error) {
+        console.error('Erro ao carregar agendamento para edição', error)
+      }
     },
-    [openEventDialog],
+    [openAppointmentEdit],
   )
 
   const handleTimeBlockClick = useCallback(
@@ -164,7 +165,6 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
     setIsMultiDayExpanded((prev) => !prev)
   }, [])
 
-  // Auto-scroll para o horário atual quando a semana contém o "hoje"
   useEffect(() => {
     const root = scrollAreaRef.current
     if (!root) return
@@ -182,7 +182,6 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
     const hourOffset = currentHour * HOUR_HEIGHT
     const target = hourOffset - viewport.clientHeight / 6
 
-    // Dá um pequeno delay para garantir que o layout foi aplicado
     window.setTimeout(() => {
       viewport.scrollTo({
         top: Math.max(target, 0),
@@ -266,7 +265,7 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
                 rows={multiDayEventRows}
                 daysInWeek={weekDays}
                 multiDayRowHeight={MULTI_DAY_ROW_HEIGHT}
-                showEventDetail={showEventDetail}
+                showEventDetail={handleEventClick}
                 isExpanded={isMultiDayExpanded}
               />
             </div>
@@ -348,7 +347,7 @@ export function EventCalendarWeek({ events, currentDate }: CalendarWeekProps) {
                       position={position}
                       leftOffset={leftPercent}
                       rightOffset={rightPercent}
-                      onClick={openEventDialog}
+                      onClick={handleEventClick}
                     />
                   )
                 })}

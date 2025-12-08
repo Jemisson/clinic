@@ -18,59 +18,61 @@ import {
 
 import { useEventCalendarStore } from '@/hooks/use-event'
 import AppointmentService from '@/service/appointment-service'
+
 import {
   AppointmentCreateRequest,
   AppointmentForEdit,
   AppointmentKind,
 } from '@/types/appointment'
-import { AppointmentNotesSection, AppointmentValidationSummary } from '../appointments/AppointmentNotesAndErrors'
-import { ConsultationAppointmentSection } from '../appointments/ConsultationAppointmentSection'
-import { EventTypeDoctorSection } from '../appointments/EventTypeDoctorSection'
+
 import {
   appointmentFormSchema,
   AppointmentFormValues,
 } from '../appointments/form/appointment-form-schema'
 
 import { buildDefaultValues } from '../appointments/form/appointment-form-defaults'
-import { BlockAppointmentSection } from '../appointments/BlockAppointmentSection'
 
+import { AppointmentNotesSection, AppointmentValidationSummary } from '../appointments/AppointmentNotesAndErrors'
+import { ConsultationAppointmentSection } from '../appointments/ConsultationAppointmentSection'
+import { BlockAppointmentSection } from '../appointments/BlockAppointmentSection'
+import { EventTypeDoctorSection } from '../appointments/EventTypeDoctorSection'
+
+// helper
 export function buildDateTime(dateStr: string, timeStr: string): Date {
   const [year, month, day] = dateStr.split('-').map(Number)
   const [hour, minute] = timeStr.split(':').map(Number)
   return new Date(year, month - 1, day, hour, minute)
 }
 
-type SelectOption = { id: number; name: string }
+type EventCreateDialogProps = {}
 
-const MOCK_FACILITIES: SelectOption[] = [
-  { id: 1, name: 'Sala 01' },
-  { id: 2, name: 'Sala 02' },
-]
-
-type EventCreateDialogProps = {
-  mode?: 'create' | 'edit'
-  appointmentToEdit?: AppointmentForEdit | null
-}
-
-export function EventCreateDialog({
-  mode = 'create',
-  appointmentToEdit = null,
-}: EventCreateDialogProps) {
-  const { isQuickAddDialogOpen, closeQuickAddDialog, quickAddData } =
-    useEventCalendarStore(
-      useShallow((state) => ({
-        isQuickAddDialogOpen: state.isQuickAddDialogOpen,
-        closeQuickAddDialog: state.closeQuickAddDialog,
-        quickAddData: state.quickAddData,
-      })),
-    )
+export function EventCreateDialog({}: EventCreateDialogProps) {
+  const {
+    isQuickAddDialogOpen,
+    closeQuickAddDialog,
+    quickAddData,
+    formMode,
+    appointmentToEdit,
+  } = useEventCalendarStore(
+    useShallow((state) => ({
+      isQuickAddDialogOpen: state.isQuickAddDialogOpen,
+      closeQuickAddDialog: state.closeQuickAddDialog,
+      quickAddData: state.quickAddData,
+      formMode: state.formMode,
+      appointmentToEdit: state.appointmentToEdit,
+    })),
+  )
 
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentFormSchema),
     mode: 'onChange',
-    defaultValues: buildDefaultValues(quickAddData, mode, appointmentToEdit),
+    defaultValues: buildDefaultValues(
+      quickAddData,
+      formMode,
+      appointmentToEdit,
+    ),
   })
 
   const {
@@ -88,13 +90,17 @@ export function EventCreateDialog({
 
     setSubmitError(null)
 
-    reset(buildDefaultValues(quickAddData, mode, appointmentToEdit), {
-      keepDefaultValues: false,
-    })
-  }, [isQuickAddDialogOpen, quickAddData, mode, appointmentToEdit, reset])
+    reset(
+      buildDefaultValues(quickAddData, formMode, appointmentToEdit),
+      { keepDefaultValues: false },
+    )
+  }, [isQuickAddDialogOpen, quickAddData, formMode, appointmentToEdit, reset])
 
   const isSubmitDisabled = !isValid || isSubmitting
 
+  // ------------------------------
+  //  SUBMIT (CREATE or UPDATE)
+  // ------------------------------
   const onSubmit = async (values: AppointmentFormValues) => {
     try {
       setSubmitError(null)
@@ -107,34 +113,30 @@ export function EventCreateDialog({
 
       const payload: AppointmentCreateRequest = {
         appointment: {
-          patient_id: isConsultationLikeLocal
-            ? values.patientId
+          patient_id:
+            isConsultationLikeLocal && values.patientId
               ? Number(values.patientId)
-              : null
-            : null,
+              : null,
           user_id: Number(values.userId),
-          facility_item_id: values.informFacility
-            ? values.facilityItemId
+          facility_item_id:
+            values.informFacility && values.facilityItemId
               ? Number(values.facilityItemId)
-              : null
-            : null,
+              : null,
           kind: values.kind,
           status: values.status,
           starts_at: start.toISOString(),
           ends_at: end.toISOString(),
           duration_minutes: values.durationMinutes,
           first_visit:
-            values.kind === 'consultation' ? (values.firstVisit ?? false) : false,
-          is_return: values.kind === 'consultation' ? (values.isReturn ?? false) : false,
-          aesthetic_evaluation: isConsultationLikeLocal
-            ? values.aestheticEvaluation ?? false
-            : false,
-          online_booking: isConsultationLikeLocal
-            ? values.onlineBooking ?? false
-            : false,
-          online_booking_link: isConsultationLikeLocal
-            ? values.onlineBookingLink || null
-            : null,
+            values.kind === 'consultation' ? values.firstVisit ?? false : false,
+          is_return:
+            values.kind === 'consultation' ? values.isReturn ?? false : false,
+          aesthetic_evaluation:
+            isConsultationLikeLocal ? values.aestheticEvaluation ?? false : false,
+          online_booking:
+            isConsultationLikeLocal ? values.onlineBooking ?? false : false,
+          online_booking_link:
+            isConsultationLikeLocal ? values.onlineBookingLink || null : null,
           notes: values.notes || null,
           ...(values.kind === 'block' && values.repeatEnabled
             ? {
@@ -147,8 +149,8 @@ export function EventCreateDialog({
         },
       }
 
-      if (mode === 'edit' && appointmentToEdit) {
-        // await AppointmentService.update(appointmentToEdit.id, payload)
+      if (formMode === 'edit' && appointmentToEdit) {
+        await AppointmentService.update(appointmentToEdit.id, payload)
       } else {
         await AppointmentService.create(payload)
       }
@@ -164,14 +166,9 @@ export function EventCreateDialog({
 
   const validationErrors = useMemo(() => {
     const msgs: string[] = []
-
     Object.values(errors).forEach((err) => {
-      if (!err) return
-      if (err.message) {
-        msgs.push(String(err.message))
-      }
+      if (err?.message) msgs.push(String(err.message))
     })
-
     return msgs
   }, [errors])
 
@@ -185,11 +182,13 @@ export function EventCreateDialog({
       <DialogContent className="max-w-4xl">
         <DialogHeader className="mb-4">
           <DialogTitle>
-            {mode === 'edit' ? 'Editar Agendamento' : 'Novo Agendamento'}
+            {formMode === 'edit'
+              ? 'Editar Agendamento'
+              : 'Novo Agendamento'}
           </DialogTitle>
           <DialogDescription>
             Preencha as informações abaixo para{' '}
-            {mode === 'edit' ? 'editar' : 'criar'} um agendamento.
+            {formMode === 'edit' ? 'editar' : 'criar'} um agendamento.
           </DialogDescription>
         </DialogHeader>
 
@@ -206,7 +205,7 @@ export function EventCreateDialog({
             />
 
             {isConsultationLike ? (
-              <ConsultationAppointmentSection facilities={MOCK_FACILITIES} />
+              <ConsultationAppointmentSection facilities={[]} />
             ) : (
               <BlockAppointmentSection />
             )}
@@ -226,14 +225,12 @@ export function EventCreateDialog({
               >
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitDisabled}
-              >
+
+              <Button type="submit" disabled={isSubmitDisabled}>
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                {mode === 'edit' ? 'Salvar alterações' : 'Agendar'}
+                {formMode === 'edit' ? 'Salvar alterações' : 'Agendar'}
               </Button>
             </DialogFooter>
           </form>

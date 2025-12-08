@@ -2,6 +2,7 @@
 
 import { useEventCalendarStore } from '@/hooks/use-event'
 import { getLocaleFromCode } from '@/lib/event'
+import AppointmentService from '@/service/appointment-service'
 import { CalendarViewType, Events } from '@/types/event'
 import {
   eachMonthOfInterval,
@@ -13,6 +14,7 @@ import {
 } from 'date-fns'
 import { parseAsIsoDate, useQueryState } from 'nuqs'
 import { useCallback, useMemo } from 'react'
+import { toast } from 'sonner'
 import { useShallow } from 'zustand/shallow'
 import { MonthCard } from './ui/month-card'
 
@@ -24,19 +26,19 @@ interface CalendarYearProps {
 export function EventCalendarYear({ events, currentDate }: CalendarYearProps) {
   const {
     openQuickAddDialog,
-    openEventDialog,
     openDayEventsDialog,
     setView,
     viewSettings,
     locale,
+    openAppointmentEdit,
   } = useEventCalendarStore(
     useShallow((state) => ({
       openQuickAddDialog: state.openQuickAddDialog,
-      openEventDialog: state.openEventDialog,
       openDayEventsDialog: state.openDayEventsDialog,
       setView: state.setView,
       viewSettings: state.viewSettings.year,
       locale: state.locale,
+      openAppointmentEdit: state.openAppointmentEdit,
     })),
   )
 
@@ -104,6 +106,20 @@ export function EventCalendarYear({ events, currentDate }: CalendarYearProps) {
     [openQuickAddDialog],
   )
 
+  const handleEventClick = useCallback(
+    async (event: Events) => {
+      try {
+        const appointmentId = Number(event.id)
+        const appointment = await AppointmentService.show(appointmentId)
+        openAppointmentEdit(appointment)
+      } catch (error) {
+        console.error('Erro ao carregar agendamento na visão anual:', error)
+        toast.error('Não foi possível abrir o agendamento para edição.')
+      }
+    },
+    [openAppointmentEdit],
+  )
+
   return (
     <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {monthsInYear.map((month) => (
@@ -114,7 +130,7 @@ export function EventCalendarYear({ events, currentDate }: CalendarYearProps) {
           eventCount={eventCountByMonth[getMonth(month)]}
           yearViewConfig={viewSettings}
           onMonthClick={handleMonthClick}
-          onEventClick={openEventDialog}
+          onEventClick={handleEventClick}
           onDateClick={handleDateClick}
           onQuickAdd={handleQuickAdd}
           locale={localeObj}

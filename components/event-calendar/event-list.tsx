@@ -1,8 +1,10 @@
 'use client'
+
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useEventCalendarStore } from '@/hooks/use-event'
 import { getLocaleFromCode, useEventFilter, useEventGrouper } from '@/lib/event'
 import { CalendarViewType, Events, TimeFormatType } from '@/types/event'
+
 import {
   addDays,
   endOfDay,
@@ -13,9 +15,13 @@ import {
   isWithinInterval,
   startOfDay,
 } from 'date-fns'
+
 import { useCallback } from 'react'
 import { useShallow } from 'zustand/shallow'
 import { EventGroup, NoEvents } from './ui/events'
+import AppointmentService from '@/service/appointment-service'
+import { AppointmentForEdit } from '@/types/appointment'
+import { toast } from 'sonner'
 
 interface EventsListProps {
   events: Events[]
@@ -83,19 +89,19 @@ const EventSection = ({
 )
 
 export function EventsList({ events, currentDate }: EventsListProps) {
-  const { timeFormat, currentView, locale, openEventDialog } =
+  const { timeFormat, currentView, locale, openAppointmentEdit } =
     useEventCalendarStore(
       useShallow((state) => ({
         timeFormat: state.timeFormat,
         currentView: state.currentView,
         locale: state.locale,
-        openEventDialog: state.openEventDialog,
+        openAppointmentEdit: state.openAppointmentEdit,
       })),
     )
+
   const localeObj = getLocaleFromCode(locale)
 
   const filteredEvents = useEventFilter(events, currentDate, currentView)
-
   const groupedEvents = useEventGrouper(
     filteredEvents,
     currentView,
@@ -104,10 +110,19 @@ export function EventsList({ events, currentDate }: EventsListProps) {
   )
 
   const handleEventClick = useCallback(
-    (event: Events) => {
-      openEventDialog(event)
+    async (event: Events) => {
+      try {
+        const id = Number(event.id)
+        const appointment: AppointmentForEdit =
+          await AppointmentService.show(id)
+
+        openAppointmentEdit(appointment)
+      } catch (error) {
+        console.error(error)
+        toast.error('Não foi possível carregar o agendamento para edição.')
+      }
     },
-    [openEventDialog],
+    [openAppointmentEdit],
   )
 
   if (groupedEvents.length === 0) {
@@ -115,10 +130,7 @@ export function EventsList({ events, currentDate }: EventsListProps) {
   }
 
   return (
-    <div
-      className="h-full w-full space-y-4"
-      data-testid="events-list"
-    >
+    <div className="h-full w-full space-y-4" data-testid="events-list">
       <ScrollArea className="h-[calc(100vh-12rem)] pr-3">
         <div className="space-y-3 px-5 py-4">
           {groupedEvents.map(({ key, title, events }) => (
