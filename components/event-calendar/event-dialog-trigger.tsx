@@ -5,6 +5,7 @@ import { getColorClasses } from '@/lib/event'
 import { cn } from '@/lib/utils'
 import { Events, TimeFormatType } from '@/types/event'
 import { Clock } from 'lucide-react'
+import { Badge } from '../ui/badge'
 
 type EventDialogTriggerProps = {
   event: Events
@@ -52,6 +53,8 @@ export function EventDialogTrigger({
   // texto final: "1h 30m - 12:00 - 13:30"
   const timeLine = `${start} - ${end} - ${durationLabel}`
 
+  console.log(event);
+  
   return (
     <div
       className="pointer-events-auto absolute"
@@ -75,7 +78,15 @@ export function EventDialogTrigger({
       >
         {/* título só se tiver espaço mínimo */}
         {!isVeryShort && (
-          <span className="line-clamp-1 font-medium">{event.title}</span>
+          <div className="flex">
+            <span className="line-clamp-1 font-medium">{event.title}</span>
+            <Badge
+              variant="default"
+              className={cn('ml-1 h-4 px-1 text-[9px] leading-none', bg)}
+            >
+              {event.category !== 'Bloqueio' ? event.category : ''}
+            </Badge>
+          </div>
         )}
 
         <div className="mt-0.5 flex items-center gap-1 text-[10px] leading-tight">

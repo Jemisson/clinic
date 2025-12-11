@@ -91,7 +91,7 @@ export const EventCard = ({
       )}
       onClick={() => onClick(event)}
     >
-      <div className="flex w-full items-start justify-between gap-1.5 group-hover/event:opacity-80">
+      <div className="flex w-full items-start gap-1.5 group-hover/event:opacity-80">
         <span className="line-clamp-1 text-[11px] font-medium leading-tight">
           {event.title}
         </span>
@@ -99,7 +99,7 @@ export const EventCard = ({
           variant="default"
           className={cn('ml-1 h-4 px-1 text-[9px] leading-none', badge.bg)}
         >
-          {event.category}
+          {event.category !== 'Bloqueio' ? event.category : ''}
         </Badge>
       </div>
 
