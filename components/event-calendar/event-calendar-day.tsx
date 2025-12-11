@@ -1,26 +1,20 @@
 'use client'
 
-import {
-  useState,
-  useMemo,
-  useRef,
-  useCallback,
-  useEffect,
-} from 'react'
 import { isSameDay } from 'date-fns'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/shallow'
 
-import { ScrollArea } from '../ui/scroll-area'
+import { useEventCalendarStore } from '@/hooks/use-event'
 import { generateTimeSlots } from '@/lib/date'
+import { useDayEventPositions } from '@/lib/event'
 import { cn } from '@/lib/utils'
+import AppointmentService from '@/service/appointment-service'
 import { Events, HoverPositionType } from '@/types/event'
+import { ScrollArea } from '../ui/scroll-area'
 import { EventDialogTrigger } from './event-dialog-trigger'
 import { CurrentTimeIndicator } from './ui/current-time-indicator'
 import { HoverTimeIndicator } from './ui/hover-time-indicator'
-import { useDayEventPositions } from '@/lib/event'
 import { TimeColumn } from './ui/time-column'
-import { useEventCalendarStore } from '@/hooks/use-event'
-import AppointmentService from '@/service/appointment-service'
 
 const HOUR_HEIGHT = 64
 const START_HOUR = 0
@@ -30,9 +24,14 @@ const COLUMN_WIDTH_TOTAL = 99.5
 interface CalendarDayProps {
   events: Events[]
   currentDate: Date
+  variant?: 'full' | 'compact'
 }
 
-export function EventCalendarDay({ events, currentDate }: CalendarDayProps) {
+export function EventCalendarDay({
+  events,
+  currentDate,
+  variant = 'full',
+}: CalendarDayProps) {
   const { timeFormat, viewSettings, openQuickAddDialog, openAppointmentEdit } =
     useEventCalendarStore(
       useShallow((state) => ({
@@ -145,8 +144,11 @@ export function EventCalendarDay({ events, currentDate }: CalendarDayProps) {
     }, 50)
   }, [currentDate, currentHour])
 
+  const containerHeightClass =
+    variant === 'full' ? 'h-[760px]' : 'h-[520px]'
+
   return (
-    <div className="flex h-[760px] flex-col py-3">
+    <div className={cn('flex flex-col py-3 w-full', containerHeightClass)}>
       <ScrollArea
         ref={scrollAreaRef}
         className="h-full w-full rounded-md px-4"

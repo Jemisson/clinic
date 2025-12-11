@@ -1,20 +1,25 @@
 import { Card, CardContent } from '@/components/ui/card'
+import { id } from 'date-fns/locale'
 import { CalendarCheck2, FileText, Stethoscope, UserPlus2 } from 'lucide-react'
 
 const actions = [
   {
-    title: 'Cadastrar Paciente',
+    id: 1,
+    title: 'Agendar Paciente',
     icon: UserPlus2,
   },
   {
+    id: 2,
     title: 'Cadastrar Procedimento',
     icon: Stethoscope,
   },
   {
-    title: 'Agendar Paciente',
+    id: 3,
+    title: 'Cadastrar Paciente',
     icon: CalendarCheck2,
   },
   {
+    id: 4,
     title: 'Consultar Relatório',
     icon: FileText,
   },
@@ -25,7 +30,7 @@ export function DashboardQuickActions() {
     <section className="grid gap-4 sm:grid-cols-2">
       {actions.map((action) => (
         <Card
-          key={action.title}
+          key={action.id}
           className="flex cursor-default flex-col items-center justify-center rounded-2xl bg-emerald-900 text-center text-emerald-50 transition hover:bg-emerald-800"
         >
           <CardContent className="flex flex-col items-center justify-center gap-3 p-6">
